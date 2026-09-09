@@ -1,0 +1,333 @@
+import { useEffect, useState } from 'react'
+import type { DriveStatus } from '@shared/types'
+import { hal } from '@/lib/ipc'
+import { useUi } from '@/state/ui'
+import { useVault } from '@/state/vault'
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="border-b border-zinc-800 px-5 py-4 last:border-b-0">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">{title}</h2>
+      {children}
+    </section>
+  )
+}
+
+const INTERVALS = [
+  { ms: 15_000, label: '15 seconds' },
+  { ms: 30_000, label: '30 seconds' },
+  { ms: 60_000, label: '1 minute' },
+  { ms: 300_000, label: '5 minutes' }
+]
+
+function DriveSection() {
+  const [status, setStatus] = useState<DriveStatus | null>(null)
+  const [secret, setSecret] = useState('')
+  const [connecting, setConnecting] = useState(false)
+  const [error, setError] = useState('')
+  const [folderName, setFolderName] = useState('')
+  const settings = useUi((s) => s.settings)
+  const refreshVault = useVault((s) => s.refresh)
+
+  const reload = (): void => {
+    void hal.driveStatus().then(setStatus).catch(() => setStatus(null))
+  }
+  useEffect(reload, [])
+
+  useEffect(() => {
+    if (settings?.vaultFolderName && !folderName) setFolderName(settings.vaultFolderName)
+  }, [settings?.vaultFolderName, folderName])
+
+  const configured = status?.configured ?? false
+  const connected = status?.connected ?? false
+
+  const doConnect = (): Promise<void> => {
+    setError('')
+    setConnecting(true)
+    return hal
+      .driveConnect()
+      .then(() => reload())
+      .then(() => refreshVault())
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .finally(() => setConnecting(false))
+  }
+
+  return (
+    <Section title="Google Drive">
+      {!configured && (
+        <div className="mb-3">
+          <p className="mb-2 text-xs leading-5 text-zinc-400">
+            Create a free OAuth <b>Desktop</b> client at console.cloud.google.com (enable the Drive API), then paste the
+            downloaded <code className="text-violet-300">client_secret*.json</code> here. One-time setup.
+          </p>
+          <textarea
+            rows={4}
+            className="w-full resize-none rounded-md border border-zinc-700 bg-zinc-900 p-2 font-mono text-[11px] outline-none focus:border-violet-500"
+            placeholder='{"installed": {"client_id": …}}'
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+          />
+          <button
+            className="mt-2 rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+            disabled={!secret.trim()}
+            onClick={() => {
+              try {
+                void hal.driveConfigure(secret.trim()).then(() => {
+                  setSecret('')
+                  reload()
+                })
+              } catch {
+                setError('That does not look like a client secret file')
+              }
+            }}
+          >
+            Save client secret
+          </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 text-sm">
+        <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400' : configured ? 'bg-amber-400' : 'bg-zinc-600'}`} />
+        {connected ? 'Connected — notes sync two-way with Drive' : configured ? 'Configured — not signed in' : 'Not configured'}
+      </div>
+      {status?.vaultFolderId && <p className="mt-1 text-[11px] text-zinc-600">Vault folder: {status.vaultFolderName} ({status.vaultFolderId})</p>}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {configured && !connected && (
+          <button
+            className="rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-50"
+            disabled={connecting}
+            onClick={() => void doConnect()}
+          >
+            {connecting ? 'Waiting for sign-in in your browser…' : 'Connect to Google Drive'}
+          </button>
+        )}
+        {connected && (
+          <>
+            <button
+              className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+              onClick={() => void hal.driveSyncNow()}
+            >
+              Sync now
+            </button>
+            <button
+              className="rounded-md border border-red-500/40 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10"
+              onClick={() => {
+                void hal.driveDisconnect().then(() => {
+                  reload()
+                  void refreshVault()
+                })
+              }}
+            >
+              Disconnect
+            </button>
+          </>
+        )}
+      </div>
+      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+
+      {connected && (
+        <label className="mt-3 block text-xs text-zinc-400">
+          Vault folder in My Drive
+          <input
+            className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            onBlur={() => {
+              if (folderName.trim() && folderName.trim() !== settings?.vaultFolderName) {
+                void hal.settingsSet({ vaultFolderName: folderName.trim() })
+              }
+            }}
+          />
+        </label>
+      )}
+
+      <label className="mt-3 block text-xs text-zinc-400">
+        Poll Drive for changes every
+        <select
+          className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+          value={settings?.syncIntervalMs ?? 30_000}
+          onChange={(e) => void hal.settingsSet({ syncIntervalMs: Number(e.target.value) })}
+        >
+          {INTERVALS.map((i) => (
+            <option key={i.ms} value={i.ms}>
+              {i.label}
+            </option>
+          ))}
+        </select>
+      </label>
+    </Section>
+  )
+}
+
+function GeminiSection() {
+  const settings = useUi((s) => s.settings)
+  const applySettings = useUi((s) => s.applySettings)
+  const embeddingsReady = useUi((s) => s.embeddingsReady)
+  const embedProgress = useUi((s) => s.embedProgress)
+  const refreshEmbeddingsReady = useUi((s) => s.refreshEmbeddingsReady)
+  const [key, setKey] = useState('')
+  const [testMsg, setTestMsg] = useState('')
+  const [testing, setTesting] = useState(false)
+  const [models, setModels] = useState<string[]>([])
+  const [building, setBuilding] = useState(false)
+
+  const keySet = settings?.geminiKeySet ?? false
+  const chatModel = settings?.chatModel || 'gemini-flash-latest'
+
+  const saveKey = (): void => {
+    void hal
+      .aiSetKey(key.trim())
+      .then(() => hal.settingsGet())
+      .then(applySettings)
+      .then(() => {
+        setKey('')
+        setTestMsg('Key saved')
+        void hal.aiModels().then(setModels).catch(() => setModels([]))
+      })
+  }
+
+  return (
+    <Section title="Gemini">
+      {!keySet ? (
+        <div>
+          <p className="mb-2 text-xs leading-5 text-zinc-400">
+            Get a free API key at <b>aistudio.google.com</b> — your Google AI Pro/Ultra subscription raises its rate
+            limits. The key is stored encrypted on this machine only.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="password"
+              className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm outline-none focus:border-violet-500"
+              placeholder="AIza…"
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+            />
+            <button
+              className="rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+              disabled={!key.trim()}
+              onClick={saveKey}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" /> API key saved
+            <button
+              className="ml-auto rounded-md border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
+              disabled={testing}
+              onClick={() => {
+                setTesting(true)
+                setTestMsg('')
+                void hal
+                  .aiTest()
+                  .then(() => setTestMsg('✓ Key works'))
+                  .catch((err: unknown) => setTestMsg(`✗ ${err instanceof Error ? err.message : String(err)}`))
+                  .finally(() => setTesting(false))
+              }}
+            >
+              {testing ? 'Testing…' : 'Test key'}
+            </button>
+            <button
+              className="rounded-md border border-red-500/40 px-2.5 py-1 text-xs text-red-400 hover:bg-red-500/10"
+              onClick={() => {
+                void hal.aiClearKey().then(() => hal.settingsGet()).then(applySettings)
+              }}
+            >
+              Remove
+            </button>
+          </div>
+          {testMsg && <p className={`text-xs ${testMsg.startsWith('✓') ? 'text-emerald-400' : 'text-red-400'}`}>{testMsg}</p>}
+
+          <label className="block text-xs text-zinc-400">
+            Chat model
+            <select
+              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+              value={chatModel}
+              onChange={(e) => void hal.settingsSet({ chatModel: e.target.value }).then(applySettings)}
+              onClick={() => {
+                if (models.length === 0) void hal.aiModels().then(setModels).catch(() => setModels([]))
+              }}
+            >
+              <option value="gemini-flash-latest">gemini-flash-latest (default)</option>
+              {models
+                .filter((m) => m !== chatModel)
+                .map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              {models.includes(chatModel) && <option value={chatModel}>{chatModel}</option>}
+            </select>
+          </label>
+
+          <div className="rounded-md bg-zinc-800/50 p-2.5 text-xs text-zinc-400">
+            <div className="flex items-center justify-between">
+              <span>Semantic index {embeddingsReady ? '✓ ready' : '— not built'}</span>
+              <button
+                className="rounded bg-violet-500/20 px-2 py-1 text-violet-300 hover:bg-violet-500/30 disabled:opacity-50"
+                disabled={building}
+                onClick={() => {
+                  setBuilding(true)
+                  void hal
+                    .embeddingsBackfill()
+                    .then(() => refreshEmbeddingsReady())
+                    .catch((err: unknown) => setTestMsg(err instanceof Error ? err.message : String(err)))
+                    .finally(() => setBuilding(false))
+                }}
+              >
+                {building ? 'Building…' : embeddingsReady ? 'Rebuild' : 'Build index'}
+              </button>
+            </div>
+            {embedProgress && (
+              <div className="mt-2">
+                <div className="h-1 overflow-hidden rounded bg-zinc-700">
+                  <div
+                    className="h-full bg-violet-400 transition-all"
+                    style={{ width: `${embedProgress.total ? (embedProgress.done / embedProgress.total) * 100 : 0}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-500">
+                  {embedProgress.done}/{embedProgress.total} notes embedded
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+export function SettingsModal() {
+  const open = useUi((s) => s.settingsOpen)
+  const close = useUi((s) => s.closeSettings)
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60" onClick={close}>
+      <div
+        className="max-h-[82vh] w-[560px] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-3">
+          <h1 className="text-sm font-semibold text-zinc-100">Settings</h1>
+          <button className="rounded-md p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300" onClick={close}>
+            ✕
+          </button>
+        </div>
+        <DriveSection />
+        <GeminiSection />
+        <Section title="About">
+          <p className="text-xs text-zinc-500">
+            HAL Notes v0.1 — markdown notes, Google Drive sync, Gemini AI. Notes are plain{' '}
+            <code className="text-violet-300">.md</code> files in your Drive folder.
+          </p>
+        </Section>
+      </div>
+    </div>
+  )
+}

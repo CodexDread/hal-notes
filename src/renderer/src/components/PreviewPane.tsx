@@ -1,0 +1,29 @@
+import { useDeferredValue, useMemo, type RefObject } from 'react'
+import { renderMarkdown } from '@/lib/markdown'
+import { useUi } from '@/state/ui'
+import { useVault } from '@/state/vault'
+
+export function PreviewPane({ containerRef }: { containerRef: RefObject<HTMLDivElement | null> }) {
+  const activeContent = useVault((s) => s.activeContent)
+  const deferred = useDeferredValue(activeContent)
+  const html = useMemo(() => renderMarkdown(deferred), [deferred])
+
+  return (
+    <div
+      ref={containerRef}
+      className="preview prose prose-invert prose-zinc h-full min-h-0 flex-1 overflow-y-auto px-8 py-6"
+      onClick={(e) => {
+        const el = e.target as HTMLElement
+        const wl = el.closest('a.wl') as HTMLElement | null
+        if (wl) {
+          e.preventDefault()
+          void useVault.getState().openByName(wl.dataset.wikilinkTarget ?? '')
+          return
+        }
+        const tag = el.closest('[data-tag]') as HTMLElement | null
+        if (tag) useUi.getState().seedSearch(tag.dataset.tag ?? '')
+      }}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+}

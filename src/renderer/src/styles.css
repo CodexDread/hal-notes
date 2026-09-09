@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-200 antialiased;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e39 transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2e39;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* CodeMirror */
+.cm-editor {
+  height: 100%;
+  background: transparent;
+}
+.cm-scroller {
+  overflow: auto;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, Menlo, monospace;
+  line-height: 1.65;
+}
+.cm-content {
+  padding: 20px 8px 40vh 8px;
+}
+.cm-gutters {
+  background: transparent;
+  border: none;
+}
+.cm-activeLine {
+  background: rgba(255, 255, 255, 0.028);
+}
+.cm-cursor {
+  border-left-color: #a78bfa;
+}
+.cm-selectionBackground,
+.cm-editor ::selection {
+  background: #a78bfa33 !important;
+}
+.cm-wikilink {
+  color: #a78bfa;
+  cursor: pointer;
+}
+.cm-wikilink-unresolved {
+  color: #b06a6a;
+}
+.cm-tag {
+  color: #6ee7b7;
+}
+
+/* Markdown preview */
+.preview .wl {
+  color: #a78bfa;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(167, 139, 250, 0.4);
+}
+.preview .tag {
+  color: #6ee7b7;
+  background: rgba(110, 231, 183, 0.09);
+  padding: 0 7px;
+  border-radius: 9999px;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+.preview pre {
+  @apply rounded-lg bg-zinc-900 border border-zinc-800;
+}
+.preview code {
+  @apply text-[0.9em] text-violet-300 bg-zinc-900 px-1.5 py-0.5 rounded;
+}
+.preview pre code {
+  @apply bg-transparent text-zinc-300 p-0;
+}
+.preview h1,
+.preview h2,
+.preview h3,
+.preview h4 {
+  @apply text-zinc-100;
+}
+.preview a {
+  color: #93c5fd;
+}
+.preview blockquote {
+  @apply border-zinc-700 text-zinc-400;
+}
