@@ -28,9 +28,7 @@ export function App() {
       hal.on('settings:changed', (s) => useUi.getState().applySettings(s)),
       hal.on('embed:progress', (p) => useUi.getState().setEmbedProgress(p)),
       hal.on('drive:status-changed', () => void useVault.getState().refresh()),
-      hal.on('capture:suggestion', (sug) => {
-        if (useVault.getState().activeId === sug.noteId) useUi.getState().setSuggestion(sug)
-      }),
+      hal.on('capture:suggestion', (sug) => useUi.getState().addSuggestion(sug)),
       hal.on('hal:delta', ({ id, delta }) => useChat.getState().onDelta(id, delta)),
       hal.on('hal:done', ({ id, citations }) => useChat.getState().onDone(id, citations)),
       hal.on('hal:error', ({ id, error }) => useChat.getState().onError(id, error))

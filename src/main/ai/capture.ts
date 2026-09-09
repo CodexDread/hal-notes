@@ -43,8 +43,15 @@ export function initCaptureWatcher(): void {
 
 async function suggestFor(id: string): Promise<void> {
   const row = getNoteRow(id)
-  if (!row || row.trashed === 1 || row.content.trim().length < CAPTURE_MIN_LEN) return
-  if (lastSuggestedVersion.get(id) === row.content_version) return
+  if (!row || row.trashed === 1) return
+  if (row.content.trim().length < CAPTURE_MIN_LEN) {
+    console.log(`[capture] skip "${row.name}": ${row.content.trim().length} chars < ${CAPTURE_MIN_LEN}`)
+    return
+  }
+  if (lastSuggestedVersion.get(id) === row.content_version) {
+    console.log(`[capture] skip "${row.name}": already suggested for this version`)
+    return
+  }
   lastSuggestedVersion.set(id, row.content_version)
 
   const ai = getClient()
@@ -77,6 +84,7 @@ Return JSON per the schema. Tags: 3-6 short lowercase tags without the # symbol,
   try {
     parsed = JSON.parse(res.text ?? '{}')
   } catch {
+    console.log(`[capture] "${row.name}": model returned unparseable JSON, skipping`)
     return
   }
 
@@ -89,6 +97,7 @@ Return JSON per the schema. Tags: 3-6 short lowercase tags without the # symbol,
     .filter((t) => t.length > 1 && !existingTagSet.has(t))
     .slice(0, 6)
 
+  const rawLinkCount = (parsed.links ?? []).length
   const links = (parsed.links ?? [])
     .filter(
       (l) =>
@@ -106,6 +115,10 @@ Return JSON per the schema. Tags: 3-6 short lowercase tags without the # symbol,
     parsed.title.trim().toLowerCase() !== row.name.toLowerCase()
       ? parsed.title.trim().slice(0, 80)
       : ''
+
+  console.log(
+    `[capture] "${row.name}": title=${title ? `'${title}'` : '-'} tags=${tags.length}(of ${(parsed.tags ?? []).length}) links=${links.length}(of ${rawLinkCount})`
+  )
 
   if (!title && tags.length === 0 && links.length === 0) return
 

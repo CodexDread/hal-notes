@@ -2,10 +2,10 @@ import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
 
 export function SuggestionBar() {
-  const suggestion = useUi((s) => s.suggestion)
-  const setSuggestion = useUi((s) => s.setSuggestion)
   const activeId = useVault((s) => s.activeId)
-  if (!suggestion || suggestion.noteId !== activeId) return null
+  const suggestion = useUi((s) => (activeId ? s.suggestions[activeId] : undefined))
+  const dismissSuggestion = useUi((s) => s.dismissSuggestion)
+  if (!activeId || !suggestion || suggestion.noteId !== activeId) return null
 
   const apply = (): void => {
     const vault = useVault.getState()
@@ -19,8 +19,10 @@ export function SuggestionBar() {
     }
     if (content !== vault.activeContent) vault.setContent(content)
     if (suggestion.title) void vault.renameActive(suggestion.title)
-    setSuggestion(null)
+    dismissSuggestion(activeId)
   }
+
+  const dismiss = (): void => dismissSuggestion(activeId)
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-zinc-800 bg-violet-500/5 px-4 py-1.5 text-xs">
@@ -44,7 +46,7 @@ export function SuggestionBar() {
       <button className="rounded bg-violet-500/25 px-2 py-0.5 text-violet-200 hover:bg-violet-500/40" onClick={apply}>
         Apply all
       </button>
-      <button className="rounded px-2 py-0.5 text-zinc-500 hover:bg-zinc-800" onClick={() => setSuggestion(null)}>
+      <button className="rounded px-2 py-0.5 text-zinc-500 hover:bg-zinc-800" onClick={dismiss}>
         Dismiss
       </button>
     </div>

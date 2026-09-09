@@ -17,7 +17,7 @@ interface UiState {
   embeddingsReady: boolean
   embedProgress: EmbedProgress | null
   syncStatus: SyncStatus | null
-  suggestion: CaptureSuggestion | null
+  suggestions: Record<string, CaptureSuggestion>
   searchSeed: string
 
   setSidebarTab(tab: SidebarTab): void
@@ -31,7 +31,8 @@ interface UiState {
   refreshEmbeddingsReady(): Promise<void>
   setEmbedProgress(p: EmbedProgress | null): void
   setSyncStatus(s: SyncStatus): void
-  setSuggestion(s: CaptureSuggestion | null): void
+  addSuggestion(s: CaptureSuggestion): void
+  dismissSuggestion(noteId: string): void
   seedSearch(q: string): void
 }
 
@@ -46,7 +47,7 @@ export const useUi = create<UiState>((set, get) => ({
   embeddingsReady: false,
   embedProgress: null,
   syncStatus: null,
-  suggestion: null,
+  suggestions: {},
   searchSeed: '',
 
   setSidebarTab: (tab) => set({ sidebarTab: tab, sidebarOpen: true }),
@@ -63,7 +64,13 @@ export const useUi = create<UiState>((set, get) => ({
   },
   setEmbedProgress: (p) => set({ embedProgress: p }),
   setSyncStatus: (s) => set({ syncStatus: s }),
-  setSuggestion: (s) => set({ suggestion: s }),
+  addSuggestion: (s) => set((st) => ({ suggestions: { ...st.suggestions, [s.noteId]: s } })),
+  dismissSuggestion: (noteId) =>
+    set((st) => {
+      const next = { ...st.suggestions }
+      delete next[noteId]
+      return { suggestions: next }
+    }),
   seedSearch: (q) => {
     set({ searchSeed: q, sidebarTab: 'search', sidebarOpen: true })
   }
