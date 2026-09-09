@@ -64,12 +64,15 @@ class DriveAuth {
   }
 
   /** Opens the system browser for consent and captures the code on a loopback redirect. */
-  async connect(): Promise<void> {
+  async connect(onAuthUrl?: (url: string) => void): Promise<void> {
     const secret = this.loadSecret()
     if (!secret) throw new Error('Client secret not configured')
 
     const server = http.createServer()
-    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()))
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', () => resolve())
+    })
     const port = (server.address() as AddressInfo).port
     const redirectUri = `http://127.0.0.1:${port}`
     const oauth2 = new google.auth.OAuth2(secret.clientId, secret.clientSecret, redirectUri)
@@ -79,6 +82,15 @@ class DriveAuth {
       prompt: 'consent',
       scope: SCOPES
     })
+    onAuthUrl?.(authUrl)
+    console.log(`[drive] sign-in page: ${authUrl}`)
+    try {
+      await shell.openExternal(authUrl)
+      console.log('[drive] browser open requested')
+    } catch (err) {
+      // Not fatal: the renderer shows a manual link to the same URL.
+      console.error('[drive] failed to open the browser automatically:', err)
+    }
 
     const code = await new Promise<string>((resolvePromise, rejectPromise) => {
       const timer = setTimeout(() => {

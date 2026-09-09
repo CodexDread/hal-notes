@@ -25,9 +25,15 @@ function DriveSection() {
   const [secret, setSecret] = useState('')
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
+  const [authUrl, setAuthUrl] = useState('')
   const [folderName, setFolderName] = useState('')
   const settings = useUi((s) => s.settings)
   const refreshVault = useVault((s) => s.refresh)
+
+  useEffect(() => {
+    const off = hal.on('drive:auth-url', (url) => setAuthUrl(url))
+    return off
+  }, [])
 
   const reload = (): void => {
     void hal.driveStatus().then(setStatus).catch(() => setStatus(null))
@@ -43,6 +49,7 @@ function DriveSection() {
 
   const doConnect = (): Promise<void> => {
     setError('')
+    setAuthUrl('')
     setConnecting(true)
     return hal
       .driveConnect()
@@ -101,6 +108,22 @@ function DriveSection() {
           >
             {connecting ? 'Waiting for sign-in in your browser…' : 'Connect to Google Drive'}
           </button>
+        )}
+        {connecting && (
+          <p className="mt-2 text-xs leading-5 text-amber-300">
+            Waiting for Google sign-in.{' '}
+            {authUrl ? (
+              <>
+                If your browser didn’t open,{' '}
+                <a className="text-violet-300 underline" href={authUrl} target="_blank" rel="noopener noreferrer">
+                  open the sign-in page manually
+                </a>
+                .
+              </>
+            ) : (
+              'Preparing the sign-in page…'
+            )}
+          </p>
         )}
         {connected && (
           <>

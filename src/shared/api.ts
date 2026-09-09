@@ -26,6 +26,7 @@ export interface HalEventPayloads {
   'embed:progress': EmbedProgress
   'capture:suggestion': CaptureSuggestion
   'drive:status-changed': undefined
+  'drive:auth-url': string
 }
 
 export type HalEventChannel = keyof HalEventPayloads

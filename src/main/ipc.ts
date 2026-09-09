@@ -68,7 +68,7 @@ export function registerIpc(): void {
   }))
   handle('drive:configure', (secretJson: string) => driveAuth.configure(secretJson))
   handle('drive:connect', async () => {
-    await driveAuth.connect()
+    await driveAuth.connect((url) => broadcast('drive:auth-url', url))
     await syncEngine.syncNow()
   })
   handle('drive:disconnect', () => {
