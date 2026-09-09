@@ -11,6 +11,7 @@ export function HalChat() {
   const ask = useChat((s) => s.ask)
   const clear = useChat((s) => s.clear)
   const geminiKeySet = useUi((s) => s.settings?.geminiKeySet ?? false)
+  const dark = useUi((s) => (s.settings?.theme ?? 'dark') === 'dark')
   const openSettings = useUi((s) => s.openSettings)
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -64,7 +65,7 @@ export function HalChat() {
                 ◉ HAL {m.streaming && <span className="animate-pulse text-zinc-500">thinking…</span>}
               </div>
               <div
-                className="preview prose prose-invert prose-sm prose-zinc max-w-none whitespace-pre-wrap"
+                className={`preview prose prose-sm prose-zinc max-w-none whitespace-pre-wrap ${dark ? 'prose-invert' : ''}`}
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }}
               />
               {m.citations.length > 0 && !m.streaming && (

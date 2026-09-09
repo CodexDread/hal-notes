@@ -1,7 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { EditorView } from '@codemirror/view'
-import { createEditorState, replaceDoc } from '@/lib/cm'
+import { createEditorState, halEditorTheme, replaceDoc, themeCompartment } from '@/lib/cm'
 import type { CmOptions } from '@/lib/cm'
+import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
 
 export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElement | null> }) {
@@ -9,6 +10,7 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
   const viewRef = useRef<EditorView | null>(null)
   const activeId = useVault((s) => s.activeId)
   const activeContent = useVault((s) => s.activeContent)
+  const dark = useUi((s) => (s.settings?.theme ?? 'dark') === 'dark')
 
   useEffect(() => {
     const opts: CmOptions = {
@@ -19,7 +21,7 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
     }
     const view = new EditorView({
       parent: hostRef.current!,
-      state: createEditorState(useVault.getState().activeContent, opts)
+      state: createEditorState(useVault.getState().activeContent, opts, (useUi.getState().settings?.theme ?? 'dark') === 'dark')
     })
     viewRef.current = view
 
@@ -51,6 +53,12 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
     if (!view) return
     replaceDoc(view, activeContent)
   }, [activeId, activeContent])
+
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    view.dispatch({ effects: themeCompartment.reconfigure(halEditorTheme(dark)) })
+  }, [dark])
 
   return <div ref={hostRef} className="h-full min-h-0 flex-1 overflow-hidden" />
 }

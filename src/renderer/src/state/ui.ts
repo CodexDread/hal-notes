@@ -78,6 +78,7 @@ export const useUi = create<UiState>((set, get) => ({
 
 export async function loadSettings(): Promise<void> {
   const s = await hal.settingsGet()
+  useUi.setState({ viewMode: s.defaultViewMode })
   useUi.getState().applySettings(s)
   await useUi.getState().refreshEmbeddingsReady()
 }

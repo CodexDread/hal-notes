@@ -5,13 +5,14 @@ import { useVault } from '@/state/vault'
 
 export function PreviewPane({ containerRef }: { containerRef: RefObject<HTMLDivElement | null> }) {
   const activeContent = useVault((s) => s.activeContent)
+  const dark = useUi((s) => (s.settings?.theme ?? 'dark') === 'dark')
   const deferred = useDeferredValue(activeContent)
   const html = useMemo(() => renderMarkdown(deferred), [deferred])
 
   return (
     <div
       ref={containerRef}
-      className="preview prose prose-invert prose-zinc h-full min-h-0 flex-1 overflow-y-auto px-8 py-6"
+      className={`preview prose prose-zinc h-full min-h-0 flex-1 overflow-y-auto px-8 py-6 ${dark ? 'prose-invert' : ''}`}
       onClick={(e) => {
         const el = e.target as HTMLElement
         const wl = el.closest('a.wl') as HTMLElement | null

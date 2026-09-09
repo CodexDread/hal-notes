@@ -33,10 +33,11 @@ export function initCaptureWatcher(): void {
     if (!hasKey()) return
     const existing = timers.get(id)
     if (existing) clearTimeout(existing)
+    const delay = Math.max(3_000, getSettings().captureDelayMs || CAPTURE_DEBOUNCE_MS)
     const timer = setTimeout(() => {
       timers.delete(id)
       void suggestFor(id).catch((err) => console.error('Smart capture failed:', err))
-    }, CAPTURE_DEBOUNCE_MS)
+    }, delay)
     timers.set(id, timer)
   })
 }

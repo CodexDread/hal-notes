@@ -10,7 +10,10 @@ const DEFAULTS: AppSettings = {
   vaultFolderName: 'HAL Notes',
   chatModel: '',
   geminiKeySet: false,
-  geminiEmail: ''
+  geminiEmail: '',
+  defaultViewMode: 'split',
+  captureDelayMs: 12_000,
+  editorFontSize: 15
 }
 
 const KEY_FILE = 'gemini-key.bin'

@@ -8,6 +8,56 @@ body,
   overflow: hidden;
 }
 
+/* Light theme: Tailwind v4 palette utilities resolve to these CSS variables,
+   so remapping them here flips the whole UI at once. */
+.theme-light {
+  --color-zinc-950: #fafafa;
+  --color-zinc-900: #ffffff;
+  --color-zinc-800: #e8e8ec;
+  --color-zinc-700: #d6d6dc;
+  --color-zinc-600: #6d6d78;
+  --color-zinc-500: #52525c;
+  --color-zinc-400: #45454f;
+  --color-zinc-300: #2f2f37;
+  --color-zinc-200: #26262d;
+  --color-zinc-100: #1c1c22;
+  --color-violet-200: #5b21b6;
+  --color-violet-300: #6d28d9;
+  --color-violet-400: #7c3aed;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-sky-300: #0369a1;
+  --color-amber-300: #b45309;
+  --color-amber-400: #d97706;
+  --color-orange-400: #c2410c;
+  --color-red-400: #dc2626;
+}
+
+.theme-light * {
+  scrollbar-color: #c9c9d0 transparent;
+}
+.theme-light ::-webkit-scrollbar-thumb {
+  background: #c9c9d0;
+}
+.theme-light .cm-wikilink {
+  color: #7c3aed;
+}
+.theme-light .cm-tag {
+  color: #047857;
+}
+.theme-light .cm-activeLine {
+  background: rgba(0, 0, 0, 0.035);
+}
+.theme-light .cm-gutters {
+  color: #a1a1aa;
+}
+.theme-light .preview .wl {
+  border-bottom-color: rgba(124, 58, 237, 0.45);
+}
+.theme-light .preview .tag {
+  background: rgba(4, 120, 87, 0.08);
+}
+
 body {
   @apply bg-zinc-950 text-zinc-200 antialiased;
   font-family:
@@ -42,6 +92,7 @@ body {
 .cm-scroller {
   overflow: auto;
   font-family: ui-monospace, 'Cascadia Code', Consolas, Menlo, monospace;
+  font-size: var(--hal-editor-font-size, 15px);
   line-height: 1.65;
 }
 .cm-content {

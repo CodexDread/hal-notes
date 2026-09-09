@@ -14,6 +14,16 @@ export function App() {
   const initialized = useVault((s) => s.initialized)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
+  const theme = useUi((s) => s.settings?.theme ?? 'dark')
+  const editorFontSize = useUi((s) => s.settings?.editorFontSize ?? 15)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-light', theme === 'light')
+  }, [theme])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--hal-editor-font-size', `${editorFontSize}px`)
+  }, [editorFontSize])
 
   useEffect(() => {
     void useVault.getState().init()

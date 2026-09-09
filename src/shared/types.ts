@@ -88,6 +88,9 @@ export interface AppSettings {
   chatModel: string
   geminiKeySet: boolean
   geminiEmail: string
+  defaultViewMode: 'edit' | 'split' | 'preview'
+  captureDelayMs: number
+  editorFontSize: number
 }
 
 export interface EmbedProgress {

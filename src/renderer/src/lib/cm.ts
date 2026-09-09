@@ -2,7 +2,7 @@ import { autocompletion, type CompletionContext, type CompletionResult } from '@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language'
-import { EditorState, type Extension } from '@codemirror/state'
+import { Compartment, EditorState, type Extension } from '@codemirror/state'
 import {
   Decoration,
   EditorView,
@@ -96,15 +96,19 @@ function tagCompletion(opts: CmOptions): (ctx: CompletionContext) => CompletionR
   }
 }
 
-const halTheme = EditorView.theme(
-  {
-    '&': { height: '100%', backgroundColor: 'transparent' },
-    '.cm-content': { caretColor: '#a78bfa' }
-  },
-  { dark: true }
-)
+export const themeCompartment = new Compartment()
 
-export function createEditorState(doc: string, opts: CmOptions): EditorState {
+export function halEditorTheme(dark: boolean): Extension {
+  return EditorView.theme(
+    {
+      '&': { height: '100%', backgroundColor: 'transparent', color: dark ? '#d7dae0' : '#27272a' },
+      '.cm-content': { caretColor: '#a78bfa' }
+    },
+    { dark }
+  )
+}
+
+export function createEditorState(doc: string, opts: CmOptions, dark = true): EditorState {
   return EditorState.create({
     doc,
     extensions: [
@@ -117,7 +121,7 @@ export function createEditorState(doc: string, opts: CmOptions): EditorState {
       matchPlugin(WIKI_RE, 'cm-wikilink'),
       matchPlugin(TAG_RE, 'cm-tag'),
       clickHandler(opts),
-      halTheme,
+      themeCompartment.of(halEditorTheme(dark)),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) opts.onChange(update.state.doc.toString())
       })
