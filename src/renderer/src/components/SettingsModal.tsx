@@ -360,8 +360,20 @@ function GeminiSection() {
   )
 }
 
+const ACCENT_PRESETS = [
+  { label: 'Default', value: '', hex: '#8b5cf6' },
+  { label: 'Blue', value: '#3b82f6', hex: '#3b82f6' },
+  { label: 'Cyan', value: '#06b6d4', hex: '#06b6d4' },
+  { label: 'Teal', value: '#14b8a6', hex: '#14b8a6' },
+  { label: 'Green', value: '#22c55e', hex: '#22c55e' },
+  { label: 'Amber', value: '#f59e0b', hex: '#f59e0b' },
+  { label: 'Rose', value: '#f43f5e', hex: '#f43f5e' },
+  { label: 'Pink', value: '#ec4899', hex: '#ec4899' }
+] as const
+
 function StyleSection() {
   const settings = useUi((s) => s.settings)
+  const accent = settings?.accentColor ?? ''
 
   return (
     <Section title="Appearance">
@@ -377,6 +389,41 @@ function StyleSection() {
             onChange={(theme) => void hal.settingsSet({ theme })}
           />
         </div>
+      </div>
+      <div className="mt-4 text-xs text-zinc-400">
+        Accent color
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {ACCENT_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              title={p.label}
+              className={`h-7 w-7 rounded-full border border-black/20 transition-transform hover:scale-110 ${
+                accent === p.value ? 'ring-2 ring-violet-400 ring-offset-2 ring-offset-zinc-900' : ''
+              }`}
+              style={{ backgroundColor: p.hex }}
+              onClick={() => void hal.settingsSet({ accentColor: p.value })}
+            />
+          ))}
+          <label
+            className={`flex h-7 items-center gap-1.5 rounded-full border border-zinc-600 px-2 text-[11px] text-zinc-400 ${
+              accent && !ACCENT_PRESETS.some((p) => p.value === accent)
+                ? 'ring-2 ring-violet-400 ring-offset-2 ring-offset-zinc-900'
+                : ''
+            }`}
+            title="Custom color"
+          >
+            <input
+              type="color"
+              className="h-4 w-4 cursor-pointer border-none bg-transparent p-0"
+              value={accent || '#8b5cf6'}
+              onChange={(e) => void hal.settingsSet({ accentColor: e.target.value })}
+            />
+            Custom
+          </label>
+        </div>
+        <p className="mt-1.5 text-[11px] text-zinc-600">
+          Applies to buttons, links, wiki-links, the caret, and HAL’s branding — live, in both themes.
+        </p>
       </div>
       <SelectRow
         label="Editor font size"

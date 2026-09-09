@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
 import { TopBar } from './components/TopBar'
 import { hal } from './lib/ipc'
+import { accentRamp } from './lib/color'
 import { useChat } from './state/chat'
 import { loadSettings, useUi } from './state/ui'
 import { useVault } from './state/vault'
@@ -16,6 +17,7 @@ export function App() {
   const rightOpen = useUi((s) => s.rightOpen)
   const theme = useUi((s) => s.settings?.theme ?? 'dark')
   const editorFontSize = useUi((s) => s.settings?.editorFontSize ?? 15)
+  const accentColor = useUi((s) => s.settings?.accentColor ?? '')
 
   useEffect(() => {
     document.documentElement.classList.toggle('theme-light', theme === 'light')
@@ -24,6 +26,17 @@ export function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--hal-editor-font-size', `${editorFontSize}px`)
   }, [editorFontSize])
+
+  useEffect(() => {
+    const root = document.documentElement
+    const shades = ['100', '200', '300', '400', '500'] as const
+    if (!accentColor) {
+      for (const s of shades) root.style.removeProperty(`--color-violet-${s}`)
+      return
+    }
+    const ramp = accentRamp(accentColor, theme)
+    for (const s of shades) root.style.setProperty(`--color-violet-${s}`, ramp[s])
+  }, [accentColor, theme])
 
   useEffect(() => {
     void useVault.getState().init()

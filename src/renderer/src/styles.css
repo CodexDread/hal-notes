@@ -21,6 +21,7 @@ body,
   --color-zinc-300: #2f2f37;
   --color-zinc-200: #26262d;
   --color-zinc-100: #1c1c22;
+  --color-violet-100: #402a7a;
   --color-violet-200: #5b21b6;
   --color-violet-300: #6d28d9;
   --color-violet-400: #7c3aed;
@@ -39,20 +40,11 @@ body,
 .theme-light ::-webkit-scrollbar-thumb {
   background: #c9c9d0;
 }
-.theme-light .cm-wikilink {
-  color: #7c3aed;
-}
-.theme-light .cm-tag {
-  color: #047857;
-}
 .theme-light .cm-activeLine {
   background: rgba(0, 0, 0, 0.035);
 }
 .theme-light .cm-gutters {
   color: #a1a1aa;
-}
-.theme-light .preview .wl {
-  border-bottom-color: rgba(124, 58, 237, 0.45);
 }
 .theme-light .preview .tag {
   background: rgba(4, 120, 87, 0.08);
@@ -106,14 +98,14 @@ body {
   background: rgba(255, 255, 255, 0.028);
 }
 .cm-cursor {
-  border-left-color: #a78bfa;
+  border-left-color: var(--color-violet-400);
 }
 .cm-selectionBackground,
 .cm-editor ::selection {
-  background: #a78bfa33 !important;
+  background: color-mix(in srgb, var(--color-violet-400) 26%, transparent) !important;
 }
 .cm-wikilink {
-  color: #a78bfa;
+  color: var(--color-violet-300);
   cursor: pointer;
 }
 .cm-wikilink-unresolved {
@@ -125,10 +117,10 @@ body {
 
 /* Markdown preview */
 .preview .wl {
-  color: #a78bfa;
+  color: var(--color-violet-300);
   cursor: pointer;
   text-decoration: none;
-  border-bottom: 1px dotted rgba(167, 139, 250, 0.4);
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-violet-300) 45%, transparent);
 }
 .preview .tag {
   color: #6ee7b7;

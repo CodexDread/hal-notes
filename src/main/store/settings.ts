@@ -13,7 +13,8 @@ const DEFAULTS: AppSettings = {
   geminiEmail: '',
   defaultViewMode: 'split',
   captureDelayMs: 12_000,
-  editorFontSize: 15
+  editorFontSize: 15,
+  accentColor: ''
 }
 
 const KEY_FILE = 'gemini-key.bin'

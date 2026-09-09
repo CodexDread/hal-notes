@@ -91,6 +91,7 @@ export interface AppSettings {
   defaultViewMode: 'edit' | 'split' | 'preview'
   captureDelayMs: number
   editorFontSize: number
+  accentColor: string
 }
 
 export interface EmbedProgress {
