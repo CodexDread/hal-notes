@@ -4,6 +4,8 @@ A personal markdown notes vault — Obsidian-style editing, **two-way sync with 
 
 Notes are plain `.md` files living in a `HAL Notes` folder in your Google Drive, so they stay readable and editable from Drive on the web or your phone.
 
+> 📋 **[DECISIONS.md](DECISIONS.md)** records the architecture decisions, incidents, and roadmap behind this app.
+
 ## Development
 
 ```bash
