@@ -265,6 +265,17 @@ export function createFolder(parentId: string | null, desiredName = 'New folder'
   return toFolderMeta(row)
 }
 
+/** Finds an untrashed folder by name under a parent (null = vault root), creating it if missing. */
+export function ensureFolderUnder(parentId: string | null, name: string): FolderMeta {
+  const existing = getDb()
+    .prepare<[string | null, string], FolderRow>(
+      'SELECT * FROM folders WHERE parent_id IS ? AND name = ? AND trashed = 0'
+    )
+    .get(parentId, name)
+  if (existing) return toFolderMeta(existing)
+  return createFolder(parentId, name)
+}
+
 export function renameFolder(id: string, desiredName: string): void {
   const row = getFolderRow(id)
   if (!row) return

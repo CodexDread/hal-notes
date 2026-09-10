@@ -2,13 +2,22 @@ import type {
   AppSettings,
   Backlink,
   CaptureSuggestion,
+  CardAnswerResult,
   ChatMessage,
   Citation,
   DriveStatus,
+  DueCard,
   EmbedProgress,
   FolderMeta,
   NoteMeta,
   OpenNote,
+  PathDetail,
+  ResearchChatMessage,
+  ResearchCitation,
+  ResearchNotebook,
+  ResearchNotebookDetail,
+  ResearchPath,
+  ResearchSource,
   SearchHit,
   SyncStatus,
   TagCount,
@@ -27,6 +36,11 @@ export interface HalEventPayloads {
   'capture:suggestion': CaptureSuggestion
   'drive:status-changed': undefined
   'drive:auth-url': string
+  'research-chat:delta': { id: string; notebookId: string; delta: string }
+  'research-chat:done': { id: string; notebookId: string; citations: ResearchCitation[] }
+  'research-chat:error': { id: string; notebookId: string; error: string }
+  'research:path-updated': { pathId: string; notebookId: string }
+  'research:path-error': { pathId: string; notebookId: string; error: string }
 }
 
 export type HalEventChannel = keyof HalEventPayloads
@@ -42,7 +56,7 @@ export interface HalApi {
   folderRename(id: string, name: string): Promise<void>
   folderTrash(id: string): Promise<void>
   resolveName(name: string): Promise<NoteMeta | null>
-  searchText(q: string): Promise<SearchHit[]>
+  searchText(q: string, limit?: number): Promise<SearchHit[]>
   searchSemantic(q: string): Promise<SearchHit[]>
   backlinks(id: string): Promise<Backlink[]>
   tagsList(): Promise<TagCount[]>
@@ -60,5 +74,20 @@ export interface HalApi {
   embeddingsBackfill(): Promise<void>
   embeddingsReady(): Promise<boolean>
   halAsk(id: string, question: string, history: Pick<ChatMessage, 'role' | 'text'>[]): Promise<void>
+  researchList(): Promise<ResearchNotebook[]>
+  researchCreate(name: string): Promise<ResearchNotebook>
+  researchRename(id: string, name: string): Promise<void>
+  researchDelete(id: string): Promise<void>
+  researchGet(id: string): Promise<ResearchNotebookDetail>
+  researchAddSource(notebookId: string, kind: 'web' | 'note', uri: string, title: string): Promise<ResearchSource>
+  researchRemoveSource(sourceId: string): Promise<void>
+  researchChat(id: string, notebookId: string, question: string, history: Pick<ResearchChatMessage, 'role' | 'text'>[]): Promise<void>
+  researchStartPath(notebookId: string, topic: string): Promise<ResearchPath>
+  researchGetPath(pathId: string): Promise<PathDetail>
+  researchAnswerCard(pathId: string, cardIndex: number, answer: string): Promise<CardAnswerResult>
+  researchCompleteCard(pathId: string, cardIndex: number): Promise<PathDetail>
+  researchSavePathNote(pathId: string): Promise<{ noteId: string }>
+  researchDueCards(notebookId: string): Promise<DueCard[]>
+  researchAnswerReview(progress: { pathId: string; cardIndex: number }, answer: string): Promise<CardAnswerResult>
   on<K extends HalEventChannel>(channel: K, cb: (payload: HalEventPayloads[K]) => void): () => void
 }

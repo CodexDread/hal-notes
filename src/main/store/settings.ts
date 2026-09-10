@@ -14,7 +14,8 @@ const DEFAULTS: AppSettings = {
   defaultViewMode: 'split',
   captureDelayMs: 12_000,
   editorFontSize: 15,
-  accentColor: ''
+  accentColor: '',
+  pathLengthCards: 7
 }
 
 const KEY_FILE = 'gemini-key.bin'

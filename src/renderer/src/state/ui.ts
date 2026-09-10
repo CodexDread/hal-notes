@@ -5,8 +5,10 @@ import { hal } from '@/lib/ipc'
 export type SidebarTab = 'files' | 'search' | 'tags'
 export type RightTab = 'hal' | 'backlinks'
 export type ViewMode = 'edit' | 'split' | 'preview'
+export type AppMode = 'notes' | 'research'
 
 interface UiState {
+  mode: AppMode
   sidebarTab: SidebarTab
   sidebarOpen: boolean
   rightTab: RightTab
@@ -20,6 +22,7 @@ interface UiState {
   suggestions: Record<string, CaptureSuggestion>
   searchSeed: string
 
+  setMode(mode: AppMode): void
   setSidebarTab(tab: SidebarTab): void
   toggleSidebar(): void
   setRightTab(tab: RightTab): void
@@ -37,6 +40,7 @@ interface UiState {
 }
 
 export const useUi = create<UiState>((set, get) => ({
+  mode: 'notes',
   sidebarTab: 'files',
   sidebarOpen: true,
   rightTab: 'hal',
@@ -50,6 +54,7 @@ export const useUi = create<UiState>((set, get) => ({
   suggestions: {},
   searchSeed: '',
 
+  setMode: (mode) => set({ mode }),
   setSidebarTab: (tab) => set({ sidebarTab: tab, sidebarOpen: true }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setRightTab: (tab) => set({ rightTab: tab, rightOpen: true }),

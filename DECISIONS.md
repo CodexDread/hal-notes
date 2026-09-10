@@ -54,6 +54,17 @@ One JSON blob in the `meta` table, broadcast to the renderer on change. UI tabs:
 ### D12 — Data-loss guards
 Autosave is debounced (700ms), but every path that would discard editor state — switching notes, renaming, trashing, note id swaps mid-save (with one remap-and-retry) — flushes first. Lesson burned in by I3 below. *(2026-09-09)*
 
+### D13 — Research mode: learning paths, not reports (2026-09-10)
+Research mode exists for **personal learning with failure aversion in mind** — the owner loves learning, struggles with failure, and wants the app as a bridge. The design rules that follow from that, enforced everywhere (prompts and UX alike):
+- **Engagement is the metric, not correctness.** No scores, grades, red, or pass/fail anywhere. "Not quite — here's the interesting nuance" is the harshest feedback gets.
+- **Start from strength**: every path opens with what the learner's own vault already knows about the topic.
+- **Small finishable steps**: cards unlock one at a time; micro-exercises are 2–5 min and nearly fail-proof; the closing "tiny project" is one sitting, and stopping there is framed as complete.
+- **Learn by answering**: each card = short chunk + check-in (MCQ or short answer, gently evaluated) + micro-exercise. Active recall over reading.
+- **The vault is scaffolding**: cards link to existing notes; completed paths save as notes under `Research/<notebook>/` (synced, searchable, embeddable — future research cites them). Working state (progress, chat history, sources, review schedule) is local SQLite (`research_*` tables, migration v2).
+- **Socratic notebook chat** scoped to the notebook's sources; HAL asks questions back but explains plainly when asked.
+- **Review sessions** resurface check-ins on a 1/3/7/14/30-day ladder — anti-forgetting without testing pressure. Skipped is skipped.
+Mechanics: web research via Gemini Google Search grounding (`tools: [{googleSearch: {}}]`), flash for rounds, configured model for synthesis; path length is a setting (5/7/9 cards). Deferred: interactive pre-path calibration questions, urlContext deep URL reading, cross-machine sync of notebook working state.
+
 ## Incidents & fixes worth remembering
 
 - **I1 — npm ERESOLVE chain** (2026-09-09): see D2. Also: piping npm output through `tail` masks failures — exit codes lie under pipes.

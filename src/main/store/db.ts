@@ -39,7 +39,11 @@ export function deleteMeta(key: string): void {
 
 function migrate(): void {
   const current = db!.pragma('user_version', { simple: true }) as number
-  if (current >= 1) return
+  if (current < 1) migrateV1()
+  if (current < 2) migrateV2()
+}
+
+function migrateV1(): void {
   db!.transaction(() => {
     db!.exec(`
       CREATE TABLE notes (
@@ -113,5 +117,70 @@ function migrate(): void {
       END;
     `)
     db!.pragma('user_version = 1')
+  })()
+}
+
+function migrateV2(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      CREATE TABLE research_notebooks (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+
+      CREATE TABLE research_sources (
+        id TEXT PRIMARY KEY,
+        notebook_id TEXT NOT NULL REFERENCES research_notebooks(id) ON DELETE CASCADE,
+        kind TEXT NOT NULL,
+        uri TEXT NOT NULL,
+        title TEXT NOT NULL DEFAULT '',
+        gist TEXT NOT NULL DEFAULT '',
+        added_by TEXT NOT NULL DEFAULT 'you',
+        embedding BLOB,
+        added_at INTEGER NOT NULL,
+        UNIQUE(notebook_id, kind, uri)
+      );
+      CREATE INDEX idx_research_sources_nb ON research_sources(notebook_id);
+
+      CREATE TABLE research_messages (
+        id TEXT PRIMARY KEY,
+        notebook_id TEXT NOT NULL REFERENCES research_notebooks(id) ON DELETE CASCADE,
+        role TEXT NOT NULL,
+        text TEXT NOT NULL,
+        citations_json TEXT NOT NULL DEFAULT '[]',
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_research_messages_nb ON research_messages(notebook_id, created_at);
+
+      CREATE TABLE research_paths (
+        id TEXT PRIMARY KEY,
+        notebook_id TEXT NOT NULL REFERENCES research_notebooks(id) ON DELETE CASCADE,
+        question TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'assessing',
+        path_json TEXT,
+        note_id TEXT,
+        error TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_research_paths_nb ON research_paths(notebook_id, created_at);
+
+      CREATE TABLE research_card_progress (
+        path_id TEXT NOT NULL REFERENCES research_paths(id) ON DELETE CASCADE,
+        card_index INTEGER NOT NULL,
+        state TEXT NOT NULL DEFAULT 'locked',
+        attempts INTEGER NOT NULL DEFAULT 0,
+        reviews INTEGER NOT NULL DEFAULT 0,
+        last_answer TEXT NOT NULL DEFAULT '',
+        last_feedback TEXT NOT NULL DEFAULT '',
+        next_due INTEGER,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (path_id, card_index)
+      );
+    `)
+    db!.pragma('user_version = 2')
   })()
 }

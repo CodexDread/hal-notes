@@ -12,7 +12,7 @@ const api: HalApi = {
   folderRename: (id, name) => ipcRenderer.invoke('folders:rename', id, name),
   folderTrash: (id) => ipcRenderer.invoke('folders:trash', id),
   resolveName: (name) => ipcRenderer.invoke('notes:resolve', name),
-  searchText: (q) => ipcRenderer.invoke('search:text', q),
+  searchText: (q, limit) => ipcRenderer.invoke('search:text', q, limit),
   searchSemantic: (q) => ipcRenderer.invoke('search:semantic', q),
   backlinks: (id) => ipcRenderer.invoke('notes:backlinks', id),
   tagsList: () => ipcRenderer.invoke('tags:list'),
@@ -30,6 +30,22 @@ const api: HalApi = {
   embeddingsBackfill: () => ipcRenderer.invoke('embed:backfill'),
   embeddingsReady: () => ipcRenderer.invoke('embed:ready'),
   halAsk: (id, question, history) => ipcRenderer.invoke('hal:ask', id, question, history),
+  researchList: () => ipcRenderer.invoke('research:list'),
+  researchCreate: (name) => ipcRenderer.invoke('research:create', name),
+  researchRename: (id, name) => ipcRenderer.invoke('research:rename', id, name),
+  researchDelete: (id) => ipcRenderer.invoke('research:delete', id),
+  researchGet: (id) => ipcRenderer.invoke('research:get', id),
+  researchAddSource: (notebookId, kind, uri, title) => ipcRenderer.invoke('research:add-source', notebookId, kind, uri, title),
+  researchRemoveSource: (sourceId) => ipcRenderer.invoke('research:remove-source', sourceId),
+  researchChat: (id, notebookId, question, history) => ipcRenderer.invoke('research:chat', id, notebookId, question, history),
+  researchStartPath: (notebookId, topic) => ipcRenderer.invoke('research:start-path', notebookId, topic),
+  researchGetPath: (pathId) => ipcRenderer.invoke('research:get-path', pathId),
+  researchAnswerCard: (pathId, cardIndex, answer) => ipcRenderer.invoke('research:answer-card', pathId, cardIndex, answer),
+  researchCompleteCard: (pathId, cardIndex) => ipcRenderer.invoke('research:complete-card', pathId, cardIndex),
+  researchSavePathNote: (pathId) => ipcRenderer.invoke('research:save-path-note', pathId),
+  researchDueCards: (notebookId) => ipcRenderer.invoke('research:due-cards', notebookId),
+  researchAnswerReview: (progress, answer) =>
+    ipcRenderer.invoke('research:answer-review', progress.pathId, progress.cardIndex, answer),
   on: (channel, cb) => {
     const listener = (_e: Electron.IpcRendererEvent, payload: unknown): void => {
       cb(payload as HalEventPayloads[typeof channel])

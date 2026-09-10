@@ -472,6 +472,16 @@ function DefaultsSection() {
         onChange={(v) => void hal.settingsSet({ captureDelayMs: Number(v) })}
       />
       <SelectRow
+        label="Learning path length (research mode)"
+        value={settings?.pathLengthCards ?? 7}
+        options={[
+          { value: 5, label: '5 cards — sprint' },
+          { value: 7, label: '7 cards — standard' },
+          { value: 9, label: '9 cards — deep dive' }
+        ]}
+        onChange={(v) => void hal.settingsSet({ pathLengthCards: Number(v) })}
+      />
+      <SelectRow
         label="Poll Google Drive for changes every"
         value={settings?.syncIntervalMs ?? 30_000}
         options={[

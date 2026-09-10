@@ -26,6 +26,16 @@ async function embedTexts(texts: string[], taskType: TaskType): Promise<Float32A
   return embeddings.map((e) => Float32Array.from(e.values ?? []))
 }
 
+/** Embeds a single text for features outside the vault (e.g. research sources). Returns null on failure. */
+export async function embedSingle(text: string, taskType: TaskType = 'RETRIEVAL_DOCUMENT'): Promise<Float32Array | null> {
+  try {
+    return (await embedTexts([text], taskType))[0] ?? null
+  } catch (err) {
+    console.error('[embed] single embedding failed:', err)
+    return null
+  }
+}
+
 function noteEmbeddingText(name: string, content: string): string {
   const body = content.length > 8_000 ? `${content.slice(0, 8_000)}…` : content
   return `${name}\n\n${body}`
@@ -86,7 +96,7 @@ export async function backfillEmbeddings(): Promise<void> {
   bus.emit('embed:progress', { done: rows.length, total: rows.length })
 }
 
-function cosine(a: Float32Array, b: Float32Array): number {
+export function cosine(a: Float32Array, b: Float32Array): number {
   let dot = 0
   let na = 0
   let nb = 0

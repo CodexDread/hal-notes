@@ -62,6 +62,8 @@ const VIEW_BUTTONS = [
 
 export function TopBar() {
   const active = useVault((s) => s.snapshot.notes.find((n) => n.id === s.activeId))
+  const mode = useUi((s) => s.mode)
+  const setMode = useUi((s) => s.setMode)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
   const viewMode = useUi((s) => s.viewMode)
@@ -74,7 +76,7 @@ export function TopBar() {
     <header className="flex h-11 shrink-0 items-center gap-3 border-b border-zinc-800 bg-zinc-900/60 px-3">
       <button
         title="Toggle sidebar (Ctrl+B)"
-        className={`rounded-md p-1.5 hover:bg-zinc-800 ${sidebarOpen ? 'text-violet-300' : 'text-zinc-500'}`}
+        className={`rounded-md p-1.5 hover:bg-zinc-800 ${sidebarOpen && mode === 'notes' ? 'text-violet-300' : 'text-zinc-500'}`}
         onClick={toggleSidebar}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -87,33 +89,56 @@ export function TopBar() {
         <span className="font-semibold tracking-wide text-zinc-100">HAL Notes</span>
       </div>
 
-      <div className="mx-1 h-4 w-px bg-zinc-800" />
+      <div className="flex overflow-hidden rounded-md border border-zinc-700 text-xs">
+        <button
+          className={`px-2.5 py-1 ${mode === 'notes' ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+          onClick={() => setMode('notes')}
+        >
+          Notes
+        </button>
+        <button
+          className={`px-2.5 py-1 ${mode === 'research' ? 'bg-emerald-500/20 text-emerald-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+          onClick={() => setMode('research')}
+        >
+          🔬 Research
+        </button>
+      </div>
 
-      <div className="min-w-0 flex-1 truncate text-sm text-zinc-500">{active ? active.path : 'No note open'}</div>
+      {mode === 'notes' && (
+        <>
+          <div className="mx-1 h-4 w-px bg-zinc-800" />
+          <div className="min-w-0 flex-1 truncate text-sm text-zinc-500">{active ? active.path : 'No note open'}</div>
+        </>
+      )}
+      {mode === 'research' && <div className="min-w-0 flex-1" />}
 
       <SyncPill />
 
-      <div className="flex overflow-hidden rounded-md border border-zinc-700 text-xs">
-        {VIEW_BUTTONS.map((v) => (
-          <button
-            key={v.mode}
-            className={`px-2.5 py-1 ${viewMode === v.mode ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
-            onClick={() => setViewMode(v.mode)}
-          >
-            {v.label}
-          </button>
-        ))}
-      </div>
+      {mode === 'notes' && (
+        <>
+          <div className="flex overflow-hidden rounded-md border border-zinc-700 text-xs">
+            {VIEW_BUTTONS.map((v) => (
+              <button
+                key={v.mode}
+                className={`px-2.5 py-1 ${viewMode === v.mode ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+                onClick={() => setViewMode(v.mode)}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
 
-      <button
-        title="HAL chat (Ctrl+J)"
-        className={`rounded-md p-1.5 hover:bg-zinc-800 ${rightOpen ? 'text-violet-300' : 'text-zinc-500'}`}
-        onClick={toggleRight}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 1.5A5.5 5.5 0 0 1 13.5 7c0 1.6-.7 3-1.8 4v2.5l-2.1-1a6 6 0 0 1-1.6.2A5.5 5.5 0 0 1 2.5 7 5.5 5.5 0 0 1 8 1.5z" />
-        </svg>
-      </button>
+          <button
+            title="HAL chat (Ctrl+J)"
+            className={`rounded-md p-1.5 hover:bg-zinc-800 ${rightOpen ? 'text-violet-300' : 'text-zinc-500'}`}
+            onClick={toggleRight}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1.5A5.5 5.5 0 0 1 13.5 7c0 1.6-.7 3-1.8 4v2.5l-2.1-1a6 6 0 0 1-1.6.2A5.5 5.5 0 0 1 2.5 7 5.5 5.5 0 0 1 8 1.5z" />
+            </svg>
+          </button>
+        </>
+      )}
 
       <button
         title="Settings (Ctrl+,)"

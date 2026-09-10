@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { EditorArea } from './components/EditorArea'
 import { RightPanel } from './components/RightPanel'
+import { ResearchMode } from './components/research/ResearchMode'
 import { SettingsModal } from './components/SettingsModal'
 import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
@@ -13,6 +14,7 @@ import { useVault } from './state/vault'
 
 export function App() {
   const initialized = useVault((s) => s.initialized)
+  const mode = useUi((s) => s.mode)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
   const theme = useUi((s) => s.settings?.theme ?? 'dark')
@@ -99,14 +101,18 @@ export function App() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950 text-zinc-200">
+    <div className="relative flex h-full flex-col bg-zinc-950 text-zinc-200">
       <TopBar />
-      <div className="flex min-h-0 flex-1">
-        {sidebarOpen && <Sidebar />}
-        <EditorArea />
-        {rightOpen && <RightPanel />}
-      </div>
-      <StatusBar />
+      {mode === 'research' ? (
+        <ResearchMode />
+      ) : (
+        <div className="relative flex min-h-0 flex-1">
+          {sidebarOpen && <Sidebar />}
+          <EditorArea />
+          {rightOpen && <RightPanel />}
+        </div>
+      )}
+      {mode === 'notes' && <StatusBar />}
       <SettingsModal />
     </div>
   )
