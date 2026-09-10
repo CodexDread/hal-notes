@@ -259,7 +259,10 @@ function normalize(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
-async function evaluateShortAnswer(checkIn: CheckIn, answer: string): Promise<{ onTarget: boolean; feedback: string }> {
+export async function evaluateShortAnswerFor(
+  checkIn: { question: string; answer: string; guidance: string },
+  answer: string
+): Promise<{ onTarget: boolean; feedback: string }> {
   const ai = getClient()
   const res = await ai.models.generateContent({
     model: FLASH,
@@ -307,7 +310,7 @@ export async function answerCard(pathId: string, cardIndex: number, answer: stri
       ? `That's the one — ${card.checkIn.answer}.`
       : `Not quite — ${card.checkIn.guidance}`
   } else if (hasKey()) {
-    ;({ onTarget, feedback } = await evaluateShortAnswer(card.checkIn, answer))
+    ;({ onTarget, feedback } = await evaluateShortAnswerFor(card.checkIn, answer))
   } else {
     onTarget = true
     feedback = 'Noted — that answer counts.'
@@ -353,7 +356,7 @@ export async function answerReview(pathId: string, cardIndex: number, answer: st
     onTarget = normalize(answer) === normalize(card.checkIn.answer)
     feedback = onTarget ? `Still with you — ${card.checkIn.answer}.` : `Not quite — ${card.checkIn.guidance}`
   } else if (hasKey()) {
-    ;({ onTarget, feedback } = await evaluateShortAnswer(card.checkIn, answer))
+    ;({ onTarget, feedback } = await evaluateShortAnswerFor(card.checkIn, answer))
   } else {
     onTarget = true
     feedback = 'Noted.'

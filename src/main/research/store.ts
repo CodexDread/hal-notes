@@ -342,3 +342,20 @@ export function dueCards(notebookId: string): { progress: CardProgress; path: Re
   }
   return out.sort((a, b) => (a.progress.nextDue ?? 0) - (b.progress.nextDue ?? 0))
 }
+
+/** Due research check-ins across every notebook, for the vault-wide review mode. */
+export function dueCardsAll(): { progress: CardProgress; path: ResearchPath }[] {
+  const progressRows = getDb()
+    .prepare<[number], ProgressRow>(
+      `SELECT p.* FROM research_card_progress p
+       WHERE p.next_due IS NOT NULL AND p.next_due <= ?`
+    )
+    .all(Date.now())
+  const pathStmt = getDb().prepare<[string], PathRow>('SELECT * FROM research_paths WHERE id = ?')
+  const out: { progress: CardProgress; path: ResearchPath }[] = []
+  for (const pr of progressRows) {
+    const row = pathStmt.get(pr.path_id)
+    if (row) out.push({ progress: toProgress(pr), path: toPath(row) })
+  }
+  return out.sort((a, b) => (a.progress.nextDue ?? 0) - (b.progress.nextDue ?? 0))
+}

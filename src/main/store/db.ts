@@ -41,6 +41,7 @@ function migrate(): void {
   const current = db!.pragma('user_version', { simple: true }) as number
   if (current < 1) migrateV1()
   if (current < 2) migrateV2()
+  if (current < 3) migrateV3()
 }
 
 function migrateV1(): void {
@@ -182,5 +183,30 @@ function migrateV2(): void {
       );
     `)
     db!.pragma('user_version = 2')
+  })()
+}
+
+function migrateV3(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      CREATE TABLE review_cards (
+        id TEXT PRIMARY KEY,
+        note_id TEXT NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+        kind TEXT NOT NULL DEFAULT 'short',
+        question TEXT NOT NULL,
+        options_json TEXT NOT NULL DEFAULT '[]',
+        answer TEXT NOT NULL DEFAULT '',
+        guidance TEXT NOT NULL DEFAULT '',
+        reviews INTEGER NOT NULL DEFAULT 0,
+        last_answer TEXT NOT NULL DEFAULT '',
+        last_feedback TEXT NOT NULL DEFAULT '',
+        next_due INTEGER,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_review_cards_note ON review_cards(note_id);
+      CREATE INDEX idx_review_cards_due ON review_cards(next_due);
+    `)
+    db!.pragma('user_version = 3')
   })()
 }

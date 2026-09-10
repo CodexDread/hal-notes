@@ -18,6 +18,8 @@ import type {
   ResearchNotebookDetail,
   ResearchPath,
   ResearchSource,
+  DueItem,
+  ReviewCard,
   SearchHit,
   SyncStatus,
   TagCount,
@@ -89,5 +91,9 @@ export interface HalApi {
   researchSavePathNote(pathId: string): Promise<{ noteId: string }>
   researchDueCards(notebookId: string): Promise<DueCard[]>
   researchAnswerReview(progress: { pathId: string; cardIndex: number }, answer: string): Promise<CardAnswerResult>
+  reviewAddNote(noteId: string): Promise<{ count: number }>
+  reviewNoteCardCount(noteId: string): Promise<number>
+  reviewDue(): Promise<{ note: ReviewCard[]; research: DueCard[] }>
+  reviewAnswer(cardId: string, answer: string): Promise<CardAnswerResult>
   on<K extends HalEventChannel>(channel: K, cb: (payload: HalEventPayloads[K]) => void): () => void
 }

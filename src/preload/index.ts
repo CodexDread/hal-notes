@@ -46,6 +46,10 @@ const api: HalApi = {
   researchDueCards: (notebookId) => ipcRenderer.invoke('research:due-cards', notebookId),
   researchAnswerReview: (progress, answer) =>
     ipcRenderer.invoke('research:answer-review', progress.pathId, progress.cardIndex, answer),
+  reviewAddNote: (noteId) => ipcRenderer.invoke('review:add-note', noteId),
+  reviewNoteCardCount: (noteId) => ipcRenderer.invoke('review:note-count', noteId),
+  reviewDue: () => ipcRenderer.invoke('review:due'),
+  reviewAnswer: (cardId, answer) => ipcRenderer.invoke('review:answer', cardId, answer),
   on: (channel, cb) => {
     const listener = (_e: Electron.IpcRendererEvent, payload: unknown): void => {
       cb(payload as HalEventPayloads[typeof channel])

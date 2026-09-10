@@ -1,10 +1,57 @@
 import { useEffect, useRef, useState } from 'react'
+import { hal } from '@/lib/ipc'
 import { EditorPane } from './EditorPane'
 import { EmptyState } from './EmptyState'
 import { PreviewPane } from './PreviewPane'
 import { SuggestionBar } from './SuggestionBar'
 import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
+
+function NoteReviewButton() {
+  const activeId = useVault((s) => s.activeId)
+  const [count, setCount] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    setCount(0)
+    setError('')
+    if (activeId) void hal.reviewNoteCardCount(activeId).then(setCount).catch(() => setCount(0))
+  }, [activeId])
+
+  if (!activeId) return null
+
+  if (count > 0) {
+    return (
+      <button
+        className="shrink-0 rounded-md px-2 py-0.5 text-xs text-violet-300 hover:bg-zinc-800"
+        title="Cards in spaced review — click to open Review mode"
+        onClick={() => useUi.getState().setMode('review')}
+      >
+        🧠 {count} in review
+      </button>
+    )
+  }
+
+  return (
+    <button
+      className="shrink-0 rounded-md px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-violet-300 disabled:opacity-50"
+      disabled={busy}
+      title={error || 'Generate recall cards from this note (active recall + spaced repetition)'}
+      onClick={() => {
+        setBusy(true)
+        setError('')
+        void hal
+          .reviewAddNote(activeId)
+          .then((r) => setCount(r.count))
+          .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+          .finally(() => setBusy(false))
+      }}
+    >
+      {busy ? '🧠 Generating…' : '🧠 Add to review'}
+    </button>
+  )
+}
 
 export function EditorArea() {
   const activeId = useVault((s) => s.activeId)
@@ -51,6 +98,7 @@ export function EditorArea() {
             }
           }}
         />
+        <NoteReviewButton />
         {pendingSync && (
           <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" title="Waiting to sync to Drive" />
         )}

@@ -60,7 +60,7 @@ export function NotebookList() {
           <div
             key={nb.id}
             className={`group flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-[5px] text-sm hover:bg-zinc-800/70 ${
-              activeId === nb.id ? 'bg-emerald-400/10 text-emerald-200' : 'text-zinc-300'
+              activeId === nb.id ? 'bg-violet-400/10 text-violet-200' : 'text-zinc-300'
             }`}
             onClick={() => void open(nb.id)}
             onDoubleClick={(e) => {

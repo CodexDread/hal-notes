@@ -218,3 +218,25 @@ export interface CardAnswerResult {
   onTarget: boolean
   progress: CardProgress
 }
+
+// ── Vault-wide review (spaced recall) ────────────────────────────────────────
+
+export interface ReviewCard {
+  id: string
+  noteId: string
+  noteName: string
+  kind: 'mcq' | 'short'
+  question: string
+  options: string[]
+  answer: string
+  guidance: string
+  reviews: number
+  lastAnswer: string
+  lastFeedback: string
+  nextDue: number | null
+  createdAt: number
+}
+
+export type DueItem =
+  | { kind: 'note'; card: ReviewCard }
+  | { kind: 'research'; due: DueCard }

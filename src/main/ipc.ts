@@ -8,6 +8,7 @@ import { syncEngine } from './drive/sync'
 import { bus } from './events'
 import { answerCard, answerReview, completeCard, getPathDetailOrThrow, savePathNote, startLearningPath } from './research/engine'
 import { notebookChat } from './research/chat'
+import { answerNoteCard, dueReviewCards, generateReviewCards, noteCardCount } from './research/reviewcards'
 import * as research from './research/store'
 import { deleteMeta, getMeta } from './store/db'
 import {
@@ -146,6 +147,15 @@ export function registerIpc(): void {
   handle('research:answer-review', (pathId: string, cardIndex: number, answer: string) =>
     answerReview(pathId, cardIndex, answer)
   )
+
+  // ── Vault-wide review ──────────────────────────────────────────────────────
+  handle('review:add-note', (noteId: string) => generateReviewCards(noteId))
+  handle('review:note-count', (noteId: string) => noteCardCount(noteId))
+  handle('review:due', () => ({
+    note: dueReviewCards(),
+    research: research.dueCardsAll()
+  }))
+  handle('review:answer', (cardId: string, answer: string) => answerNoteCard(cardId, answer))
 
   bus.on('vault:changed', () => broadcast('vault:changed'))
   bus.on('note:updated', (id: string, content: string) => broadcast('note:updated', { id, content }))

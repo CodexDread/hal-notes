@@ -47,7 +47,7 @@ export function PathsTab() {
                 <span className="flex-1" />
                 {running && <span className="animate-pulse text-xs text-amber-300">{STATUS_LABEL[p.status]}</span>}
                 {p.status === 'ready' && (
-                  <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-400">
+                  <span className="rounded-full bg-violet-400/10 px-2 py-0.5 text-[10px] text-violet-400">
                     {cardCount} cards
                   </span>
                 )}

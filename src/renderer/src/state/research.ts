@@ -1,8 +1,8 @@
 import { create } from 'zustand'
-import type { DueCard, PathDetail, ResearchCitation, ResearchNotebook, ResearchNotebookDetail } from '@shared/types'
+import type { PathDetail, ResearchCitation, ResearchNotebook, ResearchNotebookDetail } from '@shared/types'
 import { hal } from '@/lib/ipc'
 
-export type ResearchTab = 'sources' | 'chat' | 'paths' | 'review'
+export type ResearchTab = 'sources' | 'chat' | 'paths'
 
 interface ResearchState {
   loaded: boolean
@@ -16,7 +16,6 @@ interface ResearchState {
   chatError: string | null
   streamId: string | null
   streamText: string
-  dueCards: DueCard[]
 
   load(): Promise<void>
   open(id: string): Promise<void>
@@ -33,7 +32,6 @@ interface ResearchState {
   onChatDelta(id: string, delta: string): void
   onChatDone(id: string): void
   onChatError(id: string, error: string): void
-  loadDue(): Promise<void>
 }
 
 export const useResearch = create<ResearchState>((set, get) => ({
@@ -48,7 +46,6 @@ export const useResearch = create<ResearchState>((set, get) => ({
   chatError: null,
   streamId: null,
   streamText: '',
-  dueCards: [],
 
   load: async () => {
     const notebooks = await hal.researchList()
@@ -63,7 +60,6 @@ export const useResearch = create<ResearchState>((set, get) => ({
     localStorage.setItem('hal.research.notebook', id)
     const detail = await hal.researchGet(id)
     set({ detail })
-    void get().loadDue()
   },
 
   create: async (name) => {
@@ -152,11 +148,5 @@ export const useResearch = create<ResearchState>((set, get) => ({
   onChatError: (id, error) => {
     if (get().streamId !== id) return
     set({ streamId: null, streamText: '', chatBusy: false, chatError: error })
-  },
-
-  loadDue: async () => {
-    const { activeId } = get()
-    if (!activeId) return
-    set({ dueCards: await hal.researchDueCards(activeId).catch(() => []) })
   }
 }))

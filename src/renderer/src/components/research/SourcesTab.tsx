@@ -32,7 +32,7 @@ function AddNoteSource() {
   return (
     <div>
       <input
-        className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-500"
+        className="w-full rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500"
         placeholder="Pin a note from your vault — search by name or content…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -97,7 +97,7 @@ export function SourcesTab() {
             >
               {s.title || s.uri}
             </a>
-            {s.addedBy === 'hal' && <span className="shrink-0 rounded-full bg-emerald-400/10 px-1.5 text-[10px] text-emerald-400">HAL</span>}
+            {s.addedBy === 'hal' && <span className="shrink-0 rounded-full bg-violet-400/10 px-1.5 text-[10px] text-violet-400">HAL</span>}
             <button className="hidden text-xs text-zinc-500 hover:text-red-400 group-hover:block" onClick={() => removeSource(s.id)}>
               ✕
             </button>

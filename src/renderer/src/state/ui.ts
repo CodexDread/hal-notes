@@ -5,7 +5,7 @@ import { hal } from '@/lib/ipc'
 export type SidebarTab = 'files' | 'search' | 'tags'
 export type RightTab = 'hal' | 'backlinks'
 export type ViewMode = 'edit' | 'split' | 'preview'
-export type AppMode = 'notes' | 'research'
+export type AppMode = 'notes' | 'research' | 'review'
 
 interface UiState {
   mode: AppMode

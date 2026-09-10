@@ -97,10 +97,16 @@ export function TopBar() {
           Notes
         </button>
         <button
-          className={`px-2.5 py-1 ${mode === 'research' ? 'bg-emerald-500/20 text-emerald-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+          className={`px-2.5 py-1 ${mode === 'research' ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
           onClick={() => setMode('research')}
         >
           🔬 Research
+        </button>
+        <button
+          className={`px-2.5 py-1 ${mode === 'review' ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+          onClick={() => setMode('review')}
+        >
+          🧠 Review
         </button>
       </div>
 

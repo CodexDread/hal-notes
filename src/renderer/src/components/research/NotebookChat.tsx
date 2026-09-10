@@ -31,9 +31,9 @@ export function NotebookChat() {
   if (!geminiKeySet) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <span className="text-4xl text-emerald-400">🔬</span>
+        <span className="text-4xl text-violet-400">🔬</span>
         <p className="text-sm text-zinc-400">Notebook chat needs a Gemini API key.</p>
-        <button className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400" onClick={openSettings}>
+        <button className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white hover:bg-violet-400" onClick={openSettings}>
           Add key in Settings
         </button>
       </div>
@@ -45,7 +45,7 @@ export function NotebookChat() {
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3">
         {messages.length === 0 && !streamText && (
           <div className="rounded-lg bg-zinc-800/40 p-3 text-xs leading-5 text-zinc-400">
-            <span className="text-emerald-300">🔬 Notebook chat</span> answers from this notebook's sources — HAL asks
+            <span className="text-violet-300">🔬 Notebook chat</span> answers from this notebook's sources — HAL asks
             questions back, teaches in your direction, and never grades. Pin notes in Sources; HAL adds web sources
             during research runs.
           </div>
@@ -53,13 +53,13 @@ export function NotebookChat() {
         {messages.map((m) =>
           m.role === 'user' ? (
             <div key={m.id} className="flex justify-end">
-              <div className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-br-sm bg-emerald-400/15 px-3 py-2 text-sm text-emerald-100">
+              <div className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-br-sm bg-violet-500/20 px-3 py-2 text-sm text-violet-100">
                 {m.text}
               </div>
             </div>
           ) : (
             <div key={m.id} className="flex flex-col gap-1.5">
-              <div className="text-[11px] font-semibold text-emerald-300">🔬 HAL</div>
+              <div className="text-[11px] font-semibold text-violet-300">🔬 HAL</div>
               <div
                 className="preview prose prose-sm prose-zinc max-w-none"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }}
@@ -98,7 +98,7 @@ export function NotebookChat() {
         )}
         {streamText && (
           <div className="flex flex-col gap-1.5">
-            <div className="text-[11px] font-semibold text-emerald-300">🔬 HAL</div>
+            <div className="text-[11px] font-semibold text-violet-300">🔬 HAL</div>
             <div
               className="preview prose prose-sm prose-zinc max-w-none"
               dangerouslySetInnerHTML={{ __html: renderMarkdown(streamText) }}
@@ -112,7 +112,7 @@ export function NotebookChat() {
         <div className="flex items-end gap-2">
           <textarea
             rows={2}
-            className="min-h-0 flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none placeholder:text-zinc-600 focus:border-emerald-500"
+            className="min-h-0 flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500"
             placeholder="Ask about this notebook's sources…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -124,7 +124,7 @@ export function NotebookChat() {
             }}
           />
           <button
-            className="rounded-lg bg-emerald-500 px-3 py-1.5 text-sm font-medium text-zinc-950 hover:bg-emerald-400 disabled:opacity-40"
+            className="rounded-lg bg-violet-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-400 disabled:opacity-40"
             disabled={chatBusy || !input.trim()}
             onClick={send}
           >

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { EditorArea } from './components/EditorArea'
 import { RightPanel } from './components/RightPanel'
 import { ResearchMode } from './components/research/ResearchMode'
+import { ReviewMode } from './components/review/ReviewMode'
 import { SettingsModal } from './components/SettingsModal'
 import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
@@ -105,6 +106,8 @@ export function App() {
       <TopBar />
       {mode === 'research' ? (
         <ResearchMode />
+      ) : mode === 'review' ? (
+        <ReviewMode />
       ) : (
         <div className="relative flex min-h-0 flex-1">
           {sidebarOpen && <Sidebar />}

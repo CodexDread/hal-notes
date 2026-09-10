@@ -65,6 +65,9 @@ Research mode exists for **personal learning with failure aversion in mind** —
 - **Review sessions** resurface check-ins on a 1/3/7/14/30-day ladder — anti-forgetting without testing pressure. Skipped is skipped.
 Mechanics: web research via Gemini Google Search grounding (`tools: [{googleSearch: {}}]`), flash for rounds, configured model for synthesis; path length is a setting (5/7/9 cards). Deferred: interactive pre-path calibration questions, urlContext deep URL reading, cross-machine sync of notebook working state.
 
+### D14 — Review is a vault-wide mode; research follows the app accent (2026-09-10)
+Spaced repetition + active recall graduated from a research-notebook tab into a **first-class mode** (Notes | Research | Review). The pool unifies two sources on one 1/3/7/14/30-day ladder: research check-ins (existing) and **note review cards** — any note can generate 2–4 recall cards via the 🧠 *Add to review* button in its header (`review_cards` table, migration v3; regenerating replaces the set; first review due ~a minute later to ride the opting-in momentum). Same no-grading rules as D13. Also: research mode's UI accents now derive from the configured accent color like the rest of the app (it had a hardcoded emerald second theme — poor form).
+
 ## Incidents & fixes worth remembering
 
 - **I1 — npm ERESOLVE chain** (2026-09-09): see D2. Also: piping npm output through `tail` masks failures — exit codes lie under pipes.
