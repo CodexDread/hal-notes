@@ -14,6 +14,7 @@ interface UiState {
   rightTab: RightTab
   rightOpen: boolean
   viewMode: ViewMode
+  graphOpen: boolean
   settingsOpen: boolean
   settings: AppSettings | null
   embeddingsReady: boolean
@@ -23,6 +24,7 @@ interface UiState {
   searchSeed: string
 
   setMode(mode: AppMode): void
+  toggleGraph(): void
   setSidebarTab(tab: SidebarTab): void
   toggleSidebar(): void
   setRightTab(tab: RightTab): void
@@ -46,6 +48,7 @@ export const useUi = create<UiState>((set, get) => ({
   rightTab: 'hal',
   rightOpen: true,
   viewMode: 'split',
+  graphOpen: false,
   settingsOpen: false,
   settings: null,
   embeddingsReady: false,
@@ -55,6 +58,7 @@ export const useUi = create<UiState>((set, get) => ({
   searchSeed: '',
 
   setMode: (mode) => set({ mode }),
+  toggleGraph: () => set((s) => ({ graphOpen: !s.graphOpen })),
   setSidebarTab: (tab) => set({ sidebarTab: tab, sidebarOpen: true }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setRightTab: (tab) => set({ rightTab: tab, rightOpen: true }),

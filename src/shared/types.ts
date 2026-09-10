@@ -36,6 +36,23 @@ export interface AttachmentMeta {
   updatedAt: number
 }
 
+export interface GraphNode {
+  id: string
+  name: string
+  unresolved: boolean
+  degree: number
+}
+
+export interface GraphEdge {
+  source: string
+  target: string
+}
+
+export interface GraphData {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+}
+
 export interface OpenNote {
   meta: NoteMeta
   content: string

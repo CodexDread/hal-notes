@@ -17,6 +17,7 @@ const api: HalApi = {
   folderTrash: (id) => ipcRenderer.invoke('folders:trash', id),
   resolveName: (name) => ipcRenderer.invoke('notes:resolve', name),
   searchText: (q, limit) => ipcRenderer.invoke('search:text', q, limit),
+  graphData: () => ipcRenderer.invoke('graph:data'),
   searchSemantic: (q) => ipcRenderer.invoke('search:semantic', q),
   backlinks: (id) => ipcRenderer.invoke('notes:backlinks', id),
   tagsList: () => ipcRenderer.invoke('tags:list'),

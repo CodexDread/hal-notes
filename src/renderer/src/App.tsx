@@ -3,6 +3,7 @@ import { EditorArea } from './components/EditorArea'
 import { RightPanel } from './components/RightPanel'
 import { ResearchMode } from './components/research/ResearchMode'
 import { ReviewMode } from './components/review/ReviewMode'
+import { GraphView } from './components/graph/GraphView'
 import { SettingsModal } from './components/SettingsModal'
 import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
@@ -16,6 +17,7 @@ import { useVault } from './state/vault'
 export function App() {
   const initialized = useVault((s) => s.initialized)
   const mode = useUi((s) => s.mode)
+  const graphOpen = useUi((s) => s.graphOpen)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
   const theme = useUi((s) => s.settings?.theme ?? 'dark')
@@ -108,6 +110,8 @@ export function App() {
         <ResearchMode />
       ) : mode === 'review' ? (
         <ReviewMode />
+      ) : graphOpen ? (
+        <GraphView />
       ) : (
         <div className="relative flex min-h-0 flex-1">
           {sidebarOpen && <Sidebar />}

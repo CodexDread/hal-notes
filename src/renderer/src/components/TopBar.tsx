@@ -67,6 +67,8 @@ export function TopBar() {
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
   const viewMode = useUi((s) => s.viewMode)
+  const graphOpen = useUi((s) => s.graphOpen)
+  const toggleGraph = useUi((s) => s.toggleGraph)
   const toggleSidebar = useUi((s) => s.toggleSidebar)
   const toggleRight = useUi((s) => s.toggleRight)
   const setViewMode = useUi((s) => s.setViewMode)
@@ -133,6 +135,19 @@ export function TopBar() {
               </button>
             ))}
           </div>
+
+          <button
+            title="Graph view — pan, zoom, drag; click a note to open it"
+            className={`rounded-md p-1.5 hover:bg-zinc-800 ${graphOpen ? 'text-violet-300' : 'text-zinc-500'}`}
+            onClick={toggleGraph}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="3" cy="4" r="2" />
+              <circle cx="13" cy="6" r="2" />
+              <circle cx="8" cy="13" r="2" />
+              <path d="M4.8 4.9 11 5.8M4.4 5.7 6.9 11.6M12 7.9 9.6 11.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
+            </svg>
+          </button>
 
           <button
             title="HAL chat (Ctrl+J)"

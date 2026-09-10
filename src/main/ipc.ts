@@ -24,6 +24,7 @@ import {
   resolveByName,
   saveNoteContent,
   searchText,
+  graphData,
   trashFolder,
   trashNote
 } from './store/notes'
@@ -82,6 +83,7 @@ export function registerIpc(): void {
   handle('folders:rename', (id: string, name: string) => renameFolder(id, name))
   handle('folders:trash', (id: string) => trashFolder(id))
   handle('search:text', (q: string, limit?: number) => searchText(q, limit ?? 50))
+  handle('graph:data', () => graphData())
   handle('search:semantic', (q: string) => semanticSearch(q))
   handle('tags:list', () => listTags())
 

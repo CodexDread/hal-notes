@@ -6,7 +6,7 @@ import {
   sanitizeFileName,
   stripMdExtension
 } from '@shared/parse'
-import type { Backlink, FolderMeta, NoteMeta, SearchHit, TagCount, VaultSnapshot } from '@shared/types'
+import type { Backlink, FolderMeta, GraphData, GraphEdge, GraphNode, NoteMeta, SearchHit, TagCount, VaultSnapshot } from '@shared/types'
 import { ftsQuery } from '@shared/sync-logic'
 import { bus } from '../events'
 import { listAttachmentMetas } from './attachments'
@@ -415,6 +415,49 @@ export function noteIdsForTag(tag: string): string[] {
     )
     .all(tag.toLowerCase())
   return rows.map((r) => r.note_id)
+}
+
+/** Graph view: notes + unresolved ghost nodes, deduped edges from the links table. */
+export function graphData(): GraphData {
+  const notes = getDb()
+    .prepare<[], NoteRow>('SELECT id, name FROM notes WHERE trashed = 0')
+    .all()
+  const byLower = new Map(notes.map((n) => [n.name.toLowerCase(), n.id]))
+  const linkRows = getDb()
+    .prepare<[], { source_id: string; target_name: string }>('SELECT source_id, target_name FROM links')
+    .all()
+
+  const nodeMap = new Map<string, GraphNode>()
+  for (const n of notes) nodeMap.set(n.id, { id: n.id, name: n.name, unresolved: false, degree: 0 })
+
+  const seenEdges = new Set<string>()
+  const edges: GraphEdge[] = []
+  for (const l of linkRows) {
+    const src = nodeMap.get(l.source_id)
+    if (!src) continue
+    const resolvedId = byLower.get(l.target_name)
+    if (resolvedId) {
+      if (resolvedId === l.source_id) continue
+      const key = [l.source_id, resolvedId].sort().join('\u0000')
+      if (seenEdges.has(key)) continue
+      seenEdges.add(key)
+      edges.push({ source: l.source_id, target: resolvedId })
+      src.degree++
+      nodeMap.get(resolvedId)!.degree++
+    } else {
+      const ghostId = `ghost:${l.target_name}`
+      if (!nodeMap.has(ghostId)) {
+        nodeMap.set(ghostId, { id: ghostId, name: l.target_name, unresolved: true, degree: 0 })
+      }
+      const key = [l.source_id, ghostId].sort().join('\u0000')
+      if (seenEdges.has(key)) continue
+      seenEdges.add(key)
+      edges.push({ source: l.source_id, target: ghostId })
+      src.degree++
+      nodeMap.get(ghostId)!.degree++
+    }
+  }
+  return { nodes: [...nodeMap.values()], edges }
 }
 
 export function swapNoteId(oldId: string, newId: string): void {

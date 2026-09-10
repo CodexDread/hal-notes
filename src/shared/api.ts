@@ -10,6 +10,7 @@ import type {
   DueCard,
   EmbedProgress,
   FolderMeta,
+  GraphData,
   NoteMeta,
   OpenNote,
   PathDetail,
@@ -54,6 +55,7 @@ export interface HalApi {
   attachmentCreate(name: string, bytes: Uint8Array): Promise<AttachmentMeta>
   attachmentTrash(id: string): Promise<void>
   attachmentOpenExternal(name: string): Promise<void>
+  graphData(): Promise<GraphData>
   noteOpen(id: string): Promise<OpenNote | null>
   noteCreate(parentId: string | null, name?: string): Promise<NoteMeta>
   noteSave(id: string, content: string): Promise<NoteMeta | null>

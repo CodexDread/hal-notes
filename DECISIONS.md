@@ -78,7 +78,10 @@ Binary files join the vault. Design:
 - **Syntax**: `![[name.png]]` embeds images inline in the preview; `![[file.pdf]]` renders an openable 📎 chip (system default app via `shell.openPath`); non-image drops insert `[[name]]` links. `[[` autocomplete now includes attachments.
 - **Capture**: clipboard paste and drag-and-drop onto the editor → bytes cross IPC once → file written + row created → embed inserted at the cursor.
 - **Sync**: any non-`.md` file anywhere in the vault folder syncs as an attachment (flat namespace; Drive-side duplicate names across folders get suffixed locally). Same hash-based three-way logic as notes; binary conflicts keep both files (`name (conflict …).ext`), remote content wins the original name. Uploads push to a dedicated `attachments/` folder in Drive.
-Deferred: attachment management UI (browse/delete from within the app) — lands with 0.8 vault QOL.
+Deferred: attachment management UI (browse/delete from within the app) — delivered early in v0.6.1 after live feedback.
+
+### D17 — Graph view (2026-09-10, v0.7.0)
+A force-directed graph over the `links` table: notes as nodes (radius by link degree), resolved wiki-links as edges, and unresolved link targets as faded ghost nodes — missing connections are visible, not hidden. `d3-force` drives the physics (the one runtime dependency added); rendering is hand-rolled SVG so nodes/edges inherit the accent palette via CSS variables. Interactions: drag nodes (live physics), pan by dragging the canvas, zoom at cursor with the wheel, hover to spotlight a node's neighborhood, click to open the note. Toggled from a TopBar button in Notes mode; the graph replaces the whole main area while open. Data comes from one SQL-side assembly (`graph:data`) with deduped undirected edges and no self-loops; the vault re-fetches on change.
 
 ## Incidents & fixes worth remembering
 
