@@ -15,7 +15,9 @@ const DEFAULTS: AppSettings = {
   captureDelayMs: 12_000,
   editorFontSize: 15,
   accentColor: '',
-  pathLengthCards: 7
+  pathLengthCards: 7,
+  debugConsole: false,
+  readingWidth: 'full'
 }
 
 const KEY_FILE = 'gemini-key.bin'

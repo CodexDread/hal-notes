@@ -81,7 +81,13 @@ Binary files join the vault. Design:
 Deferred: attachment management UI (browse/delete from within the app) — delivered early in v0.6.1 after live feedback.
 
 ### D17 — Graph view (2026-09-10, v0.7.0)
-A force-directed graph over the `links` table: notes as nodes (radius by link degree), resolved wiki-links as edges, and unresolved link targets as faded ghost nodes — missing connections are visible, not hidden. `d3-force` drives the physics (the one runtime dependency added); rendering is hand-rolled SVG so nodes/edges inherit the accent palette via CSS variables. Interactions: drag nodes (live physics), pan by dragging the canvas, zoom at cursor with the wheel, hover to spotlight a node's neighborhood, click to open the note. Toggled from a TopBar button in Notes mode; the graph replaces the whole main area while open. Data comes from one SQL-side assembly (`graph:data`) with deduped undirected edges and no self-loops; the vault re-fetches on change.
+A force-directed graph over the `links` table: notes as nodes (radius by link degree), resolved wiki-links as edges, and unresolved link targets as faded ghost nodes — missing connections are visible, not hidden. `d3-force` drives the physics (the one runtime dependency added); rendering is hand-rolled SVG so nodes/edges inherit the accent palette via CSS variables. Interactions: drag nodes (live physics), pan by dragging the canvas, zoom at cursor with the wheel, hover to spotlight a node's neighborhood, click to open the note. Toggled from a TopBar button in Notes mode; the graph replaces the whole main area while open. Data comes from one SQL-side assembly (`graph:data`) with deduped undirected edges and no self-loops; the vault re-fetches on change. *(Pan/zoom transforms are applied imperatively per I11 — React never touches the `<g>` transform.)*
+
+### D18 — Vault QOL (2026-09-10, v0.8.0)
+- **Drag-and-drop reorganizing**: HTML5 DnD in the file tree (notes and folders; drop on a folder or the root zone, ring highlight on the live target, cycle guard server-side). The sync engine learned moves as moves — `remote_parent_id` columns (migration v5) make parent drift detectable, pushes issue Drive `addParents/removeParents`, pulls apply remote moves by rewriting paths, and folder moves re-Drive-move only the folder (Drive relocates children implicitly). No more delete-and-recreate churn on reorganization.
+- **Debug console** (born from I11): main-process `console.*` and `unhandledRejection` captured into a 500-line ring and streamed live to a bottom drawer — toggle in Settings → Defaults, opens from a button beside the sync pill. Every `[capture]`/`[drive]`/sync diagnostic the developer relied on is now in the user's hands.
+- **Reading width**: Full (scales, per v0.6.3) / Wide (~64rem) / Reading (~70ch) in Settings → Style.
+Deferred: multi-select bulk operations — the one 0.8 roadmap item cut for scope; folds into a later minor.
 
 ## Incidents & fixes worth remembering
 

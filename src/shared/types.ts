@@ -121,6 +121,15 @@ export interface AppSettings {
   editorFontSize: number
   accentColor: string
   pathLengthCards: number
+  debugConsole: boolean
+  readingWidth: 'full' | 'wide' | 'reading'
+}
+
+export interface ConsoleLine {
+  seq: number
+  t: number
+  level: 'log' | 'warn' | 'error'
+  text: string
 }
 
 export interface EmbedProgress {

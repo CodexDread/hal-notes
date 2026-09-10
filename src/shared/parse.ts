@@ -50,3 +50,9 @@ export function sanitizeFileName(name: string): string {
 export function buildPath(parentPath: string | null, name: string): string {
   return parentPath ? `${parentPath}/${name}` : name
 }
+
+/** True if childPath sits inside (or equals) the folder at ancestorPath. */
+export function isDescendantPath(childPath: string, ancestorPath: string): boolean {
+  if (childPath === ancestorPath) return true
+  return childPath.startsWith(`${ancestorPath}/`)
+}

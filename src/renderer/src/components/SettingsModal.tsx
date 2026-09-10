@@ -425,6 +425,21 @@ function StyleSection() {
           Applies to buttons, links, wiki-links, the caret, and HAL’s branding — live, in both themes.
         </p>
       </div>
+      <div className="mt-4 text-xs text-zinc-400">
+        Preview reading width
+        <div className="mt-1.5">
+          <Segmented<'full' | 'wide' | 'reading'>
+            value={settings?.readingWidth ?? 'full'}
+            options={[
+              { value: 'full', label: 'Full' },
+              { value: 'wide', label: 'Wide' },
+              { value: 'reading', label: 'Reading' }
+            ]}
+            onChange={(readingWidth) => void hal.settingsSet({ readingWidth })}
+          />
+        </div>
+        <p className="mt-1.5 text-[11px] text-zinc-600">Full scales with the window; Reading caps at a comfortable ~65 characters.</p>
+      </div>
       <SelectRow
         label="Editor font size"
         value={settings?.editorFontSize ?? 15}
@@ -471,6 +486,20 @@ function DefaultsSection() {
         ]}
         onChange={(v) => void hal.settingsSet({ captureDelayMs: Number(v) })}
       />
+      <div className="mt-4 text-xs text-zinc-400">
+        Debug console
+        <div className="mt-1.5">
+          <Segmented<'off' | 'on'>
+            value={settings?.debugConsole ? 'on' : 'off'}
+            options={[
+              { value: 'off', label: 'Off' },
+              { value: 'on', label: 'On' }
+            ]}
+            onChange={(v) => void hal.settingsSet({ debugConsole: v === 'on' })}
+          />
+        </div>
+        <p className="mt-1.5 text-[11px] text-zinc-600">Shows a console button beside the sync pill — main-process logs, live.</p>
+      </div>
       <SelectRow
         label="Learning path length (research mode)"
         value={settings?.pathLengthCards ?? 7}

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { EditorArea } from './components/EditorArea'
 import { RightPanel } from './components/RightPanel'
+import { ConsoleDrawer } from './components/ConsoleDrawer'
 import { ResearchMode } from './components/research/ResearchMode'
 import { ReviewMode } from './components/review/ReviewMode'
 import { GraphView } from './components/graph/GraphView'
@@ -119,7 +120,8 @@ export function App() {
           {rightOpen && <RightPanel />}
         </div>
       )}
-      {mode === 'notes' && <StatusBar />}
+      <ConsoleDrawer />
+      {mode === 'notes' && !graphOpen && <StatusBar />}
       <SettingsModal />
     </div>
   )

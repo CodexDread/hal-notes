@@ -2,6 +2,7 @@ import { BrowserWindow, Menu, app, shell } from 'electron'
 import { join } from 'path'
 import { initCaptureWatcher } from './ai/capture'
 import { initEmbeddingWatcher } from './ai/embed'
+import { initConsoleCapture } from './console'
 import { driveAuth } from './drive/auth'
 import { syncEngine } from './drive/sync'
 import { initAttachmentProtocol, registerAttachmentScheme } from './protocol'
@@ -24,6 +25,7 @@ if (!gotLock) {
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(null)
+    initConsoleCapture()
     initAttachmentProtocol()
     initDb()
     registerIpc()

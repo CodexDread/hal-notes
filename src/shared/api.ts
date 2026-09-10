@@ -45,6 +45,7 @@ export interface HalEventPayloads {
   'research-chat:error': { id: string; notebookId: string; error: string }
   'research:path-updated': { pathId: string; notebookId: string }
   'research:path-error': { pathId: string; notebookId: string; error: string }
+  'console:line': import('./types').ConsoleLine
 }
 
 export type HalEventChannel = keyof HalEventPayloads
@@ -61,6 +62,8 @@ export interface HalApi {
   noteSave(id: string, content: string): Promise<NoteMeta | null>
   noteRename(id: string, name: string): Promise<NoteMeta | null>
   noteTrash(id: string): Promise<void>
+  noteMove(id: string, parentId: string | null): Promise<NoteMeta | null>
+  folderMove(id: string, parentId: string | null): Promise<void>
   folderCreate(parentId: string | null, name?: string): Promise<FolderMeta>
   folderRename(id: string, name: string): Promise<void>
   folderTrash(id: string): Promise<void>
@@ -102,5 +105,7 @@ export interface HalApi {
   reviewNoteCardCount(noteId: string): Promise<number>
   reviewDue(): Promise<{ note: ReviewCard[]; research: DueCard[] }>
   reviewAnswer(cardId: string, answer: string): Promise<CardAnswerResult>
+  consoleFetch(): Promise<import('./types').ConsoleLine[]>
+  consoleClear(): Promise<void>
   on<K extends HalEventChannel>(channel: K, cb: (payload: HalEventPayloads[K]) => void): () => void
 }

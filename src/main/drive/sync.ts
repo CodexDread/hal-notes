@@ -22,6 +22,7 @@ import {
 import { getMeta, setMeta } from '../store/db'
 import {
   applyRemoteContent,
+  applyRemoteMove,
   applyRemoteRename,
   createNoteWithContent,
   ensureFolderUnder,
@@ -30,10 +31,12 @@ import {
   getDirtyNotes,
   getFolderRow,
   getLocalFolders,
+  getMovedFolders,
   getNoteRow,
   getNoteRowByPath,
   insertNote,
   markFolderRemoteTrashed,
+  markFolderSynced,
   markRemoteTrashed,
   markSynced,
   md5,
@@ -52,6 +55,7 @@ import {
   getStartPageToken,
   listChanges,
   listChildren,
+  moveRemoteItem,
   tempBinaryPath,
   trashRemoteItem,
   uploadBinaryUpdate,
@@ -395,6 +399,8 @@ class SyncEngine {
       await this.resolveConflict(existing, file)
     } else if (existing.name !== name && existing.local_hash === existing.synced_hash) {
       applyRemoteRename(file.id, name)
+    } else if (existing.parent_id !== parentId && existing.local_hash === existing.synced_hash) {
+      applyRemoteMove(file.id, parentId)
     } else {
       markSynced(file.id, file.md5 ?? existing.local_hash, file.version, Date.parse(file.modifiedTime) || Date.now())
     }
@@ -460,6 +466,17 @@ class SyncEngine {
       const parentRemoteId = this.parentRemoteId(folder.parent_id, rootId)
       const created = await createRemoteFolder(drive, folder.name, parentRemoteId)
       swapFolderId(folder.id, created.id)
+      markFolderSynced(created.id, created.parentId)
+      bus.emit('vault:changed')
+    }
+    // Folders that already exist remotely but were moved locally: Drive-side move.
+    for (const folder of getMovedFolders()) {
+      const oldRemoteParent = folder.remote_parent_id ?? rootId
+      const newRemoteParent = this.parentRemoteId(folder.parent_id, rootId)
+      if (newRemoteParent !== oldRemoteParent) {
+        await moveRemoteItem(drive, folder.id, newRemoteParent, oldRemoteParent)
+      }
+      markFolderSynced(folder.id, folder.parent_id)
       bus.emit('vault:changed')
     }
   }
@@ -563,7 +580,21 @@ class SyncEngine {
       bus.emit('vault:changed')
       return
     }
-    if (row.local_hash === row.synced_hash) return
+
+    // Parent changed since last sync: move before (or instead of) a content push.
+    if (!isLocalId(row.id) && row.parent_id !== row.remote_parent_id) {
+      const oldRemoteParent = row.remote_parent_id ?? rootId
+      const newRemoteParent = this.parentRemoteId(row.parent_id, rootId)
+      await moveRemoteItem(drive, row.id, newRemoteParent, oldRemoteParent)
+    }
+
+    if (row.local_hash === row.synced_hash) {
+      if (!isLocalId(row.id) && row.parent_id !== row.remote_parent_id) {
+        markSynced(row.id, row.local_hash, row.remote_version, row.modified_remote ?? Date.now())
+        bus.emit('vault:changed')
+      }
+      return
+    }
 
     const parentRemoteId = this.parentRemoteId(row.parent_id, rootId)
     if (isLocalId(row.id)) {

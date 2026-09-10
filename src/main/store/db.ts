@@ -43,6 +43,7 @@ function migrate(): void {
   if (current < 2) migrateV2()
   if (current < 3) migrateV3()
   if (current < 4) migrateV4()
+  if (current < 5) migrateV5()
 }
 
 function migrateV1(): void {
@@ -233,7 +234,16 @@ function migrateV4(): void {
       );
       CREATE INDEX idx_attachments_dirty ON attachments(trashed, local_hash, synced_hash);
     `)
-    db!.pragma('user_version = 4'
-    )
+    db!.pragma('user_version = 4')
+  })()
+}
+
+function migrateV5(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      ALTER TABLE notes ADD COLUMN remote_parent_id TEXT;
+      ALTER TABLE folders ADD COLUMN remote_parent_id TEXT;
+    `)
+    db!.pragma('user_version = 5')
   })()
 }

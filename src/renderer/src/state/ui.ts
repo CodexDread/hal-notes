@@ -16,6 +16,7 @@ interface UiState {
   viewMode: ViewMode
   graphOpen: boolean
   settingsOpen: boolean
+  consoleOpen: boolean
   settings: AppSettings | null
   embeddingsReady: boolean
   embedProgress: EmbedProgress | null
@@ -50,6 +51,7 @@ export const useUi = create<UiState>((set, get) => ({
   viewMode: 'split',
   graphOpen: false,
   settingsOpen: false,
+  consoleOpen: false,
   settings: null,
   embeddingsReady: false,
   embedProgress: null,

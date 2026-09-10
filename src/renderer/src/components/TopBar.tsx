@@ -69,6 +69,8 @@ export function TopBar() {
   const viewMode = useUi((s) => s.viewMode)
   const graphOpen = useUi((s) => s.graphOpen)
   const toggleGraph = useUi((s) => s.toggleGraph)
+  const debugConsole = useUi((s) => s.settings?.debugConsole ?? false)
+  const consoleOpen = useUi((s) => s.consoleOpen)
   const toggleSidebar = useUi((s) => s.toggleSidebar)
   const toggleRight = useUi((s) => s.toggleRight)
   const setViewMode = useUi((s) => s.setViewMode)
@@ -121,6 +123,19 @@ export function TopBar() {
       {mode === 'research' && <div className="min-w-0 flex-1" />}
 
       <SyncPill />
+
+      {debugConsole && (
+        <button
+          title="Debug console"
+          className={`rounded-md p-1.5 hover:bg-zinc-800 ${consoleOpen ? 'text-amber-300' : 'text-zinc-500'}`}
+          onClick={() => useUi.setState({ consoleOpen: !consoleOpen })}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M1.5 3h13v8h-13V3zm1.8 1.6v4.8h9.4V4.6H3.3zM5 12h6v1.5H5V12z" />
+            <path d="M4.2 7.2 5.5 5.9l.9.9-.8.8.8.8-.7.7-1.5-1.5v-.4zM11 6.8l-.9.9.8.8-.8.8.7.7 1.5-1.5v-.4L11 6.8z" fill="#0f1116" />
+          </svg>
+        </button>
+      )}
 
       {mode === 'notes' && (
         <>

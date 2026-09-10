@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPath, normalizeName, parseTags, parseWikiLinks, sanitizeFileName, stripMdExtension } from './parse'
+import { buildPath, isDescendantPath, normalizeName, parseTags, parseWikiLinks, sanitizeFileName, stripMdExtension } from './parse'
 
 describe('parseWikiLinks', () => {
   it('parses simple links', () => {
@@ -58,6 +58,15 @@ describe('path helpers', () => {
   it('buildPath joins with slash', () => {
     expect(buildPath('Journal/2026', 'my-note')).toBe('Journal/2026/my-note')
     expect(buildPath(null, 'root')).toBe('root')
+  })
+
+  it('isDescendantPath guards cycles by path prefix', () => {
+    expect(isDescendantPath('A/B/C', 'A')).toBe(true)
+    expect(isDescendantPath('A', 'A')).toBe(true)
+    expect(isDescendantPath('A/B', 'A/B')).toBe(true)
+    expect(isDescendantPath('About', 'Ab')).toBe(false)
+    expect(isDescendantPath('Journal/2026', 'Research')).toBe(false)
+    expect(isDescendantPath('Research/plans', 'Research/plans2')).toBe(false)
   })
 
   it('sanitizeFileName strips filesystem-hostile characters', () => {

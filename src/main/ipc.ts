@@ -10,6 +10,7 @@ import { bus } from './events'
 import { answerCard, answerReview, completeCard, getPathDetailOrThrow, savePathNote, startLearningPath } from './research/engine'
 import { notebookChat } from './research/chat'
 import { answerNoteCard, dueReviewCards, generateReviewCards, noteCardCount } from './research/reviewcards'
+import { clearConsoleLines, getConsoleLines } from './console'
 import * as research from './research/store'
 import { deleteMeta, getMeta } from './store/db'
 import {
@@ -18,6 +19,8 @@ import {
   createNote,
   listTags,
   listVault,
+  moveFolder,
+  moveNote,
   openNote,
   renameFolder,
   renameNote,
@@ -77,6 +80,8 @@ export function registerIpc(): void {
   handle('notes:save', (id: string, content: string) => saveNoteContent(id, content))
   handle('notes:rename', (id: string, name: string) => renameNote(id, name))
   handle('notes:trash', (id: string) => trashNote(id))
+  handle('notes:move', (id: string, parentId: string | null) => moveNote(id, parentId))
+  handle('folders:move', (id: string, parentId: string | null) => moveFolder(id, parentId))
   handle('notes:resolve', (name: string) => resolveByName(name))
   handle('notes:backlinks', (id: string) => backlinksFor(id))
   handle('folders:create', (parentId: string | null, name?: string) => createFolder(parentId, name))
@@ -188,6 +193,10 @@ export function registerIpc(): void {
     research: research.dueCardsAll()
   }))
   handle('review:answer', (cardId: string, answer: string) => answerNoteCard(cardId, answer))
+
+  // ── Debug console ───────────────────────────────────────────────────────────
+  handle('console:fetch', () => getConsoleLines())
+  handle('console:clear', () => clearConsoleLines())
 
   bus.on('vault:changed', () => broadcast('vault:changed'))
   bus.on('note:updated', (id: string, content: string) => broadcast('note:updated', { id, content }))

@@ -25,6 +25,7 @@ export interface NoteRow {
   name: string
   path: string
   parent_id: string | null
+  remote_parent_id: string | null
   content: string
   local_hash: string
   synced_hash: string
@@ -45,6 +46,7 @@ export interface FolderRow {
   name: string
   path: string
   parent_id: string | null
+  remote_parent_id: string | null
   trashed: number
   remote_trashed: number
 }
@@ -252,6 +254,47 @@ export function trashNote(id: string): void {
   getDb().prepare('UPDATE notes SET trashed = 1, updated_at = ? WHERE id = ?').run(Date.now(), id)
   bus.emit('note:saved', id)
   bus.emit('vault:changed')
+}
+
+/** Moves a note to a new parent folder (null = vault root), rewriting its path. */
+export function moveNote(id: string, newParentId: string | null): NoteMeta | null {
+  const row = getNoteRow(id)
+  if (!row || row.parent_id === newParentId) return row ? toNoteMeta(row) : null
+  if (newParentId && !getFolderRow(newParentId)) return null
+  const name = uniqueName(newParentId, row.name, false)
+  const path = buildPath(folderPath(newParentId), name)
+  getDb()
+    .prepare('UPDATE notes SET parent_id = ?, path = ?, updated_at = ? WHERE id = ?')
+    .run(newParentId, path, Date.now(), id)
+  bus.emit('note:saved', id)
+  bus.emit('vault:changed')
+  return toNoteMeta(getNoteRow(id)!)
+}
+
+/** Moves a folder (with its whole subtree) to a new parent, rewriting descendant paths. */
+export function moveFolder(id: string, newParentId: string | null): void {
+  const row = getFolderRow(id)
+  if (!row || row.parent_id === newParentId) return
+  if (newParentId && !getFolderRow(newParentId)) return
+  // Cycle guard: cannot move a folder into itself or any of its descendants.
+  if (newParentId && isDescendantFolder(newParentId, id)) return
+  const db = getDb()
+  const newPath = buildPath(folderPath(newParentId), row.name)
+  db.transaction(() => {
+    db.prepare('UPDATE folders SET parent_id = ?, path = ? WHERE id = ?').run(newParentId, newPath, id)
+    rewriteDescendantPaths('folders', id, newPath, row.path)
+    rewriteDescendantPaths('notes', id, newPath, row.path)
+  })()
+  bus.emit('vault:changed')
+}
+
+/** True if `candidateId` is `ancestorId` itself or lives anywhere beneath it. */
+function isDescendantFolder(candidateId: string, ancestorId: string): boolean {
+  if (candidateId === ancestorId) return true
+  const db = getDb()
+  const parent = db.prepare<[string], { parent_id: string | null }>('SELECT parent_id FROM folders WHERE id = ?').get(candidateId)
+  if (!parent?.parent_id) return false
+  return isDescendantFolder(parent.parent_id, ancestorId)
 }
 
 export function createFolder(parentId: string | null, desiredName = 'New folder'): FolderMeta {
@@ -484,9 +527,33 @@ export function markSynced(
   getDb()
     .prepare(
       `UPDATE notes SET synced_hash = ?, remote_hash = ?, remote_version = ?, modified_remote = ?,
-        remote_trashed = 0 WHERE id = ?`
+        remote_trashed = 0, remote_parent_id = parent_id WHERE id = ?`
     )
     .run(remoteHash, remoteHash, remoteVersion, modifiedRemote, id)
+}
+
+/** A remote move: reparent locally and rewrite the path without queueing a push. */
+export function applyRemoteMove(id: string, newParentId: string | null): void {
+  const row = getNoteRow(id)
+  if (!row) return
+  const path = buildPath(folderPath(newParentId), row.name)
+  getDb()
+    .prepare('UPDATE notes SET parent_id = ?, path = ?, remote_parent_id = ?, updated_at = ? WHERE id = ?')
+    .run(newParentId, path, newParentId, Date.now(), id)
+  bus.emit('vault:changed')
+}
+
+export function markFolderSynced(id: string, remoteParentId: string | null): void {
+  getDb().prepare('UPDATE folders SET remote_parent_id = ? WHERE id = ?').run(remoteParentId, id)
+}
+
+/** Folders whose local parent differs from their last-synced parent — need a Drive move. */
+export function getMovedFolders(): FolderRow[] {
+  return getDb()
+    .prepare<[], FolderRow>(
+      `SELECT * FROM folders WHERE trashed = 0 AND remote_parent_id IS NOT NULL AND parent_id IS NOT remote_parent_id`
+    )
+    .all()
 }
 
 export function markRemoteTrashed(id: string): void {
@@ -496,7 +563,7 @@ export function markRemoteTrashed(id: string): void {
 export function getDirtyNotes(): NoteRow[] {
   return getDb()
     .prepare<[], NoteRow>(
-      `SELECT * FROM notes WHERE trashed = 0 AND local_hash != synced_hash
+      `SELECT * FROM notes WHERE trashed = 0 AND (local_hash != synced_hash OR parent_id IS NOT remote_parent_id)
        UNION ALL SELECT * FROM notes WHERE trashed = 1 AND remote_trashed = 0 AND id NOT LIKE 'local-%'`
     )
     .all()

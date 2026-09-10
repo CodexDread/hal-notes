@@ -12,6 +12,8 @@ const api: HalApi = {
   noteSave: (id, content) => ipcRenderer.invoke('notes:save', id, content),
   noteRename: (id, name) => ipcRenderer.invoke('notes:rename', id, name),
   noteTrash: (id) => ipcRenderer.invoke('notes:trash', id),
+  noteMove: (id, parentId) => ipcRenderer.invoke('notes:move', id, parentId),
+  folderMove: (id, parentId) => ipcRenderer.invoke('folders:move', id, parentId),
   folderCreate: (parentId, name) => ipcRenderer.invoke('folders:create', parentId, name),
   folderRename: (id, name) => ipcRenderer.invoke('folders:rename', id, name),
   folderTrash: (id) => ipcRenderer.invoke('folders:trash', id),
@@ -55,6 +57,8 @@ const api: HalApi = {
   reviewNoteCardCount: (noteId) => ipcRenderer.invoke('review:note-count', noteId),
   reviewDue: () => ipcRenderer.invoke('review:due'),
   reviewAnswer: (cardId, answer) => ipcRenderer.invoke('review:answer', cardId, answer),
+  consoleFetch: () => ipcRenderer.invoke('console:fetch'),
+  consoleClear: () => ipcRenderer.invoke('console:clear'),
   on: (channel, cb) => {
     const listener = (_e: Electron.IpcRendererEvent, payload: unknown): void => {
       cb(payload as HalEventPayloads[typeof channel])

@@ -60,6 +60,11 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
 
   return (
     <div
+      draggable={!editing}
+      onDragStart={(e) => {
+        e.dataTransfer.setData(NOTE_DND_TYPE, note.id)
+        e.dataTransfer.effectAllowed = 'move'
+      }}
       className={`group flex cursor-pointer items-center gap-1.5 rounded-md py-[3px] pr-1 text-sm hover:bg-zinc-800/70 ${
         activeId === note.id ? 'bg-violet-500/15 text-violet-200' : 'text-zinc-300'
       }`}
@@ -104,7 +109,21 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
   )
 }
 
-function FolderBranch({ node, depth }: { node: FolderNode; depth: number }) {
+function FolderBranch({
+  node,
+  depth,
+  dropTarget,
+  onDragOver,
+  onDrop,
+  setDropTarget
+}: {
+  node: FolderNode
+  depth: number
+  dropTarget: string | 'root' | null
+  onDragOver: (e: React.DragEvent, target: string) => void
+  onDrop: (e: React.DragEvent, folderId: string | null) => void
+  setDropTarget: (t: string | null) => void
+}) {
   const [open_, setOpen] = useState(true)
   const createNote = useVault((s) => s.createNote)
   const createFolder = useVault((s) => s.createFolder)
@@ -118,10 +137,22 @@ function FolderBranch({ node, depth }: { node: FolderNode; depth: number }) {
     }
   }
 
+  const isDropTarget = dropTarget === node.folder.id
+
   return (
     <div>
       <div
-        className="group flex cursor-pointer items-center gap-1 rounded-md py-[3px] pr-1 text-sm text-zinc-200 hover:bg-zinc-800/70"
+        draggable={!editing}
+        onDragStart={(e) => {
+          e.dataTransfer.setData(FOLDER_DND_TYPE, node.folder.id)
+          e.dataTransfer.effectAllowed = 'move'
+        }}
+        onDragOver={(e) => onDragOver(e, node.folder.id)}
+        onDragLeave={() => setDropTarget(null)}
+        onDrop={(e) => onDrop(e, node.folder.id)}
+        className={`group flex cursor-pointer items-center gap-1 rounded-md py-[3px] pr-1 text-sm text-zinc-200 hover:bg-zinc-800/70 ${
+          isDropTarget ? 'ring-1 ring-inset ring-violet-500/70 bg-violet-500/10' : ''
+        }`}
         style={{ paddingLeft: depth * 14 + 6 }}
         onClick={() => setOpen(!open_)}
         onDoubleClick={(e) => {
@@ -176,7 +207,15 @@ function FolderBranch({ node, depth }: { node: FolderNode; depth: number }) {
       {open_ && (
         <div>
           {node.children.map((c) => (
-            <FolderBranch key={c.folder.id} node={c} depth={depth + 1} />
+            <FolderBranch
+              key={c.folder.id}
+              node={c}
+              depth={depth + 1}
+              dropTarget={dropTarget}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              setDropTarget={setDropTarget}
+            />
           ))}
           {node.notes.map((n) => (
             <NoteRow key={n.id} note={n} depth={depth + 1} />
@@ -239,11 +278,36 @@ function AttachmentsGroup() {
   )
 }
 
+const NOTE_DND_TYPE = 'application/x-hal-note'
+const FOLDER_DND_TYPE = 'application/x-hal-folder'
+
 export function FileTree() {
   const snapshot = useVault((s) => s.snapshot)
   const createNote = useVault((s) => s.createNote)
   const createFolder = useVault((s) => s.createFolder)
+  const [dropTarget, setDropTarget] = useState<string | 'root' | null>(null)
   const { roots, rootNotes } = useMemo(() => buildTree(snapshot.folders, snapshot.notes), [snapshot])
+
+  const handleDrop = (e: React.DragEvent, folderId: string | null): void => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDropTarget(null)
+    const noteId = e.dataTransfer.getData(NOTE_DND_TYPE)
+    if (noteId) {
+      void hal.noteMove(noteId, folderId).then(() => useVault.getState().refresh())
+      return
+    }
+    const folderId2 = e.dataTransfer.getData(FOLDER_DND_TYPE)
+    if (folderId2 && folderId2 !== folderId) {
+      void hal.folderMove(folderId2, folderId).then(() => useVault.getState().refresh())
+    }
+  }
+
+  const dragOver = (e: React.DragEvent, target: string): void => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDropTarget(target)
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -266,13 +330,18 @@ export function FileTree() {
           </button>
         </span>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+      <div
+        className={`min-h-0 flex-1 overflow-y-auto px-2 pb-4 ${dropTarget === 'root' ? 'rounded-md ring-1 ring-inset ring-violet-500/60' : ''}`}
+        onDragOver={(e) => dragOver(e, 'root')}
+        onDragLeave={() => setDropTarget(null)}
+        onDrop={(e) => handleDrop(e, null)}
+      >
         {snapshot.notes.length === 0 && snapshot.folders.length === 0 ? (
           <p className="px-2 py-4 text-xs text-zinc-600">No notes yet. Create your first note with ＋.</p>
         ) : (
           <>
             {roots.map((r) => (
-              <FolderBranch key={r.folder.id} node={r} depth={0} />
+              <FolderBranch key={r.folder.id} node={r} depth={0} dropTarget={dropTarget} onDragOver={dragOver} onDrop={handleDrop} setDropTarget={setDropTarget} />
             ))}
             {rootNotes.map((n) => (
               <NoteRow key={n.id} note={n} depth={0} />
