@@ -86,5 +86,5 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
     view.dispatch({ effects: themeCompartment.reconfigure(halEditorTheme(dark)) })
   }, [dark])
 
-  return <div ref={hostRef} className="h-full min-h-0 flex-1 overflow-hidden" />
+  return <div ref={hostRef} className="h-full min-h-0 min-w-0 flex-1 overflow-hidden" />
 }

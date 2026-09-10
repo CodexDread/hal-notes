@@ -11,27 +11,28 @@ export function PreviewPane({ containerRef }: { containerRef: RefObject<HTMLDivE
   const html = useMemo(() => renderMarkdown(deferred), [deferred])
 
   return (
-    <div
-      ref={containerRef}
-      className={`preview prose prose-zinc h-full min-h-0 flex-1 overflow-y-auto px-8 py-6 ${dark ? 'prose-invert' : ''}`}
-      onClick={(e) => {
-        const el = e.target as HTMLElement
-        const file = el.closest('a.hal-file') as HTMLElement | null
-        if (file) {
-          e.preventDefault()
-          void hal.attachmentOpenExternal(file.dataset.attachment ?? '')
-          return
-        }
-        const wl = el.closest('a.wl') as HTMLElement | null
-        if (wl) {
-          e.preventDefault()
-          void useVault.getState().openByName(wl.dataset.wikilinkTarget ?? '')
-          return
-        }
-        const tag = el.closest('[data-tag]') as HTMLElement | null
-        if (tag) useUi.getState().seedSearch(tag.dataset.tag ?? '')
-      }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div ref={containerRef} className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto">
+      <div
+        className={`preview prose prose-zinc mx-auto w-full px-8 py-6 ${dark ? 'prose-invert' : ''}`}
+        onClick={(e) => {
+          const el = e.target as HTMLElement
+          const file = el.closest('a.hal-file') as HTMLElement | null
+          if (file) {
+            e.preventDefault()
+            void hal.attachmentOpenExternal(file.dataset.attachment ?? '')
+            return
+          }
+          const wl = el.closest('a.wl') as HTMLElement | null
+          if (wl) {
+            e.preventDefault()
+            void useVault.getState().openByName(wl.dataset.wikilinkTarget ?? '')
+            return
+          }
+          const tag = el.closest('[data-tag]') as HTMLElement | null
+          if (tag) useUi.getState().seedSearch(tag.dataset.tag ?? '')
+        }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </div>
   )
 }
