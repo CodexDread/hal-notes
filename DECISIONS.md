@@ -92,8 +92,9 @@ Installers remain deliberately **dead last** — the final feature implementatio
 3. **0.8 — Vault QOL + theming extensions**: drag-and-drop reorganizing (notes and folders, with the sync engine learning moves), bulk operations; deeper app customization on top of the palette-variable theme/accent system.
 4. **0.9 — AI router**: provider abstraction — Google, OpenAI, Anthropic, OpenRouter, and anything OpenAI-compatible (including local Ollama) — behind the current AI surface, with per-provider keys and model pickers. Every built-in AI feature and every future plugin talks to the router, never to one vendor's SDK.
 5. **0.10 — Plugin platform + conversions**: the first-party plugin API; **research mode and review mode convert from built-ins into bundled plugins** (the conversion is the API's proof); the **screenplay module** — Fountain-style editor with sluglines, action, character cues, dialogue, autocomplete, and export — ships as the first showcase in-house plugin.
-6. **0.11+ — Whatever the using teaches**: the owner expects the list to grow as the app gets used.
-7. **Installers → 1.0**: electron-builder (Windows NSIS, Linux AppImage). The closing act, unchanged.
+6. **Plugin development SDK** (no fixed priority — rides after the plugin platform, since it wraps that API): a typed SDK package for third-party developers — manifest spec, project scaffold/generator, a dev harness for running and hot-reloading a plugin against a live app, and a versioned compatibility surface so plugins declare which app versions they support.
+7. **0.11+ — Whatever the using teaches**: the owner expects the list to grow as the app gets used.
+8. **Installers → 1.0**: electron-builder (Windows NSIS, Linux AppImage). The closing act, unchanged.
 
 Sequencing rationale: the AI router precedes the plugin platform so plugins are written against provider-agnostic plumbing; research/review conversion waits for the platform and then serves as its first real test. Version numbers are placeholders — each feature bumps the minor on release per D15.
 
