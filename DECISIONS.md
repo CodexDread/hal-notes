@@ -85,16 +85,20 @@ The project follows semver. During 0.x: **minor** = new feature, **patch** = fix
 
 ## Roadmap
 
-Installers are deliberately **dead last** — the final feature implementation before 1.0 (owner's call, reaffirmed 2026-09-10). Everything below precedes them:
+Installers remain deliberately **dead last** — the final feature implementation before 1.0. Confirmed pre-1.0 lineup (owner's list, 2026-09-10), sequenced for architecture rather than listed order:
 
-1. **Attachments**: image paste/drag into notes, stored in an `attachments/` folder in the vault, synced as binaries.
-2. **Graph view**: wiki-link force graph over the `links` table.
-3. **Plugins tab**: extension points — the tab already reserves the seat; likely first candidates are export formats (PDF, HTML) and custom editor tools.
-4. **Installers → 1.0**: electron-builder — Windows NSIS `.exe`, Linux AppImage. The closing act, not before the above.
-5. Maybe (post-1.0 or as demand arises): multi-window/tabbed editing, persistent push queue with retry/backoff, per-note Gemini conversations.
+1. **0.6 — Attachments**: image/file paste & drag into notes; `attachments/` folder in the vault; binary sync through the existing engine.
+2. **0.7 — Graph view**: wiki-link force graph over the `links` table.
+3. **0.8 — Vault QOL + theming extensions**: drag-and-drop reorganizing (notes and folders, with the sync engine learning moves), bulk operations; deeper app customization on top of the palette-variable theme/accent system.
+4. **0.9 — AI router**: provider abstraction — Google, OpenAI, Anthropic, OpenRouter, and anything OpenAI-compatible (including local Ollama) — behind the current AI surface, with per-provider keys and model pickers. Every built-in AI feature and every future plugin talks to the router, never to one vendor's SDK.
+5. **0.10 — Plugin platform + conversions**: the first-party plugin API; **research mode and review mode convert from built-ins into bundled plugins** (the conversion is the API's proof); the **screenplay module** — Fountain-style editor with sluglines, action, character cues, dialogue, autocomplete, and export — ships as the first showcase in-house plugin.
+6. **0.11+ — Whatever the using teaches**: the owner expects the list to grow as the app gets used.
+7. **Installers → 1.0**: electron-builder (Windows NSIS, Linux AppImage). The closing act, unchanged.
+
+Sequencing rationale: the AI router precedes the plugin platform so plugins are written against provider-agnostic plumbing; research/review conversion waits for the platform and then serves as its first real test. Version numbers are placeholders — each feature bumps the minor on release per D15.
 
 ## Operational notes
 
-- Dev: `npm run dev` · checks: `npm run typecheck`, `npm test` (35 tests). Restart dev after main-process changes (I8).
+- Dev: `npm run dev` · checks: `npm run typecheck`, `npm test` (39 tests). Restart dev after main-process changes (I8).
 - Secrets on disk (all under Electron `userData`): `drive-tokens.json` and `gemini-key.bin` (safeStorage-encrypted), `client-secret.json` (pastable, semi-public).
 - The Google Cloud OAuth client is personal-use; the scary-sounding "full Drive access" consent text is the price of watching a folder the user also edits externally — the engine self-restricts to the vault folder (D4).
