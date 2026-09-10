@@ -13,7 +13,7 @@ export function PreviewPane({ containerRef }: { containerRef: RefObject<HTMLDivE
   return (
     <div ref={containerRef} className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto">
       <div
-        className={`preview prose prose-zinc mx-auto w-full px-8 py-6 ${dark ? 'prose-invert' : ''}`}
+        className={`preview prose prose-zinc mx-auto w-full max-w-none px-8 py-6 ${dark ? 'prose-invert' : ''}`}
         onClick={(e) => {
           const el = e.target as HTMLElement
           const file = el.closest('a.hal-file') as HTMLElement | null
