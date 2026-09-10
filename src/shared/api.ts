@@ -48,6 +48,7 @@ export interface HalEventPayloads {
 export type HalEventChannel = keyof HalEventPayloads
 
 export interface HalApi {
+  appVersion(): Promise<string>
   vaultList(): Promise<VaultSnapshot>
   noteOpen(id: string): Promise<OpenNote | null>
   noteCreate(parentId: string | null, name?: string): Promise<NoteMeta>

@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { HalApi, HalEventChannel, HalEventPayloads } from '@shared/api'
 
 const api: HalApi = {
+  appVersion: () => ipcRenderer.invoke('app:version'),
   vaultList: () => ipcRenderer.invoke('vault:list'),
   noteOpen: (id) => ipcRenderer.invoke('notes:open', id),
   noteCreate: (parentId, name) => ipcRenderer.invoke('notes:create', parentId, name),

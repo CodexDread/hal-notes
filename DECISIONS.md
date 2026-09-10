@@ -68,6 +68,9 @@ Mechanics: web research via Gemini Google Search grounding (`tools: [{googleSear
 ### D14 — Review is a vault-wide mode; research follows the app accent (2026-09-10)
 Spaced repetition + active recall graduated from a research-notebook tab into a **first-class mode** (Notes | Research | Review). The pool unifies two sources on one 1/3/7/14/30-day ladder: research check-ins (existing) and **note review cards** — any note can generate 2–4 recall cards via the 🧠 *Add to review* button in its header (`review_cards` table, migration v3; regenerating replaces the set; first review due ~a minute later to ride the opting-in momentum). Same no-grading rules as D13. Also: research mode's UI accents now derive from the configured accent color like the rest of the app (it had a hardcoded emerald second theme — poor form).
 
+### D15 — Semver, enforced at commit time (2026-09-10)
+The project follows semver. During 0.x: **minor** = new feature, **patch** = fix, bump in the same commit as the change, tag `vX.Y.Z`. **1.0 is deliberately gated on the installers** — the owner's stated close order (attachments → graph → plugins → installers → 1.0). v0.5.0 consolidates the previously unversioned era (0.2 settings tabs/light theme/defaults · 0.3 accent colors · 0.4 research mode · 0.5 vault-wide review); the app reads its version from package.json via `app.getVersion()` rather than hardcoded strings.
+
 ## Incidents & fixes worth remembering
 
 - **I1 — npm ERESOLVE chain** (2026-09-09): see D2. Also: piping npm output through `tail` masks failures — exit codes lie under pipes.

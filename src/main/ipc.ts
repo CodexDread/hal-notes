@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import type { ChatMessage } from '@shared/types'
 import { askHal } from './ai/chat'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
@@ -40,6 +40,7 @@ function handle(channel: string, fn: (...args: never[]) => unknown): void {
 }
 
 export function registerIpc(): void {
+  handle('app:version', () => app.getVersion())
   handle('vault:list', () => ({ ...listVault(), driveConnected: driveAuth.isConnected() }))
   handle('notes:open', (id: string) => openNote(id))
   handle('notes:create', (parentId: string | null, name?: string) => createNote(parentId, name))

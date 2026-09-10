@@ -515,6 +515,10 @@ export function SettingsModal() {
   const open = useUi((s) => s.settingsOpen)
   const close = useUi((s) => s.closeSettings)
   const [tab, setTab] = useState<SettingsTab>('integrations')
+  const [version, setVersion] = useState('')
+  useEffect(() => {
+    void hal.appVersion().then(setVersion).catch(() => setVersion(''))
+  }, [])
   if (!open) return null
 
   return (
@@ -554,7 +558,7 @@ export function SettingsModal() {
           {tab === 'plugins' && <PluginsSection />}
         </div>
         <div className="shrink-0 border-t border-zinc-800 px-5 py-2 text-right text-[10px] text-zinc-600">
-          HAL Notes v0.1
+          HAL Notes {version ? `v${version}` : ''}
         </div>
       </div>
     </div>
