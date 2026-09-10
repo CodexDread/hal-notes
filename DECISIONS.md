@@ -68,11 +68,13 @@ Autosave is debounced (700ms), but every path that would discard editor state �
 
 ## Roadmap
 
-1. **Installers** (next): electron-builder — Windows NSIS `.exe`, Linux AppImage.
-2. **Attachments**: image paste/drag into notes, stored in an `attachments/` folder in the vault, synced as binaries.
-3. **Graph view**: wiki-link force graph over the `links` table.
-4. **Plugins tab**: extension points — the tab already reserves the seat; likely first candidates are export formats (PDF, HTML) and custom editor tools.
-5. Maybe: multi-window/tabbed editing, persistent push queue with retry/backoff, per-note Gemini conversations.
+Installers are deliberately **dead last** — the final feature implementation before 1.0 (owner's call, reaffirmed 2026-09-10). Everything below precedes them:
+
+1. **Attachments**: image paste/drag into notes, stored in an `attachments/` folder in the vault, synced as binaries.
+2. **Graph view**: wiki-link force graph over the `links` table.
+3. **Plugins tab**: extension points — the tab already reserves the seat; likely first candidates are export formats (PDF, HTML) and custom editor tools.
+4. **Installers → 1.0**: electron-builder — Windows NSIS `.exe`, Linux AppImage. The closing act, not before the above.
+5. Maybe (post-1.0 or as demand arises): multi-window/tabbed editing, persistent push queue with retry/backoff, per-note Gemini conversations.
 
 ## Operational notes
 
