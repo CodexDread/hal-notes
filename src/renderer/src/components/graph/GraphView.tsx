@@ -104,14 +104,15 @@ export function GraphView() {
     })
   }
 
-  // Window-level listeners while a drag is live, so fast pointer travel off the
-  // node (or off the svg entirely) never stalls the gesture.
-  const beginDrag = (e: React.PointerEvent, nodeId?: string): void => {
+  // Window-level mouse listeners while a drag is live, so fast travel off the
+  // node or off the canvas never stalls the gesture. Deliberately mouse events —
+  // pointer events proved unreliable on SVG surfaces in this Electron build.
+  const beginDrag = (e: React.MouseEvent, nodeId?: string): void => {
     e.preventDefault()
     dragRef.current = { mode: nodeId ? 'node' : 'pan', nodeId, startX: e.clientX, startY: e.clientY, lastX: e.clientX, lastY: e.clientY }
     if (nodeId) simRef.current?.alphaTarget(0.25).restart()
 
-    const onMove = (ev: PointerEvent): void => {
+    const onMove = (ev: MouseEvent): void => {
       const drag = dragRef.current
       if (!drag) return
       const dist = Math.hypot(ev.clientX - drag.startX, ev.clientY - drag.startY)
@@ -142,12 +143,12 @@ export function GraphView() {
         simRef.current?.alphaTarget(0)
       }
       dragRef.current = null
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
     }
 
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
   }
 
   const openNote = (node: SimNode): void => {
@@ -190,9 +191,9 @@ export function GraphView() {
     <div className="relative h-full min-h-0 flex-1 overflow-hidden bg-zinc-950">
       <svg
         ref={svgRef}
-        className="h-full w-full touch-none select-none"
+        className="h-full w-full select-none"
         onWheel={onWheel}
-        onPointerDown={(e) => beginDrag(e)}
+        onMouseDown={(e) => beginDrag(e)}
         style={{ cursor: 'grab' }}
       >
         <rect x="0" y="0" width="100%" height="100%" fill="transparent" pointer-events="all" />
@@ -223,7 +224,7 @@ export function GraphView() {
                 transform={`translate(${n.x},${n.y})`}
                 opacity={dim ? 0.15 : 1}
                 style={{ cursor: n.unresolved ? 'default' : 'pointer' }}
-                onPointerDown={(e) => {
+                onMouseDown={(e) => {
                   e.stopPropagation()
                   beginDrag(e, n.id)
                 }}
@@ -256,7 +257,8 @@ export function GraphView() {
       </svg>
       <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-zinc-900/80 px-2.5 py-1 text-[11px] text-zinc-500">
         {data.nodes.filter((n) => !n.unresolved).length} notes · {data.edges.length} links ·{" "}
-        {data.nodes.filter((n) => n.unresolved).length} unresolved
+        {data.nodes.filter((n) => n.unresolved).length} unresolved · view {Math.round(view.x)},{Math.round(view.y)} ×
+        {view.k.toFixed(1)}
       </div>
     </div>
   )
