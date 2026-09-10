@@ -52,6 +52,7 @@ export interface HalApi {
   appVersion(): Promise<string>
   vaultList(): Promise<VaultSnapshot>
   attachmentCreate(name: string, bytes: Uint8Array): Promise<AttachmentMeta>
+  attachmentTrash(id: string): Promise<void>
   attachmentOpenExternal(name: string): Promise<void>
   noteOpen(id: string): Promise<OpenNote | null>
   noteCreate(parentId: string | null, name?: string): Promise<NoteMeta>

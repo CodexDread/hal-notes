@@ -5,6 +5,7 @@ const api: HalApi = {
   appVersion: () => ipcRenderer.invoke('app:version'),
   vaultList: () => ipcRenderer.invoke('vault:list'),
   attachmentCreate: (name, bytes) => ipcRenderer.invoke('attachment:create', name, bytes),
+  attachmentTrash: (id) => ipcRenderer.invoke('attachment:trash', id),
   attachmentOpenExternal: (name) => ipcRenderer.invoke('attachment:open-external', name),
   noteOpen: (id) => ipcRenderer.invoke('notes:open', id),
   noteCreate: (parentId, name) => ipcRenderer.invoke('notes:create', parentId, name),

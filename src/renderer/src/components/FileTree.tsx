@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { FolderMeta, NoteMeta } from '@shared/types'
+import type { AttachmentMeta, FolderMeta, NoteMeta } from '@shared/types'
 import { hal } from '@/lib/ipc'
 import { useVault } from '@/state/vault'
 
@@ -187,6 +187,58 @@ function FolderBranch({ node, depth }: { node: FolderNode; depth: number }) {
   )
 }
 
+function AttachmentRow({ att, depth }: { att: AttachmentMeta; depth: number }) {
+  const [confirming, setConfirming] = useState(false)
+  const isImage = /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(att.name)
+  return (
+    <div
+      className="group flex cursor-pointer items-center gap-1.5 rounded-md py-[3px] pr-1 text-sm text-zinc-400 hover:bg-zinc-800/70"
+      style={{ paddingLeft: depth * 14 + 22 }}
+      title={`${att.name} — open with its default app`}
+      onClick={() => void hal.attachmentOpenExternal(att.name)}
+    >
+      <span className="text-[10px]">{isImage ? '🖼️' : '📎'}</span>
+      <span className="min-w-0 flex-1 truncate">{att.name}</span>
+      {att.pendingSync && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/80" title="Pending sync" />}
+      <button
+        title="Delete attachment"
+        className={`shrink-0 rounded px-1 text-xs hover:text-red-400 ${confirming ? 'text-red-400' : 'hidden text-zinc-500 group-hover:block'}`}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (confirming) {
+            void hal.attachmentTrash(att.id).then(() => useVault.getState().refresh())
+          } else {
+            setConfirming(true)
+            setTimeout(() => setConfirming(false), 2500)
+          }
+        }}
+      >
+        {confirming ? 'sure?' : '✕'}
+      </button>
+    </div>
+  )
+}
+
+function AttachmentsGroup() {
+  const attachments = useVault((s) => s.snapshot.attachments)
+  const [open_, setOpen] = useState(true)
+  if (attachments.length === 0) return null
+  return (
+    <div className="mt-2 border-t border-zinc-800/60 pt-1">
+      <div
+        className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-[3px] text-sm text-zinc-400 hover:bg-zinc-800/70"
+        onClick={() => setOpen(!open_)}
+      >
+        <span className={`text-[10px] text-zinc-500 transition-transform ${open_ ? 'rotate-90' : ''}`}>▶</span>
+        <span className="text-[11px]">📎</span>
+        <span className="min-w-0 flex-1 truncate font-medium">attachments</span>
+        <span className="text-[10px] text-zinc-600">{attachments.length}</span>
+      </div>
+      {open_ && attachments.map((a) => <AttachmentRow key={a.id} att={a} depth={0} />)}
+    </div>
+  )
+}
+
 export function FileTree() {
   const snapshot = useVault((s) => s.snapshot)
   const createNote = useVault((s) => s.createNote)
@@ -225,6 +277,7 @@ export function FileTree() {
             {rootNotes.map((n) => (
               <NoteRow key={n.id} note={n} depth={0} />
             ))}
+            <AttachmentsGroup />
           </>
         )}
       </div>

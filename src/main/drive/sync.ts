@@ -228,6 +228,11 @@ class SyncEngine {
       setMeta('drive_change_token', newStartPageToken)
       setMeta('last_sync_at', String(Date.now()))
       if (touched) bus.emit('vault:changed')
+
+      // Self-heal: anything left dirty (e.g. a push that failed last session) rides every pull cycle.
+      if (getDirtyNotes().length > 0 || getDirtyAttachments().length > 0) {
+        await this.pushAllDirty(rootId)
+      }
       this.setStatus({ state: 'idle', lastSyncAt: Date.now() })
     } catch (err) {
       this.handleSyncError(err)

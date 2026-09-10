@@ -1,7 +1,7 @@
 import { app, ipcMain, shell } from 'electron'
 import type { ChatMessage } from '@shared/types'
 import { askHal } from './ai/chat'
-import { attachmentPath, createAttachment, getAttachmentByName } from './store/attachments'
+import { attachmentPath, createAttachment, getAttachmentByName, trashAttachment } from './store/attachments'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
 import { listChatModels, testKey } from './ai/gemini'
 import { driveAuth } from './drive/auth'
@@ -65,6 +65,7 @@ export function registerIpc(): void {
   handle('app:version', () => app.getVersion())
   handle('vault:list', () => ({ ...listVault(), driveConnected: driveAuth.isConnected() }))
   handle('attachment:create', (name: string, bytes: Uint8Array) => createAttachment(name, guessRendererMime(name), bytes))
+  handle('attachment:trash', (id: string) => trashAttachment(id))
   handle('attachment:open-external', (name: string) => {
     const row = getAttachmentByName(name)
     if (row) return shell.openPath(attachmentPath(row.name))

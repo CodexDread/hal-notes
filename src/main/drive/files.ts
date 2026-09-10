@@ -1,4 +1,4 @@
-import { createWriteStream } from 'fs'
+import { createReadStream, createWriteStream } from 'fs'
 import { readFile, unlink } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
@@ -98,15 +98,11 @@ export async function uploadNewBinary(
   absPath: string,
   mime: string
 ): Promise<UploadResult> {
-  const body = await readFile(absPath)
-  const res = await drive.files.create(
-    {
-      requestBody: { name, parents: [parentId] },
-      media: { mimeType: mime || 'application/octet-stream', body },
-      fields: 'id, md5Checksum, version, modifiedTime'
-    },
-    { headers: { 'Content-Type': mime || 'application/octet-stream' } }
-  )
+  const res = await drive.files.create({
+    requestBody: { name, parents: [parentId] },
+    media: { mimeType: mime || 'application/octet-stream', body: createReadStream(absPath) },
+    fields: 'id, md5Checksum, version, modifiedTime'
+  })
   return {
     id: res.data.id!,
     md5: res.data.md5Checksum ?? null,
@@ -122,16 +118,12 @@ export async function uploadBinaryUpdate(
   absPath: string,
   mime: string
 ): Promise<UploadResult> {
-  const body = await readFile(absPath)
-  const res = await drive.files.update(
-    {
-      fileId,
-      requestBody: { name },
-      media: { mimeType: mime || 'application/octet-stream', body },
-      fields: 'id, md5Checksum, version, modifiedTime'
-    },
-    { headers: { 'Content-Type': mime || 'application/octet-stream' } }
-  )
+  const res = await drive.files.update({
+    fileId,
+    requestBody: { name },
+    media: { mimeType: mime || 'application/octet-stream', body: createReadStream(absPath) },
+    fields: 'id, md5Checksum, version, modifiedTime'
+  })
   return {
     id: res.data.id!,
     md5: res.data.md5Checksum ?? null,
