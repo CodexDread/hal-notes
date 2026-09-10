@@ -19,6 +19,12 @@ interface SimNode extends SimulationNodeDatum, GraphNode {}
 
 interface SimLink extends SimulationLinkDatum<SimNode> {}
 
+interface ViewTransform {
+  k: number
+  x: number
+  y: number
+}
+
 export function GraphView() {
   const snapshotVersion = useVault((s) => s.snapshot.notes.length + s.snapshot.notes.reduce((a, n) => a + n.updatedAt, 0))
   const open = useVault((s) => s.open)
@@ -29,7 +35,11 @@ export function GraphView() {
   const nodesRef = useRef<SimNode[]>([])
   const linksRef = useRef<SimLink[]>([])
   const svgRef = useRef<SVGSVGElement>(null)
-  const [view, setView] = useState({ k: 1, x: 0, y: 0 })
+  const gRef = useRef<SVGGElement>(null)
+  // Source of truth for the pan/zoom transform — written straight to the DOM;
+  // the mirrored state exists only for the stats readout.
+  const viewRef = useRef<ViewTransform>({ k: 1, x: 0, y: 0 })
+  const [view, setView] = useState<ViewTransform>({ k: 1, x: 0, y: 0 })
   const [hovered, setHovered] = useState<string | null>(null)
   const dragRef = useRef<{ mode: 'pan' | 'node'; nodeId?: string; startX: number; startY: number; lastX: number; lastY: number } | null>(null)
   const wasDragRef = useRef(false)
@@ -37,6 +47,12 @@ export function GraphView() {
   useEffect(() => {
     void hal.graphData().then(setData).catch(() => setData(null))
   }, [snapshotVersion])
+
+  const applyView = (): void => {
+    const v = viewRef.current
+    gRef.current?.setAttribute('transform', `translate(${v.x},${v.y}) scale(${v.k})`)
+    setView({ ...v })
+  }
 
   // Center the world origin in the viewport once the canvas has size —
   // the simulation pulls nodes toward (0,0), which is the SVG's top-left corner.
@@ -46,7 +62,8 @@ export function GraphView() {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect || rect.width === 0) return
     centeredRef.current = true
-    setView((v) => ({ ...v, x: rect.width / 2, y: rect.height / 2 }))
+    viewRef.current = { k: 1, x: rect.width / 2, y: rect.height / 2 }
+    applyView()
   }, [data])
 
   useEffect(() => {
@@ -89,7 +106,8 @@ export function GraphView() {
   const toWorld = (clientX: number, clientY: number): { x: number; y: number } => {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return { x: 0, y: 0 }
-    return { x: (clientX - rect.left - view.x) / view.k, y: (clientY - rect.top - view.y) / view.k }
+    const v = viewRef.current
+    return { x: (clientX - rect.left - v.x) / v.k, y: (clientY - rect.top - v.y) / v.k }
   }
 
   const onWheel = (e: React.WheelEvent): void => {
@@ -97,16 +115,16 @@ export function GraphView() {
     const rect = svgRef.current!.getBoundingClientRect()
     const mx = e.clientX - rect.left
     const my = e.clientY - rect.top
-    setView((v) => {
-      const factor = Math.exp(-e.deltaY * 0.0012)
-      const k = Math.min(3, Math.max(0.15, v.k * factor))
-      return { k, x: mx - ((mx - v.x) * k) / v.k, y: my - ((my - v.y) * k) / v.k }
-    })
+    const v = viewRef.current
+    const factor = Math.exp(-e.deltaY * 0.0012)
+    const k = Math.min(3, Math.max(0.15, v.k * factor))
+    viewRef.current = { k, x: mx - ((mx - v.x) * k) / v.k, y: my - ((my - v.y) * k) / v.k }
+    applyView()
   }
 
   // Window-level mouse listeners while a drag is live, so fast travel off the
-  // node or off the canvas never stalls the gesture. Deliberately mouse events —
-  // pointer events proved unreliable on SVG surfaces in this Electron build.
+  // node or off the canvas never stalls the gesture. Mouse events deliberately —
+  // pointer events never fired on this SVG surface in this Electron build.
   const beginDrag = (e: React.MouseEvent, nodeId?: string): void => {
     e.preventDefault()
     dragRef.current = { mode: nodeId ? 'node' : 'pan', nodeId, startX: e.clientX, startY: e.clientY, lastX: e.clientX, lastY: e.clientY }
@@ -118,7 +136,9 @@ export function GraphView() {
       const dist = Math.hypot(ev.clientX - drag.startX, ev.clientY - drag.startY)
       if (dist > 4) wasDragRef.current = true
       if (drag.mode === 'pan') {
-        setView((v) => ({ ...v, x: v.x + ev.clientX - drag.lastX, y: v.y + ev.clientY - drag.lastY }))
+        const v = viewRef.current
+        viewRef.current = { ...v, x: v.x + ev.clientX - drag.lastX, y: v.y + ev.clientY - drag.lastY }
+        applyView()
         drag.lastX = ev.clientX
         drag.lastY = ev.clientY
         return
@@ -154,7 +174,6 @@ export function GraphView() {
   const openNote = (node: SimNode): void => {
     if (node.unresolved) return
     if (wasDragRef.current) {
-      // This click ended a drag, not a tap — swallow it.
       wasDragRef.current = false
       return
     }
@@ -197,7 +216,7 @@ export function GraphView() {
         style={{ cursor: 'grab' }}
       >
         <rect x="0" y="0" width="100%" height="100%" fill="transparent" pointer-events="all" />
-        <g transform={`translate(${view.x},${view.y}) scale(${view.k})`}>
+        <g ref={gRef}>
           {linksRef.current.map((l, i) => {
             const s = l.source as SimNode
             const t = l.target as SimNode

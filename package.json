@@ -1,7 +1,7 @@
 {
   "name": "hal-notes",
   "productName": "HAL Notes",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Markdown notes vault with Google Drive sync and Gemini AI",
   "main": "./out/main/index.js",
   "author": "Al Piatt",
