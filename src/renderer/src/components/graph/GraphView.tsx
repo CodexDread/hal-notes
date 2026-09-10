@@ -38,6 +38,17 @@ export function GraphView() {
     void hal.graphData().then(setData).catch(() => setData(null))
   }, [snapshotVersion])
 
+  // Center the world origin in the viewport once the canvas has size —
+  // the simulation pulls nodes toward (0,0), which is the SVG's top-left corner.
+  const centeredRef = useRef(false)
+  useEffect(() => {
+    if (!data || centeredRef.current) return
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect || rect.width === 0) return
+    centeredRef.current = true
+    setView((v) => ({ ...v, x: rect.width / 2, y: rect.height / 2 }))
+  }, [data])
+
   useEffect(() => {
     if (!data) return
     const nodes: SimNode[] = data.nodes.map((n, i) => ({
@@ -86,9 +97,11 @@ export function GraphView() {
     const rect = svgRef.current!.getBoundingClientRect()
     const mx = e.clientX - rect.left
     const my = e.clientY - rect.top
-    const factor = Math.exp(-e.deltaY * 0.0012)
-    const k = Math.min(3, Math.max(0.15, view.k * factor))
-    setView({ k, x: mx - ((mx - view.x) * k) / view.k, y: my - ((my - view.y) * k) / view.k })
+    setView((v) => {
+      const factor = Math.exp(-e.deltaY * 0.0012)
+      const k = Math.min(3, Math.max(0.15, v.k * factor))
+      return { k, x: mx - ((mx - v.x) * k) / v.k, y: my - ((my - v.y) * k) / v.k }
+    })
   }
 
   // Window-level listeners while a drag is live, so fast pointer travel off the
@@ -182,6 +195,7 @@ export function GraphView() {
         onPointerDown={(e) => beginDrag(e)}
         style={{ cursor: 'grab' }}
       >
+        <rect x="0" y="0" width="100%" height="100%" fill="transparent" pointer-events="all" />
         <g transform={`translate(${view.x},${view.y}) scale(${view.k})`}>
           {linksRef.current.map((l, i) => {
             const s = l.source as SimNode
