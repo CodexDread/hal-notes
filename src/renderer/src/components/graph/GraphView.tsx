@@ -31,7 +31,8 @@ export function GraphView() {
   const svgRef = useRef<SVGSVGElement>(null)
   const [view, setView] = useState({ k: 1, x: 0, y: 0 })
   const [hovered, setHovered] = useState<string | null>(null)
-  const dragRef = useRef<{ mode: 'pan' | 'node'; nodeId?: string; lastX: number; lastY: number } | null>(null)
+  const dragRef = useRef<{ mode: 'pan' | 'node'; nodeId?: string; startX: number; startY: number; lastX: number; lastY: number } | null>(null)
+  const wasDragRef = useRef(false)
 
   useEffect(() => {
     void hal.graphData().then(setData).catch(() => setData(null))
@@ -90,45 +91,59 @@ export function GraphView() {
     setView({ k, x: mx - ((mx - view.x) * k) / view.k, y: my - ((my - view.y) * k) / view.k })
   }
 
-  const onPointerDown = (e: React.PointerEvent, nodeId?: string): void => {
-    ;(e.currentTarget as Element).setPointerCapture?.(e.pointerId)
-    dragRef.current = { mode: nodeId ? 'node' : 'pan', nodeId, lastX: e.clientX, lastY: e.clientY }
+  // Window-level listeners while a drag is live, so fast pointer travel off the
+  // node (or off the svg entirely) never stalls the gesture.
+  const beginDrag = (e: React.PointerEvent, nodeId?: string): void => {
+    e.preventDefault()
+    dragRef.current = { mode: nodeId ? 'node' : 'pan', nodeId, startX: e.clientX, startY: e.clientY, lastX: e.clientX, lastY: e.clientY }
     if (nodeId) simRef.current?.alphaTarget(0.25).restart()
-  }
 
-  const onPointerMove = (e: React.PointerEvent): void => {
-    const drag = dragRef.current
-    if (!drag) return
-    if (drag.mode === 'pan') {
-      setView((v) => ({ ...v, x: v.x + e.clientX - drag.lastX, y: v.y + e.clientY - drag.lastY }))
-      drag.lastX = e.clientX
-      drag.lastY = e.clientY
-      return
-    }
-    const node = nodesRef.current.find((n) => n.id === drag.nodeId)
-    if (!node) return
-    const world = toWorld(e.clientX, e.clientY)
-    node.fx = world.x
-    node.fy = world.y
-    drag.lastX = e.clientX
-    drag.lastY = e.clientY
-  }
-
-  const onPointerUp = (): void => {
-    const drag = dragRef.current
-    if (drag?.mode === 'node') {
-      const node = nodesRef.current.find((n) => n.id === drag.nodeId)
-      if (node) {
-        node.fx = null
-        node.fy = null
+    const onMove = (ev: PointerEvent): void => {
+      const drag = dragRef.current
+      if (!drag) return
+      const dist = Math.hypot(ev.clientX - drag.startX, ev.clientY - drag.startY)
+      if (dist > 4) wasDragRef.current = true
+      if (drag.mode === 'pan') {
+        setView((v) => ({ ...v, x: v.x + ev.clientX - drag.lastX, y: v.y + ev.clientY - drag.lastY }))
+        drag.lastX = ev.clientX
+        drag.lastY = ev.clientY
+        return
       }
-      simRef.current?.alphaTarget(0)
+      const node = nodesRef.current.find((n) => n.id === drag.nodeId)
+      if (!node) return
+      const world = toWorld(ev.clientX, ev.clientY)
+      node.fx = world.x
+      node.fy = world.y
+      drag.lastX = ev.clientX
+      drag.lastY = ev.clientY
     }
-    dragRef.current = null
+
+    const onUp = (): void => {
+      const drag = dragRef.current
+      if (drag?.mode === 'node') {
+        const node = nodesRef.current.find((n) => n.id === drag.nodeId)
+        if (node) {
+          node.fx = null
+          node.fy = null
+        }
+        simRef.current?.alphaTarget(0)
+      }
+      dragRef.current = null
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
   }
 
   const openNote = (node: SimNode): void => {
     if (node.unresolved) return
+    if (wasDragRef.current) {
+      // This click ended a drag, not a tap — swallow it.
+      wasDragRef.current = false
+      return
+    }
     toggleGraph()
     void open(node.id)
   }
@@ -164,11 +179,8 @@ export function GraphView() {
         ref={svgRef}
         className="h-full w-full touch-none select-none"
         onWheel={onWheel}
-        onPointerDown={(e) => onPointerDown(e)}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        style={{ cursor: dragRef.current?.mode === 'pan' ? 'grabbing' : 'default' }}
+        onPointerDown={(e) => beginDrag(e)}
+        style={{ cursor: 'grab' }}
       >
         <g transform={`translate(${view.x},${view.y}) scale(${view.k})`}>
           {linksRef.current.map((l, i) => {
@@ -199,9 +211,8 @@ export function GraphView() {
                 style={{ cursor: n.unresolved ? 'default' : 'pointer' }}
                 onPointerDown={(e) => {
                   e.stopPropagation()
-                  onPointerDown(e, n.id)
+                  beginDrag(e, n.id)
                 }}
-                onPointerUp={onPointerUp}
                 onMouseEnter={() => setHovered(n.id)}
                 onMouseLeave={() => setHovered(null)}
                 onClick={(e) => {
