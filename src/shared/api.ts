@@ -1,5 +1,6 @@
 import type {
   AppSettings,
+  AttachmentMeta,
   Backlink,
   CaptureSuggestion,
   CardAnswerResult,
@@ -50,6 +51,8 @@ export type HalEventChannel = keyof HalEventPayloads
 export interface HalApi {
   appVersion(): Promise<string>
   vaultList(): Promise<VaultSnapshot>
+  attachmentCreate(name: string, bytes: Uint8Array): Promise<AttachmentMeta>
+  attachmentOpenExternal(name: string): Promise<void>
   noteOpen(id: string): Promise<OpenNote | null>
   noteCreate(parentId: string | null, name?: string): Promise<NoteMeta>
   noteSave(id: string, content: string): Promise<NoteMeta | null>

@@ -15,7 +15,9 @@ import {
 
 export interface CmOptions {
   onOpenNote(target: string): void
+  onFiles(files: File[]): void
   getNoteNames(): string[]
+  getAttachmentNames(): string[]
   getTags(): string[]
   onChange(doc: string): void
 }
@@ -41,6 +43,24 @@ function matchPlugin(regexp: RegExp, className: string): Extension {
 
 function clickHandler(opts: CmOptions): Extension {
   return EditorView.domEventHandlers({
+    paste(event, view) {
+      const files = Array.from(event.clipboardData?.files ?? [])
+      if (files.length > 0) {
+        event.preventDefault()
+        opts.onFiles(files)
+        return true
+      }
+      return false
+    },
+    drop(event) {
+      const files = Array.from(event.dataTransfer?.files ?? [])
+      if (files.length > 0) {
+        event.preventDefault()
+        opts.onFiles(files)
+        return true
+      }
+      return false
+    },
     mousedown(event, view) {
       if (event.button !== 0) return false
       const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
@@ -76,7 +96,10 @@ function wikiCompletion(opts: CmOptions): (ctx: CompletionContext) => Completion
     if (!m) return null
     return {
       from: ctx.pos - m[1].length,
-      options: opts.getNoteNames().map((n) => ({ label: n, type: 'text' })),
+      options: [
+        ...opts.getNoteNames().map((n) => ({ label: n, type: 'text' })),
+        ...opts.getAttachmentNames().map((n) => ({ label: n, type: 'file' }))
+      ],
       validFor: /^[^\[\]|#]*$/
     }
   }

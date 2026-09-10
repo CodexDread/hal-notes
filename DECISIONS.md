@@ -71,6 +71,15 @@ Spaced repetition + active recall graduated from a research-notebook tab into a 
 ### D15 — Semver, enforced at commit time (2026-09-10)
 The project follows semver. During 0.x: **minor** = new feature, **patch** = fix, bump in the same commit as the change, tag `vX.Y.Z`. **1.0 is deliberately gated on the installers** — the owner's stated close order (attachments → graph → plugins → installers → 1.0). v0.5.0 consolidates the previously unversioned era (0.2 settings tabs/light theme/defaults · 0.3 accent colors · 0.4 research mode · 0.5 vault-wide review); the app reads its version from package.json via `app.getVersion()` rather than hardcoded strings.
 
+### D16 — Attachments (2026-09-10, v0.6.0)
+Binary files join the vault. Design:
+- **Storage**: bytes live in a local cache dir (`userData/attachments`), not SQLite — the DB tracks metadata + sync hashes only (`attachments` table, migration v4). 25MB cap per file.
+- **Serving**: a privileged custom protocol `hal-att://<urlencoded-name>` streams files to the renderer with correct MIME types (CSP allow-listed); no `file://` escapes.
+- **Syntax**: `![[name.png]]` embeds images inline in the preview; `![[file.pdf]]` renders an openable 📎 chip (system default app via `shell.openPath`); non-image drops insert `[[name]]` links. `[[` autocomplete now includes attachments.
+- **Capture**: clipboard paste and drag-and-drop onto the editor → bytes cross IPC once → file written + row created → embed inserted at the cursor.
+- **Sync**: any non-`.md` file anywhere in the vault folder syncs as an attachment (flat namespace; Drive-side duplicate names across folders get suffixed locally). Same hash-based three-way logic as notes; binary conflicts keep both files (`name (conflict …).ext`), remote content wins the original name. Uploads push to a dedicated `attachments/` folder in Drive.
+Deferred: attachment management UI (browse/delete from within the app) — lands with 0.8 vault QOL.
+
 ## Incidents & fixes worth remembering
 
 - **I1 — npm ERESOLVE chain** (2026-09-09): see D2. Also: piping npm output through `tail` masks failures — exit codes lie under pipes.

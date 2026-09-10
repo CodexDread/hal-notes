@@ -4,9 +4,12 @@ import { initCaptureWatcher } from './ai/capture'
 import { initEmbeddingWatcher } from './ai/embed'
 import { driveAuth } from './drive/auth'
 import { syncEngine } from './drive/sync'
+import { initAttachmentProtocol, registerAttachmentScheme } from './protocol'
 import { initDb } from './store/db'
 import { registerIpc } from './ipc'
 import { registerWindow } from './windows'
+
+registerAttachmentScheme()
 
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {
@@ -21,6 +24,7 @@ if (!gotLock) {
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(null)
+    initAttachmentProtocol()
     initDb()
     registerIpc()
     initEmbeddingWatcher()

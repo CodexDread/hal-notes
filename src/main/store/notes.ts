@@ -9,6 +9,7 @@ import {
 import type { Backlink, FolderMeta, NoteMeta, SearchHit, TagCount, VaultSnapshot } from '@shared/types'
 import { ftsQuery } from '@shared/sync-logic'
 import { bus } from '../events'
+import { listAttachmentMetas } from './attachments'
 import { getDb } from './db'
 
 export function md5(s: string): string {
@@ -76,7 +77,7 @@ export function listVault(): VaultSnapshot {
     .prepare<[], FolderRow>('SELECT * FROM folders WHERE trashed = 0 ORDER BY path COLLATE NOCASE')
     .all()
     .map(toFolderMeta)
-  return { notes, folders, driveConnected: false }
+  return { notes, folders, attachments: listAttachmentMetas(), driveConnected: false }
 }
 
 export function getNoteRow(id: string): NoteRow | undefined {

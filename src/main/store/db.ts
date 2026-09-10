@@ -42,6 +42,7 @@ function migrate(): void {
   if (current < 1) migrateV1()
   if (current < 2) migrateV2()
   if (current < 3) migrateV3()
+  if (current < 4) migrateV4()
 }
 
 function migrateV1(): void {
@@ -208,5 +209,31 @@ function migrateV3(): void {
       CREATE INDEX idx_review_cards_due ON review_cards(next_due);
     `)
     db!.pragma('user_version = 3')
+  })()
+}
+
+function migrateV4(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      CREATE TABLE attachments (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        parent_id TEXT,
+        mime TEXT NOT NULL DEFAULT '',
+        size INTEGER NOT NULL DEFAULT 0,
+        local_hash TEXT NOT NULL DEFAULT '',
+        synced_hash TEXT NOT NULL DEFAULT '',
+        remote_hash TEXT,
+        remote_version TEXT,
+        remote_trashed INTEGER NOT NULL DEFAULT 0,
+        trashed INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        UNIQUE(name)
+      );
+      CREATE INDEX idx_attachments_dirty ON attachments(trashed, local_hash, synced_hash);
+    `)
+    db!.pragma('user_version = 4'
+    )
   })()
 }

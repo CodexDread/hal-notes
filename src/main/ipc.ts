@@ -1,6 +1,7 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, shell } from 'electron'
 import type { ChatMessage } from '@shared/types'
 import { askHal } from './ai/chat'
+import { attachmentPath, createAttachment, getAttachmentByName } from './store/attachments'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
 import { listChatModels, testKey } from './ai/gemini'
 import { driveAuth } from './drive/auth'
@@ -39,9 +40,36 @@ function handle(channel: string, fn: (...args: never[]) => unknown): void {
   })
 }
 
+const MIME_BY_EXT: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.bmp': 'image/bmp',
+  '.svg': 'image/svg+xml',
+  '.pdf': 'application/pdf',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.txt': 'text/plain'
+}
+
+function guessRendererMime(name: string): string {
+  const dot = name.lastIndexOf('.')
+  if (dot < 0) return 'application/octet-stream'
+  return MIME_BY_EXT[name.slice(dot).toLowerCase()] ?? 'application/octet-stream'
+}
+
 export function registerIpc(): void {
   handle('app:version', () => app.getVersion())
   handle('vault:list', () => ({ ...listVault(), driveConnected: driveAuth.isConnected() }))
+  handle('attachment:create', (name: string, bytes: Uint8Array) => createAttachment(name, guessRendererMime(name), bytes))
+  handle('attachment:open-external', (name: string) => {
+    const row = getAttachmentByName(name)
+    if (row) return shell.openPath(attachmentPath(row.name))
+    return Promise.resolve('not found')
+  })
   handle('notes:open', (id: string) => openNote(id))
   handle('notes:create', (parentId: string | null, name?: string) => createNote(parentId, name))
   handle('notes:save', (id: string, content: string) => saveNoteContent(id, content))

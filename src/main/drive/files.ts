@@ -1,3 +1,7 @@
+import { createWriteStream } from 'fs'
+import { readFile, unlink } from 'fs/promises'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import type { drive_v3 } from 'googleapis'
 
 export const FOLDER_MIME = 'application/vnd.google-apps.folder'
@@ -70,6 +74,79 @@ export async function createRemoteFolder(drive: drive_v3.Drive, name: string, pa
 export async function downloadNote(drive: drive_v3.Drive, fileId: string): Promise<string> {
   const res = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'text' })
   return typeof res.data === 'string' ? res.data : String(res.data)
+}
+
+/** Downloads a binary file to an absolute path, returning its byte size. */
+export async function downloadBinaryTo(drive: drive_v3.Drive, fileId: string, destPath: string): Promise<number> {
+  const res = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' })
+  const stream = res.data as unknown as NodeJS.ReadableStream
+  await new Promise<void>((resolve, reject) => {
+    const out = createWriteStream(destPath)
+    stream.on('error', reject)
+    out.on('error', reject)
+    out.on('finish', () => resolve())
+    stream.pipe(out)
+  })
+  const bytes = await readFile(destPath)
+  return bytes.byteLength
+}
+
+export async function uploadNewBinary(
+  drive: drive_v3.Drive,
+  name: string,
+  parentId: string,
+  absPath: string,
+  mime: string
+): Promise<UploadResult> {
+  const body = await readFile(absPath)
+  const res = await drive.files.create(
+    {
+      requestBody: { name, parents: [parentId] },
+      media: { mimeType: mime || 'application/octet-stream', body },
+      fields: 'id, md5Checksum, version, modifiedTime'
+    },
+    { headers: { 'Content-Type': mime || 'application/octet-stream' } }
+  )
+  return {
+    id: res.data.id!,
+    md5: res.data.md5Checksum ?? null,
+    version: res.data.version != null ? String(res.data.version) : null,
+    modifiedTime: res.data.modifiedTime ?? new Date().toISOString()
+  }
+}
+
+export async function uploadBinaryUpdate(
+  drive: drive_v3.Drive,
+  fileId: string,
+  name: string,
+  absPath: string,
+  mime: string
+): Promise<UploadResult> {
+  const body = await readFile(absPath)
+  const res = await drive.files.update(
+    {
+      fileId,
+      requestBody: { name },
+      media: { mimeType: mime || 'application/octet-stream', body },
+      fields: 'id, md5Checksum, version, modifiedTime'
+    },
+    { headers: { 'Content-Type': mime || 'application/octet-stream' } }
+  )
+  return {
+    id: res.data.id!,
+    md5: res.data.md5Checksum ?? null,
+    version: res.data.version != null ? String(res.data.version) : null,
+    modifiedTime: res.data.modifiedTime ?? new Date().toISOString()
+  }
+}
+
+/** Temp-file scratch path used when buffering remote binaries. */
+export function tempBinaryPath(name: string): string {
+  return join(tmpdir(), `hal-${Date.now()}-${name.replace(/[^A-Za-z0-9._-]/g, '_')}`)
+}
+
+export async function cleanupTemp(path: string): Promise<void> {
+  await unlink(path).catch(() => undefined)
 }
 
 export interface UploadResult {

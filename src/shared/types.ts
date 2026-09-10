@@ -22,7 +22,18 @@ export interface FolderMeta {
 export interface VaultSnapshot {
   notes: NoteMeta[]
   folders: FolderMeta[]
+  attachments: AttachmentMeta[]
   driveConnected: boolean
+}
+
+export interface AttachmentMeta {
+  id: string
+  name: string
+  mime: string
+  size: number
+  pendingSync: boolean
+  createdAt: number
+  updatedAt: number
 }
 
 export interface OpenNote {

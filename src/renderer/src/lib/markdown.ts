@@ -52,6 +52,45 @@ md.renderer.rules.hal_wikilink = (tokens, idx) => {
   return `<a class="wl" ${WIKI_TARGET}="${target}">${md.utils.escapeHtml(t.content)}</a>`
 }
 
+// ![[attachment.png]] — embeds: images render inline, other files render as openable chips.
+// Registered after hal_wikilink exists, but inserted before it so embeds win at the '!'.
+md.inline.ruler.before(
+  'hal_wikilink',
+  'hal_embed',
+  (state, silent) => {
+    const src = state.src
+    const pos = state.pos
+    if (src.charCodeAt(pos) !== 0x21 /* ! */ || src.charCodeAt(pos + 1) !== 0x5b || src.charCodeAt(pos + 2) !== 0x5b) {
+      return false
+    }
+    const end = src.indexOf(']]', pos + 3)
+    if (end < 0 || end > state.posMax) return false
+    const raw = src.slice(pos + 3, end).trim()
+    const name = raw.split('#')[0].trim()
+    if (!raw || raw.includes('|')) {
+      state.pos = end + 2
+      return true
+    }
+    if (!silent) {
+      const token = state.push('hal_embed', '', 0)
+      token.content = name
+    }
+    state.pos = end + 2
+    return true
+  },
+  { alt: [] }
+)
+
+md.renderer.rules.hal_embed = (tokens, idx) => {
+  const name = tokens[idx].content
+  const escaped = md.utils.escapeHtml(name)
+  const uri = encodeURIComponent(name)
+  if (/\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(name)) {
+    return `<img class="hal-embed" src="hal-att://${uri}" alt="${escaped}" loading="lazy">`
+  }
+  return `<a class="hal-file" data-attachment="${escaped}" title="Open ${escaped} with its default app">📎 ${escaped}</a>`
+}
+
 // #tags (inline, not headings)
 md.inline.ruler.before(
   'emphasis',

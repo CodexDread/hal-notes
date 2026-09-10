@@ -31,7 +31,7 @@ interface VaultState {
 }
 
 export const useVault = create<VaultState>((set, get) => ({
-  snapshot: { notes: [], folders: [], driveConnected: false },
+  snapshot: { notes: [], folders: [], attachments: [], driveConnected: false },
   tagCounts: [],
   activeId: null,
   activeContent: '',

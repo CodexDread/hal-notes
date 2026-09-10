@@ -4,6 +4,8 @@ import type { HalApi, HalEventChannel, HalEventPayloads } from '@shared/api'
 const api: HalApi = {
   appVersion: () => ipcRenderer.invoke('app:version'),
   vaultList: () => ipcRenderer.invoke('vault:list'),
+  attachmentCreate: (name, bytes) => ipcRenderer.invoke('attachment:create', name, bytes),
+  attachmentOpenExternal: (name) => ipcRenderer.invoke('attachment:open-external', name),
   noteOpen: (id) => ipcRenderer.invoke('notes:open', id),
   noteCreate: (parentId, name) => ipcRenderer.invoke('notes:create', parentId, name),
   noteSave: (id, content) => ipcRenderer.invoke('notes:save', id, content),
