@@ -55,7 +55,12 @@ export function App() {
       hal.on('note:updated', ({ id, content }) => useVault.getState().applyExternalUpdate(id, content)),
       hal.on('sync:status', (s) => useUi.getState().setSyncStatus(s)),
       hal.on('settings:changed', (s) => useUi.getState().applySettings(s)),
-      hal.on('embed:progress', (p) => useUi.getState().setEmbedProgress(p)),
+      hal.on('embed:progress', (p) => {
+        useUi.getState().setEmbedProgress(p)
+        if (p.total > 0 && p.done >= p.total) {
+          void useUi.getState().refreshEmbeddingsReady()
+        }
+      }),
       hal.on('drive:status-changed', () => void useVault.getState().refresh()),
       hal.on('capture:suggestion', (sug) => useUi.getState().addSuggestion(sug)),
       hal.on('hal:delta', ({ id, delta }) => useChat.getState().onDelta(id, delta)),

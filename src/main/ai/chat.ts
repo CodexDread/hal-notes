@@ -1,5 +1,7 @@
-import { retrieveContext } from './embed'
+import { detectIndexRebuildIntent } from '@shared/intents'
+import { backfillEmbeddings, retrieveContext } from './embed'
 import { aiChat } from './router'
+import { getDb } from '../store/db'
 
 export interface ChatTurn {
   role: 'user' | 'hal'
@@ -22,6 +24,11 @@ export async function askHal(
   history: ChatTurn[],
   onDelta: (text: string) => void
 ): Promise<HalAnswer> {
+  // "Run a calibration pass on the vault" and friends are commands, not questions.
+  if (detectIndexRebuildIntent(question)) {
+    return calibrateVault(onDelta)
+  }
+
   const context = await retrieveContext(question, 8)
 
   const contextBlock =
@@ -43,4 +50,23 @@ export async function askHal(
     answerId,
     citations: context.map((n, i) => ({ index: i + 1, id: n.id, name: n.name, path: n.path }))
   }
+}
+
+async function calibrateVault(onDelta: (text: string) => void): Promise<HalAnswer> {
+  const answerId = `hal-calibrate-${Date.now()}`
+  try {
+    const count = getDb()
+      .prepare<[], { n: number }>('SELECT COUNT(*) AS n FROM notes WHERE trashed = 0')
+      .get()!.n
+    onDelta('Running calibration pass — re-reading every note in the vault…\n\n')
+    await backfillEmbeddings()
+    onDelta(
+      `Calibration complete. I re-indexed all ${count} note${count === 1 ? '' : 's'} in the vault — semantic search and my retrieval are current.`
+    )
+  } catch (err) {
+    onDelta(
+      `Calibration could not run: ${err instanceof Error ? err.message : String(err)}\n\nCheck the embeddings provider in Settings → Integrations.`
+    )
+  }
+  return { answerId, citations: [] }
 }
