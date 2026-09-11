@@ -123,6 +123,9 @@ export interface AppSettings {
   pathLengthCards: number
   debugConsole: boolean
   readingWidth: 'full' | 'wide' | 'reading'
+  aiProvider: 'google' | 'openai' | 'anthropic' | 'openrouter' | 'custom'
+  embeddingProvider: 'google' | 'openai' | 'custom'
+  embeddingModel: string
 }
 
 export interface ConsoleLine {

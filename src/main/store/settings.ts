@@ -17,7 +17,10 @@ const DEFAULTS: AppSettings = {
   accentColor: '',
   pathLengthCards: 7,
   debugConsole: false,
-  readingWidth: 'full'
+  readingWidth: 'full',
+  aiProvider: 'google',
+  embeddingProvider: 'google',
+  embeddingModel: ''
 }
 
 const KEY_FILE = 'gemini-key.bin'

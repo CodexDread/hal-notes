@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { CardAnswerResult, ReviewCard } from '@shared/types'
-import { getClient, hasKey } from '../ai/gemini'
+import { aiActiveReady, aiChat } from '../ai/router'
 import { getDb } from '../store/db'
 import { getNoteRow } from '../store/notes'
 import { evaluateShortAnswerFor } from './engine'
@@ -64,15 +64,13 @@ export function dueReviewCards(): ReviewCard[] {
 
 /** Generates recall cards for a note (replacing any existing set). Returns the new count. */
 export async function generateReviewCards(noteId: string): Promise<{ count: number }> {
-  if (!hasKey()) throw new Error('Gemini API key is not set — add it in Settings')
+  if (!aiActiveReady()) throw new Error('No AI provider is configured — add one in Settings → Integrations')
   const note = getNoteRow(noteId)
   if (!note) throw new Error('Note not found')
   if (note.content.trim().length < 120) throw new Error('Write a bit more first — cards need something to recall (a few sentences)')
 
-  const ai = getClient()
-  const res = await ai.models.generateContent({
-    model: 'gemini-flash-latest',
-    contents: `Create 2-4 active-recall cards from this personal note.
+  const res = await aiChat({
+    messages: [{ role: 'user', text: `Create 2-4 active-recall cards from this personal note.
 
 Rules:
 - Ask about the note's core ideas, in the learner's own framing where possible.
@@ -84,11 +82,10 @@ Rules:
 ${note.content.slice(0, 8000)}
 </note>
 
-Return JSON: {"cards": [{"kind": "mcq"|"short", "question": string, "options": string[], "answer": string, "guidance": string}]}`,
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: 'object',
+Return JSON: {"cards": [{"kind": "mcq"|"short", "question": string, "options": string[], "answer": string, "guidance": string}]}` }],
+    json: true,
+    jsonSchema: {
+      type: 'object',
         properties: {
           cards: {
             type: 'array',
@@ -106,8 +103,7 @@ Return JSON: {"cards": [{"kind": "mcq"|"short", "question": string, "options": s
           }
         },
         required: ['cards']
-      } as never
-    }
+      }
   })
 
   let parsed: { cards?: { kind?: string; question?: string; options?: string[]; answer?: string; guidance?: string }[] }

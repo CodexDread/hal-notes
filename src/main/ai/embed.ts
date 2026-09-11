@@ -1,35 +1,20 @@
 import type { SearchHit } from '@shared/types'
 import { bus } from '../events'
-import {
-  getDb,
-  getMeta,
-  setMeta
-} from '../store/db'
+import { getDb, getMeta, setMeta } from '../store/db'
 import { getNoteRow, searchText } from '../store/notes'
-import { getClient, hasKey } from './gemini'
+import { aiEmbed, embeddingReady, embeddingSignature } from './router'
 
-const EMBED_MODEL = 'gemini-embedding-001'
-const DIM = 768
 const BATCH = 16
 const EMBED_DEBOUNCE_MS = 15_000
 
-type TaskType = 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY'
-
-async function embedTexts(texts: string[], taskType: TaskType): Promise<Float32Array[]> {
-  const ai = getClient()
-  const res = await ai.models.embedContent({
-    model: EMBED_MODEL,
-    contents: texts,
-    config: { outputDimensionality: DIM, taskType } as never
-  })
-  const embeddings = res.embeddings ?? []
-  return embeddings.map((e) => Float32Array.from(e.values ?? []))
+async function embedTexts(texts: string[], taskType: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY'): Promise<Float32Array[]> {
+  return aiEmbed(texts, { taskType })
 }
 
-/** Embeds a single text for features outside the vault (e.g. research sources). Returns null on failure. */
-export async function embedSingle(text: string, taskType: TaskType = 'RETRIEVAL_DOCUMENT'): Promise<Float32Array | null> {
+/** Embeds a single text for features outside the vault index (e.g. research sources). Returns null on failure. */
+export async function embedSingle(text: string): Promise<Float32Array | null> {
   try {
-    return (await embedTexts([text], taskType))[0] ?? null
+    return (await aiEmbed([text], { taskType: 'RETRIEVAL_QUERY' }))[0] ?? null
   } catch (err) {
     console.error('[embed] single embedding failed:', err)
     return null
@@ -39,6 +24,18 @@ export async function embedSingle(text: string, taskType: TaskType = 'RETRIEVAL_
 function noteEmbeddingText(name: string, content: string): string {
   const body = content.length > 8_000 ? `${content.slice(0, 8_000)}…` : content
   return `${name}\n\n${body}`
+}
+
+/** Embeddings from different providers/models have different geometry — a change wipes the index. */
+function ensureSignature(): void {
+  const sig = embeddingSignature()
+  if (getMeta('embedding_sig') !== sig) {
+    getDb().exec('DELETE FROM embeddings')
+    setMeta('embedding_sig', sig)
+    setMeta('embeddings_ready', '')
+    console.log(`[embed] provider/model changed (${sig}) — semantic index cleared, rebuild needed`)
+    bus.emit('embed:progress', { done: 0, total: 0 })
+  }
 }
 
 interface BacklogRow {
@@ -67,21 +64,13 @@ function setEmbedding(id: string, vec: Float32Array): void {
     .run(id, Buffer.from(vec.buffer, vec.byteOffset, vec.byteLength), vec.length, Date.now())
 }
 
-interface EmbeddingRow {
-  note_id: string
-  vec: Buffer
-}
-
-function allEmbeddings(): EmbeddingRow[] {
-  return getDb().prepare('SELECT note_id, vec FROM embeddings').all() as EmbeddingRow[]
-}
-
 export function embeddingsReady(): boolean {
   return getMeta('embeddings_ready') === '1'
 }
 
 export async function backfillEmbeddings(): Promise<void> {
-  if (!hasKey()) throw new Error('Gemini API key is not set')
+  ensureSignature()
+  if (!embeddingReady()) throw new Error('The embedding provider has no API key set')
   const rows = backlog()
   bus.emit('embed:progress', { done: 0, total: rows.length })
   for (let i = 0; i < rows.length; i += BATCH) {
@@ -112,10 +101,17 @@ export function cosine(a: Float32Array, b: Float32Array): number {
 
 /** Hybrid retrieval: cosine similarity fused with FTS-5 keyword ranks via reciprocal-rank fusion. */
 export async function semanticSearch(query: string, limit = 20): Promise<SearchHit[]> {
+  ensureSignature()
   const qVec = (await embedTexts([query], 'RETRIEVAL_QUERY'))[0]
 
-  const embedRows = allEmbeddings()
-    .map((r) => ({ id: r.note_id, score: cosine(qVec, new Float32Array(r.vec.buffer, r.vec.byteOffset, r.vec.byteLength / 4)) }))
+  const embedRows = getDb()
+    .prepare('SELECT note_id, vec FROM embeddings')
+    .all() as { note_id: string; vec: Buffer }[]
+  const scored = embedRows
+    .map((r) => ({
+      id: r.note_id,
+      score: cosine(qVec, new Float32Array(r.vec.buffer, r.vec.byteOffset, r.vec.byteLength / 4))
+    }))
     .filter((r) => r.score > 0.05)
     .sort((a, b) => b.score - a.score)
     .slice(0, 50)
@@ -123,7 +119,7 @@ export async function semanticSearch(query: string, limit = 20): Promise<SearchH
   const fts = searchText(query, 50)
 
   const fused = new Map<string, number>()
-  embedRows.forEach((r, rank) => {
+  scored.forEach((r, rank) => {
     fused.set(r.id, (fused.get(r.id) ?? 0) + 1 / (60 + rank))
   })
   fts.forEach((h, rank) => {
@@ -148,7 +144,10 @@ export async function semanticSearch(query: string, limit = 20): Promise<SearchH
 }
 
 /** Top notes relevant to a query — shared by Ask HAL chat for grounding. */
-export async function retrieveContext(query: string, k = 8): Promise<{ id: string; name: string; path: string; content: string }[]> {
+export async function retrieveContext(
+  query: string,
+  k = 8
+): Promise<{ id: string; name: string; path: string; content: string }[]> {
   const hits = await semanticSearch(query, Math.max(k * 2, 20))
   const out: { id: string; name: string; path: string; content: string }[] = []
   for (const hit of hits.slice(0, k)) {
@@ -169,7 +168,7 @@ const pendingTimers = new Map<string, NodeJS.Timeout>()
 
 export function initEmbeddingWatcher(): void {
   bus.on('note:saved', (id: string) => {
-    if (!hasKey()) return
+    if (!embeddingReady()) return
     const existing = pendingTimers.get(id)
     if (existing) clearTimeout(existing)
     const timer = setTimeout(() => {

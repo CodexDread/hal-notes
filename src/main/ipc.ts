@@ -3,7 +3,7 @@ import type { ChatMessage } from '@shared/types'
 import { askHal } from './ai/chat'
 import { attachmentPath, createAttachment, getAttachmentByName, trashAttachment } from './store/attachments'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
-import { listChatModels, testKey } from './ai/gemini'
+import { aiActiveReady, aiListModels, aiTest, providerReady, type ProviderId } from './ai/router'
 import { driveAuth } from './drive/auth'
 import { syncEngine } from './drive/sync'
 import { bus } from './events'
@@ -31,6 +31,7 @@ import {
   trashFolder,
   trashNote
 } from './store/notes'
+import { setCustomBaseUrl, setProviderKey } from './ai/router'
 import { clearGeminiKey, getSettings, setGeminiKey, updateSettings } from './store/settings'
 import { broadcast } from './windows'
 
@@ -121,8 +122,24 @@ export function registerIpc(): void {
 
   handle('ai:set-key', (key: string) => setGeminiKey(key))
   handle('ai:clear-key', () => clearGeminiKey())
-  handle('ai:test', () => testKey())
-  handle('ai:models', () => listChatModels())
+  handle('ai:test', (provider?: string) => aiTest((provider as ProviderId) || (getSettings().aiProvider as ProviderId)))
+  handle('ai:models', (provider?: string) =>
+    aiListModels((provider as ProviderId) || (getSettings().aiProvider as ProviderId))
+  )
+  handle('ai:set-provider', (provider: string) => {
+    updateSettings({ aiProvider: provider as ProviderId, chatModel: '' })
+  })
+  handle('ai:set-provider-key', (provider: string, key: string) => {
+    setProviderKey(provider as ProviderId, key)
+    return providerReady(provider as ProviderId)
+  })
+  handle('ai:set-custom-base-url', (url: string) => setCustomBaseUrl(url))
+  handle('ai:status', () => ({
+    active: getSettings().aiProvider,
+    activeReady: aiActiveReady(),
+    embeddingProvider: getSettings().embeddingProvider,
+    chatModel: getSettings().chatModel
+  }))
   handle('embed:backfill', () => backfillEmbeddings())
   handle('embed:ready', () => embeddingsReady())
 

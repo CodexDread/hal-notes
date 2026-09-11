@@ -81,8 +81,12 @@ export interface HalApi {
   driveSyncNow(): Promise<void>
   aiSetKey(key: string): Promise<void>
   aiClearKey(): Promise<void>
-  aiTest(): Promise<void>
-  aiModels(): Promise<string[]>
+  aiTest(provider?: string): Promise<void>
+  aiModels(provider?: string): Promise<string[]>
+  aiSetProvider(provider: string): Promise<AppSettings>
+  aiSetProviderKey(provider: string, key: string): Promise<boolean>
+  aiSetCustomBaseUrl(url: string): Promise<void>
+  aiStatus(): Promise<{ active: string; activeReady: boolean; embeddingProvider: string; chatModel: string }>
   embeddingsBackfill(): Promise<void>
   embeddingsReady(): Promise<boolean>
   halAsk(id: string, question: string, history: Pick<ChatMessage, 'role' | 'text'>[]): Promise<void>

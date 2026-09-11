@@ -1,7 +1,7 @@
 import { bus } from '../events'
 import { getNoteRow, listTags, noteNameList } from '../store/notes'
 import { getSettings } from '../store/settings'
-import { getClient, hasKey } from './gemini'
+import { aiActiveReady, aiChat } from './router'
 
 const CAPTURE_MIN_LEN = 250
 const CAPTURE_DEBOUNCE_MS = 12_000
@@ -30,7 +30,7 @@ const lastSuggestedVersion = new Map<string, number>()
 
 export function initCaptureWatcher(): void {
   bus.on('note:saved', (id: string) => {
-    if (!hasKey()) return
+    if (!aiActiveReady()) return
     const existing = timers.get(id)
     if (existing) clearTimeout(existing)
     const delay = Math.max(3_000, getSettings().captureDelayMs || CAPTURE_DEBOUNCE_MS)
@@ -55,8 +55,6 @@ async function suggestFor(id: string): Promise<void> {
   }
   lastSuggestedVersion.set(id, row.content_version)
 
-  const ai = getClient()
-  const model = getSettings().chatModel || 'gemini-flash-latest'
   const names = noteNameList(400).filter((n) => n !== row.name)
   const existingTags = listTags()
     .slice(0, 60)
@@ -75,10 +73,10 @@ Existing tags in the vault (prefer reusing these when apt): ${existingTags.join(
 
 Return JSON per the schema. Tags: 3-6 short lowercase tags without the # symbol, kebab-case, no duplicates of tags already in the note. Links: at most 4, only strong conceptual connections; "text" must be an exact substring copied from the note; "target" must exactly match a name from the list. Use empty arrays when nothing fits.`
 
-  const res = await ai.models.generateContent({
-    model,
-    contents: prompt,
-    config: { responseMimeType: 'application/json', responseSchema: RESPONSE_SCHEMA as never }
+  const res = await aiChat({
+    messages: [{ role: 'user', text: prompt }],
+    json: true,
+    jsonSchema: RESPONSE_SCHEMA
   })
 
   let parsed: { title?: string; tags?: string[]; links?: { text: string; target: string }[] }

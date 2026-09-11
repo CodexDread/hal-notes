@@ -1,8 +1,7 @@
 import type { ResearchCitation } from '@shared/types'
 import { cosine, embedSingle } from '../ai/embed'
-import { getClient, hasKey } from '../ai/gemini'
+import { aiActiveReady, aiChat } from '../ai/router'
 import { getNoteRow } from '../store/notes'
-import { getSettings } from '../store/settings'
 import { addMessage, getSourceRows } from './store'
 import type { SourceRow } from './store'
 
@@ -64,10 +63,9 @@ export async function notebookChat(
   question: string,
   history: { role: 'user' | 'hal'; text: string }[]
 ): Promise<{ citations: ResearchCitation[] }> {
-  if (!hasKey()) throw new Error('Gemini API key is not set — add it in Settings')
-  const ai = getClient()
+  if (!aiActiveReady()) throw new Error('No AI provider is configured — add one in Settings → Integrations')
 
-  const queryVec = await embedSingle(question, 'RETRIEVAL_QUERY').catch(() => null)
+  const queryVec = await embedSingle(question).catch(() => null)
   const { blocks, citations } = buildSourceContext(notebookId, queryVec)
 
   addMessage(notebookId, 'user', question, [])
@@ -86,20 +84,19 @@ export async function notebookChat(
     }
   ]
 
-  const stream = await ai.models.generateContentStream({
-    model: getSettings().chatModel || 'gemini-flash-latest',
-    contents,
-    config: { systemInstruction: SYSTEM_INSTRUCTION }
-  })
-
   let full = ''
-  for await (const chunk of stream) {
-    const text = chunk.text ?? ''
-    if (text) {
-      full += text
-      emit(text)
+  const result = await aiChat({
+    system: SYSTEM_INSTRUCTION,
+    messages: contents.map((c) => ({
+      role: c.role === 'user' ? ('user' as const) : ('assistant' as const),
+      text: c.parts[0].text
+    })),
+    stream: (delta) => {
+      full += delta
+      emit(delta)
     }
-  }
+  })
+  full = result.text || full
   addMessage(notebookId, 'hal', full, citations)
   return { citations }
 }

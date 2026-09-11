@@ -1,6 +1,5 @@
-import { getSettings } from '../store/settings'
 import { retrieveContext } from './embed'
-import { getClient } from './gemini'
+import { aiChat } from './router'
 
 export interface ChatTurn {
   role: 'user' | 'hal'
@@ -23,9 +22,6 @@ export async function askHal(
   history: ChatTurn[],
   onDelta: (text: string) => void
 ): Promise<HalAnswer> {
-  const ai = getClient()
-  const settings = getSettings()
-  const model = settings.chatModel || 'gemini-flash-latest'
   const context = await retrieveContext(question, 8)
 
   const contextBlock =
@@ -35,29 +31,12 @@ export async function askHal(
           .map((n, i) => `--- Note [${i + 1}]: ${n.name} (${n.path}) ---\n${n.content}`)
           .join('\n\n')
 
-  const contents: { role: 'user' | 'model'; parts: { text: string }[] }[] = []
-  for (const turn of history.slice(-6)) {
-    contents.push({ role: turn.role === 'user' ? 'user' : 'model', parts: [{ text: turn.text }] })
-  }
-  contents.push({
-    role: 'user',
-    parts: [{ text: `${contextBlock}\n\nQuestion: ${question}` }]
-  })
+  const messages = [
+    ...history.slice(-6).map((t) => ({ role: t.role === 'user' ? ('user' as const) : ('assistant' as const), text: t.text })),
+    { role: 'user' as const, text: `${contextBlock}\n\nQuestion: ${question}` }
+  ]
 
-  const stream = await ai.models.generateContentStream({
-    model,
-    contents,
-    config: { systemInstruction: SYSTEM_INSTRUCTION }
-  })
-
-  let full = ''
-  for await (const chunk of stream) {
-    const text = chunk.text ?? ''
-    if (text) {
-      full += text
-      onDelta(text)
-    }
-  }
+  await aiChat({ system: SYSTEM_INSTRUCTION, messages, stream: onDelta })
 
   const answerId = `hal-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   return {

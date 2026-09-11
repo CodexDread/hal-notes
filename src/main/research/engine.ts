@@ -7,7 +7,7 @@ import type {
   PathDetail
 } from '@shared/types'
 import { retrieveContext } from '../ai/embed'
-import { getClient, hasKey } from '../ai/gemini'
+import { aiActiveReady, aiChat, aiGroundedChat } from '../ai/router'
 import { bus } from '../events'
 import { createNoteWithContent, ensureFolderUnder, getNoteRow, noteNameList } from '../store/notes'
 import { getSettings } from '../store/settings'
@@ -23,7 +23,6 @@ import {
   updatePath
 } from './store'
 
-const FLASH = 'gemini-flash-latest'
 
 const TONE_RULES = `Tone rules (non-negotiable — this learner thrives on momentum, not grades):
 - Warm, direct, zero condescension. Never "simply", "obviously", "easy", "just".
@@ -31,32 +30,6 @@ const TONE_RULES = `Tone rules (non-negotiable — this learner thrives on momen
 - Every step must feel finishable. Small beats thorough.`
 
 // ── Grounding extraction (pure, unit-tested) ─────────────────────────────────
-
-interface GroundingChunkWeb {
-  uri?: string
-  title?: string
-}
-
-interface GroundingCandidate {
-  groundingMetadata?: {
-    groundingChunks?: { web?: GroundingChunkWeb }[]
-  }
-}
-
-export function extractGroundingSources(response: unknown): { uri: string; title: string }[] {
-  const out: { uri: string; title: string }[] = []
-  const seen = new Set<string>()
-  const candidates = (response as { candidates?: GroundingCandidate[] })?.candidates ?? []
-  for (const candidate of candidates) {
-    for (const chunk of candidate.groundingMetadata?.groundingChunks ?? []) {
-      const uri = chunk.web?.uri
-      if (!uri || seen.has(uri)) continue
-      seen.add(uri)
-      out.push({ uri, title: chunk.web?.title || uri })
-    }
-  }
-  return out
-}
 
 // ── Learning path generation ──────────────────────────────────────────────────
 
@@ -129,8 +102,7 @@ export function startLearningPath(notebookId: string, topic: string, pathId: str
 }
 
 async function runLearningPath(notebookId: string, topic: string, pathId: string): Promise<void> {
-  if (!hasKey()) throw new Error('Gemini API key is not set — add it in Settings')
-  const ai = getClient()
+  if (!aiActiveReady()) throw new Error('No AI provider is configured — add one in Settings → Integrations')
 
   // 1. Assess: what does the learner already bring?
   const vault = await groundInVault(topic)
@@ -138,13 +110,12 @@ async function runLearningPath(notebookId: string, topic: string, pathId: string
   bus.emit('research:path-updated', pathId, notebookId)
 
   // 2. Plan sub-questions, then run grounded search rounds.
-  const planRes = await ai.models.generateContent({
-    model: FLASH,
-    contents: `A learner wants to learn: "${topic}".
+  const planRes = await aiChat({
+    messages: [{ role: 'user', text: `A learner wants to learn: "${topic}".
 They already have some familiarity (their existing notes touch): ${vault.anchors.join('; ') || 'nothing yet — brand new topic'}.
 Decompose this into 4-6 sub-questions that together cover what's genuinely worth understanding, ordered from foundations to interesting edges. Avoid trivia.
-Return JSON: {"subQuestions": string[]}`,
-    config: { responseMimeType: 'application/json' }
+Return JSON: {"subQuestions": string[]}` }],
+    json: true
   })
   let subQuestions: string[] = []
   try {
@@ -157,13 +128,16 @@ Return JSON: {"subQuestions": string[]}`,
   const findings: { q: string; text: string }[] = []
   const webSources = new Map<string, string>()
   for (const q of subQuestions.slice(0, 6)) {
-    const res = await ai.models.generateContent({
-      model: FLASH,
-      contents: `Research question: ${q}\nLearner's topic: ${topic}. Write 3-6 dense paragraphs of accurate, current findings with the specifics that matter (numbers, names, mechanisms). No fluff.`,
-      config: { tools: [{ googleSearch: {} }] }
+    const res = await aiGroundedChat({
+      messages: [
+        {
+          role: 'user',
+          text: `Research question: ${q}\nLearner's topic: ${topic}. Write 3-6 dense paragraphs of accurate, current findings with the specifics that matter (numbers, names, mechanisms). No fluff.`
+        }
+      ]
     })
-    findings.push({ q, text: (res.text ?? '').slice(0, 2500) })
-    for (const src of extractGroundingSources(res)) {
+    findings.push({ q, text: res.text.slice(0, 2500) })
+    for (const src of res.groundingSources) {
       webSources.set(src.uri, src.title)
       void addSource({ notebookId, kind: 'web', uri: src.uri, title: src.title, gist: '', addedBy: 'hal' })
     }
@@ -176,9 +150,8 @@ Return JSON: {"subQuestions": string[]}`,
   bus.emit('research:path-updated', pathId, notebookId)
 
   const cardCount = pathLengthCards()
-  const writeRes = await ai.models.generateContent({
-    model: getSettings().chatModel || FLASH,
-    contents: `Build a ${cardCount}-card personal learning path on "${topic}" for one specific learner.
+  const writeRes = await aiChat({
+    messages: [{ role: 'user', text: `Build a ${cardCount}-card personal learning path on "${topic}" for one specific learner.
 
 ${TONE_RULES}
 
@@ -197,8 +170,9 @@ Card construction:
 - exercise: a 2-5 minute hands-on micro-exercise that produces something tiny and real. Nearly impossible to fail.
 - The LAST card's exercise may stretch to 5 minutes and set up the tiny project.
 - tinyProject: a 15-30 minute project that consolidates the whole path, explicitly completable in one sitting.
-- knownAnchors: 2-5 short bullets affirming related knowledge or honest curiosity the learner already has (from their notes list or the topic phrasing). Phrase as strengths/standing starts, never as gaps.`,
-    config: { responseMimeType: 'application/json', responseSchema: PATH_SCHEMA as never }
+- knownAnchors: 2-5 short bullets affirming related knowledge or honest curiosity the learner already has (from their notes list or the topic phrasing). Phrase as strengths/standing starts, never as gaps.` }],
+    json: true,
+    jsonSchema: PATH_SCHEMA
   })
 
   let parsed: { knownAnchors?: string[]; cards?: unknown[]; tinyProject?: { title?: string; body?: string } }
@@ -263,10 +237,8 @@ export async function evaluateShortAnswerFor(
   checkIn: { question: string; answer: string; guidance: string },
   answer: string
 ): Promise<{ onTarget: boolean; feedback: string }> {
-  const ai = getClient()
-  const res = await ai.models.generateContent({
-    model: FLASH,
-    contents: `A learner answered a recall question. Evaluate gently.
+  const res = await aiChat({
+    messages: [{ role: 'user', text: `A learner answered a recall question. Evaluate gently.
 
 Question: ${checkIn.question}
 Expected gist: ${checkIn.answer}
@@ -274,14 +246,12 @@ Learner's answer: ${answer}
 
 ${TONE_RULES}
 "onTarget": did the answer engage the core idea (generous standard — partial understanding counts)?
-"feedback": 2-3 sentences. If on target: affirm something specific they said, add one layer. If not: begin "Not quite —" then share the interesting nuance (use this extra context if helpful: ${checkIn.guidance}). Never use "wrong", "incorrect", "fail".`,
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: 'object',
-        properties: { onTarget: { type: 'boolean' }, feedback: { type: 'string' } },
-        required: ['onTarget', 'feedback']
-      } as never
+"feedback": 2-3 sentences. If on target: affirm something specific they said, add one layer. If not: begin "Not quite —" then share the interesting nuance (use this extra context if helpful: ${checkIn.guidance}). Never use "wrong", "incorrect", "fail".` }],
+    json: true,
+    jsonSchema: {
+      type: 'object',
+      properties: { onTarget: { type: 'boolean' }, feedback: { type: 'string' } },
+      required: ['onTarget', 'feedback']
     }
   })
   try {
@@ -309,7 +279,7 @@ export async function answerCard(pathId: string, cardIndex: number, answer: stri
     feedback = onTarget
       ? `That's the one — ${card.checkIn.answer}.`
       : `Not quite — ${card.checkIn.guidance}`
-  } else if (hasKey()) {
+  } else if (aiActiveReady()) {
     ;({ onTarget, feedback } = await evaluateShortAnswerFor(card.checkIn, answer))
   } else {
     onTarget = true
@@ -355,7 +325,7 @@ export async function answerReview(pathId: string, cardIndex: number, answer: st
   if (card.checkIn.kind === 'mcq' && card.checkIn.options.length > 0) {
     onTarget = normalize(answer) === normalize(card.checkIn.answer)
     feedback = onTarget ? `Still with you — ${card.checkIn.answer}.` : `Not quite — ${card.checkIn.guidance}`
-  } else if (hasKey()) {
+  } else if (aiActiveReady()) {
     ;({ onTarget, feedback } = await evaluateShortAnswerFor(card.checkIn, answer))
   } else {
     onTarget = true
