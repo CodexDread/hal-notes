@@ -29,13 +29,19 @@ function noteEmbeddingText(name: string, content: string): string {
 /** Embeddings from different providers/models have different geometry — a change wipes the index. */
 function ensureSignature(): void {
   const sig = embeddingSignature()
-  if (getMeta('embedding_sig') !== sig) {
-    getDb().exec('DELETE FROM embeddings')
+  const previous = getMeta('embedding_sig')
+  if (previous === sig) return
+  if (previous === null) {
+    // First run after the router landed: the existing index was built by the
+    // pre-router Google defaults, so stamp it rather than destroying it.
     setMeta('embedding_sig', sig)
-    setMeta('embeddings_ready', '')
-    console.log(`[embed] provider/model changed (${sig}) — semantic index cleared, rebuild needed`)
-    bus.emit('embed:progress', { done: 0, total: 0 })
+    return
   }
+  getDb().exec('DELETE FROM embeddings')
+  setMeta('embedding_sig', sig)
+  setMeta('embeddings_ready', '')
+  console.log(`[embed] provider/model changed (${previous} → ${sig}) — semantic index cleared, rebuild needed`)
+  bus.emit('embed:progress', { done: 0, total: 0 })
 }
 
 interface BacklogRow {

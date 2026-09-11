@@ -69,4 +69,16 @@ describe('ftsQuery', () => {
   it('returns a harmless match-all-ish term for empty input', () => {
     expect(ftsQuery('   ')).toBe('""')
   })
+
+  it('strips punctuation stuck to tokens', () => {
+    expect(ftsQuery('AI? (inference)')).toBe('"AI"* AND "inference"*')
+  })
+
+  it('drops stopwords so natural-language queries still match', () => {
+    expect(ftsQuery('Are there any notes in the vault relating to AI?')).toBe('"notes"* AND "vault"* AND "AI"*')
+  })
+
+  it('falls back to raw tokens when everything is a stopword', () => {
+    expect(ftsQuery('the and of')).toBe('"the"* AND "and"* AND "of"*')
+  })
 })

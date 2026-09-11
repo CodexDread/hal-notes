@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { renderMarkdown } from '@/lib/markdown'
+import { hal } from '@/lib/ipc'
 import { useUi } from '@/state/ui'
 import { useChat } from '@/state/chat'
 import { useVault } from '@/state/vault'
@@ -13,7 +14,10 @@ export function HalChat() {
   const geminiKeySet = useUi((s) => s.settings?.geminiKeySet ?? false)
   const dark = useUi((s) => (s.settings?.theme ?? 'dark') === 'dark')
   const openSettings = useUi((s) => s.openSettings)
+  const embeddingsReady = useUi((s) => s.embeddingsReady)
+  const embedProgress = useUi((s) => s.embedProgress)
   const [input, setInput] = useState('')
+  const [buildingIndex, setBuildingIndex] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -45,6 +49,30 @@ export function HalChat() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {!embeddingsReady && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-amber-500/20 bg-amber-400/5 px-3 py-1.5 text-[11px] text-amber-300">
+          <span>Semantic index not built — Ask HAL may miss notes.</span>
+          <button
+            className="rounded bg-amber-400/20 px-2 py-0.5 text-amber-200 hover:bg-amber-400/30 disabled:opacity-50"
+            disabled={buildingIndex}
+            onClick={() => {
+              setBuildingIndex(true)
+              void hal
+                .embeddingsBackfill()
+                .then(() => useUi.getState().refreshEmbeddingsReady())
+                .catch((err: unknown) => console.error(err))
+                .finally(() => setBuildingIndex(false))
+            }}
+          >
+            {buildingIndex ? 'Building…' : 'Build index'}
+          </button>
+          {embedProgress && (
+            <span className="text-amber-500/80">
+              {embedProgress.done}/{embedProgress.total}
+            </span>
+          )}
+        </div>
+      )}
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-3 py-3">
         {messages.length === 0 && (
           <div className="rounded-lg bg-zinc-800/40 p-3 text-xs leading-5 text-zinc-400">

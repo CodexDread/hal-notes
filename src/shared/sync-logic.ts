@@ -29,11 +29,20 @@ export function conflictCopyName(name: string, date = new Date()): string {
   return `${trimmed} (conflict ${stamp})`
 }
 
+const STOPWORDS = new Set([
+  'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'but', 'can', 'could', 'did', 'do', 'does', 'for',
+  'has', 'have', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'me', 'my', 'no', 'not', 'of',
+  'on', 'or', 'our', 'relating', 'so', 'some', 'that', 'the', 'their', 'them', 'there', 'these',
+  'they', 'this', 'to', 'up', 'us', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'who',
+  'why', 'will', 'with', 'would', 'you', 'your'
+])
+
+/** Builds an FTS-5 query: strips punctuation, drops stopwords so natural-language queries still match. */
 export function ftsQuery(query: string): string {
-  const tokens = query
-    .trim()
-    .split(/\s+/)
-    .filter((t) => t.length > 0)
+  const rawTokens = query.trim().split(/\s+/)
+  const clean = (t: string): string => t.replace(/^[^\w]+|[^\w]+$/g, '')
+  const meaningful = rawTokens.map(clean).filter((t) => t.length > 0 && !STOPWORDS.has(t.toLowerCase()))
+  const tokens = (meaningful.length > 0 ? meaningful : rawTokens.map(clean).filter((t) => t.length > 0))
     .map((t) => `"${t.replace(/"/g, '""')}"*`)
   if (tokens.length === 0) return '""'
   return tokens.slice(0, 8).join(' AND ')
