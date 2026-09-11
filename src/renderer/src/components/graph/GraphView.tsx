@@ -182,7 +182,7 @@ export function GraphView() {
   }
 
   if (!data) {
-    return <div className="grid h-full place-items-center text-sm text-zinc-600">Building graph…</div>
+    return <div className="grid h-full place-items-center text-sm text-[var(--hal-dim)] opacity-80">Building graph…</div>
   }
 
   if (data.nodes.length === 0) {
@@ -190,9 +190,9 @@ export function GraphView() {
       <div className="grid h-full place-items-center px-6 text-center">
         <div className="max-w-sm">
           <div className="text-4xl">🕸️</div>
-          <p className="mt-3 text-sm text-zinc-400">No notes to graph yet.</p>
-          <p className="mt-1.5 text-xs leading-5 text-zinc-600">
-            Write a few notes and connect them with <span className="text-violet-400">[[wiki links]]</span> — the graph
+          <p className="mt-3 text-sm text-[var(--hal-dim)]">No notes to graph yet.</p>
+          <p className="mt-1.5 text-xs leading-5 text-[var(--hal-dim)] opacity-80">
+            Write a few notes and connect them with <span className="text-[var(--hal-amber)]">[[wiki links]]</span> — the graph
             grows as your vault connects.
           </p>
         </div>
@@ -207,7 +207,7 @@ export function GraphView() {
   }
 
   return (
-    <div className="relative h-full min-h-0 flex-1 overflow-hidden bg-zinc-950">
+    <div className="relative h-full min-h-0 flex-1 overflow-hidden bg-[var(--hal-ground)]">
       <svg
         ref={svgRef}
         className="h-full w-full select-none"
@@ -274,7 +274,7 @@ export function GraphView() {
           })}
         </g>
       </svg>
-      <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-zinc-900/80 px-2.5 py-1 text-[11px] text-zinc-500">
+      <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-[var(--hal-plate)] px-2.5 py-1 text-[11px] text-[var(--hal-dim)]">
         {data.nodes.filter((n) => !n.unresolved).length} notes · {data.edges.length} links ·{" "}
         {data.nodes.filter((n) => n.unresolved).length} unresolved · view {Math.round(view.x)},{Math.round(view.y)} ×
         {view.k.toFixed(1)}

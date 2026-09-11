@@ -65,8 +65,8 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
         e.dataTransfer.setData(NOTE_DND_TYPE, note.id)
         e.dataTransfer.effectAllowed = 'move'
       }}
-      className={`group flex cursor-pointer items-center gap-1.5 rounded-md py-[3px] pr-1 text-sm hover:bg-zinc-800/70 ${
-        activeId === note.id ? 'bg-violet-500/15 text-violet-200' : 'text-zinc-300'
+      className={`group flex cursor-pointer items-center gap-1.5 py-[3px] pr-1 mono text-[11px] hover:bg-[var(--hal-plate-2)] ${
+        activeId === note.id ? 'text-[var(--hal-ivory)]' : 'text-[var(--hal-dim)]'
       }`}
       style={{ paddingLeft: depth * 14 + 22 }}
       onClick={() => void open(note.id)}
@@ -75,11 +75,11 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
         startRename()
       }}
     >
-      <span className="text-[10px] text-zinc-500">📄</span>
+      <span className="lamp" style={{ background: 'var(--hal-hairline)' }} />
       {editing ? (
         <input
           autoFocus
-          className="min-w-0 flex-1 rounded bg-zinc-900 px-1 text-sm outline outline-violet-500"
+          className="field min-w-0 flex-1 py-0 px-1 text-[11px] mono"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitRename}
@@ -92,11 +92,11 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
       ) : (
         <span className="min-w-0 flex-1 truncate">{note.name}</span>
       )}
-      {note.pendingSync && !editing && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/80" title="Pending sync" />}
+      {note.pendingSync && !editing && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--hal-amber)]" title="Pending sync" />}
       {!editing && (
         <button
           title="Delete note"
-          className="hidden shrink-0 rounded px-1 text-xs text-zinc-500 hover:text-red-400 group-hover:block"
+          className="hidden shrink-0 px-1 text-[10px] hover:text-[var(--hal-lamp-red)] group-hover:block"
           onClick={(e) => {
             e.stopPropagation()
             if (window.confirm(`Delete "${note.name}"?`)) void trashNote(note.id)
@@ -150,8 +150,8 @@ function FolderBranch({
         onDragOver={(e) => onDragOver(e, node.folder.id)}
         onDragLeave={() => setDropTarget(null)}
         onDrop={(e) => onDrop(e, node.folder.id)}
-        className={`group flex cursor-pointer items-center gap-1 rounded-md py-[3px] pr-1 text-sm text-zinc-200 hover:bg-zinc-800/70 ${
-          isDropTarget ? 'ring-1 ring-inset ring-violet-500/70 bg-violet-500/10' : ''
+        className={`group flex cursor-pointer items-center gap-1 py-[3px] pr-1 mono text-[11px] text-[var(--hal-ink)] hover:bg-[var(--hal-plate-2)] ${
+          isDropTarget ? 'ring-1 ring-inset ring-[var(--hal-amber)] bg-[var(--hal-amber-dim)]' : ''
         }`}
         style={{ paddingLeft: depth * 14 + 6 }}
         onClick={() => setOpen(!open_)}
@@ -161,12 +161,12 @@ function FolderBranch({
           setEditing(true)
         }}
       >
-        <span className={`text-[10px] text-zinc-500 transition-transform ${open_ ? 'rotate-90' : ''}`}>▶</span>
+        <span className={`text-[9px] transition-transform ${open_ ? 'rotate-90' : ''}`} style={{ color: 'var(--hal-dim)' }}>▶</span>
         <span className="text-[11px]">{open_ ? '📂' : '📁'}</span>
         {editing ? (
           <input
             autoFocus
-            className="min-w-0 flex-1 rounded bg-zinc-900 px-1 text-sm outline outline-violet-500"
+            className="field min-w-0 flex-1 py-0 px-1 text-[11px] mono"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commit}
@@ -183,7 +183,7 @@ function FolderBranch({
           <span className="hidden items-center gap-0.5 group-hover:flex">
             <button
               title="New note in folder"
-              className="rounded px-1 text-xs text-zinc-500 hover:text-violet-300"
+              className="rounded px-1 text-xs text-[var(--hal-dim)] hover:text-[var(--hal-amber)]"
               onClick={(e) => {
                 e.stopPropagation()
                 void createNote(node.folder.id)
@@ -193,7 +193,7 @@ function FolderBranch({
             </button>
             <button
               title="New subfolder"
-              className="rounded px-1 text-[10px] text-zinc-500 hover:text-violet-300"
+              className="rounded px-1 text-[10px] hover:text-[var(--hal-amber)]"
               onClick={(e) => {
                 e.stopPropagation()
                 void createFolder(node.folder.id)
@@ -231,17 +231,17 @@ function AttachmentRow({ att, depth }: { att: AttachmentMeta; depth: number }) {
   const isImage = /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(att.name)
   return (
     <div
-      className="group flex cursor-pointer items-center gap-1.5 rounded-md py-[3px] pr-1 text-sm text-zinc-400 hover:bg-zinc-800/70"
+      className="group flex cursor-pointer items-center gap-1.5 rounded-md py-[3px] pr-1 mono text-[11px] text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]"
       style={{ paddingLeft: depth * 14 + 22 }}
       title={`${att.name} — open with its default app`}
       onClick={() => void hal.attachmentOpenExternal(att.name)}
     >
       <span className="text-[10px]">{isImage ? '🖼️' : '📎'}</span>
       <span className="min-w-0 flex-1 truncate">{att.name}</span>
-      {att.pendingSync && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/80" title="Pending sync" />}
+      {att.pendingSync && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--hal-amber)]" title="Pending sync" />}
       <button
         title="Delete attachment"
-        className={`shrink-0 rounded px-1 text-xs hover:text-red-400 ${confirming ? 'text-red-400' : 'hidden text-zinc-500 group-hover:block'}`}
+        className={`shrink-0 rounded px-1 text-xs hover:text-[var(--hal-lamp-red)] ${confirming ? 'text-[var(--hal-lamp-red)]' : 'hidden text-[var(--hal-dim)] group-hover:block'}`}
         onClick={(e) => {
           e.stopPropagation()
           if (confirming) {
@@ -263,15 +263,15 @@ function AttachmentsGroup() {
   const [open_, setOpen] = useState(true)
   if (attachments.length === 0) return null
   return (
-    <div className="mt-2 border-t border-zinc-800/60 pt-1">
+    <div className="mt-2 border-t pt-1" style={{ borderColor: 'var(--hal-hairline)' }}>
       <div
-        className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-[3px] text-sm text-zinc-400 hover:bg-zinc-800/70"
+        className="flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-[3px] mono text-[11px] text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]"
         onClick={() => setOpen(!open_)}
       >
-        <span className={`text-[10px] text-zinc-500 transition-transform ${open_ ? 'rotate-90' : ''}`}>▶</span>
-        <span className="text-[11px]">📎</span>
+        <span className={`text-[9px] transition-transform ${open_ ? 'rotate-90' : ''}`} style={{ color: 'var(--hal-dim)' }}>▶</span>
+        
         <span className="min-w-0 flex-1 truncate font-medium">attachments</span>
-        <span className="text-[10px] text-zinc-600">{attachments.length}</span>
+        <span className="text-[10px] text-[var(--hal-dim)] opacity-80">{attachments.length}</span>
       </div>
       {open_ && attachments.map((a) => <AttachmentRow key={a.id} att={a} depth={0} />)}
     </div>
@@ -311,19 +311,19 @@ export function FileTree() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Files</span>
+      <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: 'var(--hal-hairline)' }}>
+        <span className="legend">File rail</span>
         <span className="flex gap-1">
           <button
             title="New note (Ctrl+N)"
-            className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-violet-300"
+            className="rounded p-1 hover:text-[var(--hal-amber)]"
             onClick={() => void createNote(null)}
           >
             ＋
           </button>
           <button
             title="New folder"
-            className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-violet-300"
+            className="rounded p-1 hover:text-[var(--hal-amber)]"
             onClick={() => void createFolder(null)}
           >
             ▤
@@ -337,7 +337,7 @@ export function FileTree() {
         onDrop={(e) => handleDrop(e, null)}
       >
         {snapshot.notes.length === 0 && snapshot.folders.length === 0 ? (
-          <p className="px-2 py-4 text-xs text-zinc-600">No notes yet. Create your first note with ＋.</p>
+          <p className="px-2 py-4 text-xs text-[var(--hal-dim)] opacity-80">No notes yet. Create your first note with ＋.</p>
         ) : (
           <>
             {roots.map((r) => (

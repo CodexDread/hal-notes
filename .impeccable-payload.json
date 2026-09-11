@@ -1,0 +1,182 @@
+{
+  "title": "Choose HAL Notes' visual world",
+  "question": "The roll assigned the Observatory Atlas. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Observatory Atlas",
+      "kicker": "THE ROLL",
+      "lineage": "celestial atlases, observatory consoles, ephemeris tables",
+      "thesis": "The vault as a night sky: notes are catalogued stars, wiki-links are constellation lines, HAL is the observer at the eyepiece. Dense data rendered calmly on a deep sky ground \u2014 the tradition of the star atlas, not the dashboard.",
+      "palette": [
+        "#0b1020",
+        "#101830",
+        "#e8e4d8",
+        "#c9a86a",
+        "#7fb4d6"
+      ],
+      "materials": [
+        "hairline coordinate grids",
+        "engraved catalog tables",
+        "instrument brass"
+      ],
+      "viewport": "The editor as a catalog desk: a deep-blue-black field, the note's title as a catalog entry in a refined grotesk, prose column on a faint hairline grid, the sidebar a star index with magnitude-ordered type; the graph view is the sky chart itself.",
+      "risk": "Astronomical imagery can drift into sci-fi cosplay if the atlas discipline (tables, grids, restraint) is not held.",
+      "raised": [
+        {
+          "from": "challenger-cracktro",
+          "raise": "Hierarchy by luminosity and depth instead of boxes: the front plane is brightest, rear planes recede \u2014 panels separate by light, not borders."
+        },
+        {
+          "from": "challenger-tensegrity",
+          "raise": "Constellation lines carry tension: link weight and staleness render as cord tension in the graph, structure made visible as opposing forces."
+        },
+        {
+          "from": "challenger-ticket-wallet",
+          "raise": "States stamp themselves: completed cards and reviewed items get catalog-stamp states (stamped, cancelled) instead of color flips."
+        },
+        {
+          "from": "challenger-phosphor",
+          "raise": "One living focus point: the caret and active panel get a faint instrument-lamp bloom; everything else holds still."
+        }
+      ],
+      "hero": "https://upload.wikimedia.org/wikipedia/commons/9/99/Uranographia_Andromeda.jpg",
+      "board": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Auriga_Hevelius.jpg"
+    },
+    {
+      "id": "model-pick",
+      "label": "Apollo Avionics",
+      "kicker": "IMPECCABLE'S PICK",
+      "lineage": "Apollo DSKY, cockpit night lighting, mission-control consoles",
+      "thesis": "The vault as mission instrumentation: state lamps, elastomer-key tactility, single-accent night lighting (amber or green) on near-black, every control labeled like a panel. HAL's native home \u2014 the film's own consoles.",
+      "palette": [
+        "#0d0f12",
+        "#171a1f",
+        "#e8dcc4",
+        "#ffb000",
+        "#5a9e6f"
+      ],
+      "materials": [
+        "anodized panels",
+        "engraved legends",
+        "state lamps"
+      ],
+      "viewport": "The app as a night-lit instrument panel: mode switching as panel select lamps, sync status as an annunciator, the editor a lit work surface with panel-divider rules.",
+      "risk": "Avionics-dark is a familiar tech aesthetic; without the lamp discipline it reads as generic dark dashboard.",
+      "hero": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/Apollo_DSKY_CHM.agr.jpg/960px-Apollo_DSKY_CHM.agr.jpg",
+      "board": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Apollo_CM_DSKY_at_Draper_Hack_the_Moon_exhibit.jpg/960px-Apollo_CM_DSKY_at_Draper_Hack_the_Moon_exhibit.jpg"
+    },
+    {
+      "id": "challenger-devconsole",
+      "label": "Graphite Developer Console",
+      "verdict": "competitive",
+      "lineage": "dark-first developer consoles, hairline-seam IDEs",
+      "thesis": "Graphite ground, panels separated by one-pixel seams and one elevation step, syntax-derived accents for state only, destructive actions isolated in deliberate space.",
+      "palette": [
+        "#141518",
+        "#1c1e22",
+        "#d6d8dc",
+        "#5da9e9",
+        "#e05252"
+      ],
+      "materials": [
+        "hairline seams",
+        "compact sans + mono figures",
+        "focus-gated danger"
+      ],
+      "viewport": "The safest excellent choice: what the app already is, rebuilt with perfect discipline.",
+      "case": "Wins pure task-clarity; identifies with your tools more than with this product's soul.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-dark-first-developer-console-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/digital-design-canon-dark-first-developer-console.webp"
+    },
+    {
+      "id": "challenger-phosphor",
+      "label": "Phosphor Terminal",
+      "verdict": "competitive",
+      "lineage": "green-phosphor CRTs in midnight machine rooms",
+      "thesis": "One monospaced face on curved glass, cursor bloom, afterimage trails; system states print themselves.",
+      "palette": [
+        "#041006",
+        "#0a1f0e",
+        "#7dfc9a",
+        "#3d7a4c"
+      ],
+      "materials": [
+        "scanline glass",
+        "bitmap mono",
+        "printed state lines"
+      ],
+      "viewport": "The vault as a living transcript on a green tube.",
+      "case": "Deep audience identification (terminal culture); prose notes and the learning-warmth surfaces suffer under one-face grammar.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-phosphor-terminal-midnight-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-phosphor-terminal-midnight.webp"
+    },
+    {
+      "id": "challenger-ticketwallet",
+      "label": "Jet-Age Ticket Wallet",
+      "verdict": "competitive",
+      "lineage": "1960s airline ticket wallets, coupons, route maps",
+      "thesis": "Journeys as coupon books: each learning path tears off leg by leg, states stamp themselves (VALIDATED / VOID), route arcs map the vault.",
+      "palette": [
+        "#f4f1e8",
+        "#1b2a4a",
+        "#c0392b",
+        "#6b4fa0"
+      ],
+      "materials": [
+        "coupon stock",
+        "carbon numerals",
+        "stamps"
+      ],
+      "viewport": "The research mode as a folded journey wallet; light-first.",
+      "case": "Holds clarity for the learning-path surface narrowly; weaker for daily editor density.",
+      "hero": "https://impeccable.style/worlds/cards/vernacular-ephemera-jet-age-ticket-wallet-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/vernacular-ephemera-jet-age-ticket-wallet.webp"
+    },
+    {
+      "id": "challenger-cracktro",
+      "label": "Baseline Dust Field",
+      "verdict": "declined",
+      "lineage": "cracktro title screens",
+      "thesis": "Ivory bitmap baselines on an emissive void; state is depth and drift; nothing is ever boxed.",
+      "kept": "Depth-by-luminosity hierarchy \u2014 adopted into the Observatory Atlas as a named raise.",
+      "hero": "https://impeccable.style/worlds/cards/operate-c-cracktro-scroller-queue-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/operate-c-cracktro-scroller-queue.webp"
+    },
+    {
+      "id": "challenger-tensegrity",
+      "label": "Tensegrity Column",
+      "verdict": "declined",
+      "lineage": "carbon-rod and red-cord sculpture",
+      "thesis": "Structure as opposing forces; annotations pinned to nodes on leader lines.",
+      "kept": "Tension-as-structure for the graph's constellation lines \u2014 adopted as a named raise.",
+      "hero": "https://impeccable.style/worlds/cards/kinetic-sculpture-automata-tensegrity-breathing-column-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/kinetic-sculpture-automata-tensegrity-breathing-column.webp"
+    },
+    {
+      "id": "canon",
+      "label": "The Category Standard",
+      "kicker": "THE STANDING EXIT",
+      "lineage": "Obsidian-class markdown apps",
+      "thesis": "The familiar polished dark markdown app, played straight and executed at full fidelity.",
+      "palette": [
+        "#1e1e1e",
+        "#252526",
+        "#d4d4d4",
+        "#7c6ff0"
+      ],
+      "materials": [
+        "soft panels",
+        "purple accent",
+        "icon chrome"
+      ],
+      "viewport": "What every note app ships; your door if the dealt worlds are not this product.",
+      "risk": "None \u2014 that is the point."
+    },
+    {
+      "id": "reroll",
+      "label": "Re-roll the hand",
+      "line": "A fresh hand from the catalog (plain), safer (conventional + canon), or bolder (foreign forms only) \u2014 say which register with your choice."
+    }
+  ]
+}

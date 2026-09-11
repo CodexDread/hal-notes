@@ -1,0 +1,52 @@
+{
+  "regions": [
+    {
+      "id": "top-rail",
+      "kind": "chrome",
+      "grid": "A0:J0",
+      "note": "instrument rail: mode annunciators, sync, keys",
+      "container": true
+    },
+    {
+      "id": "file-rail",
+      "kind": "chrome",
+      "grid": "A1:C9",
+      "note": "file rail plate: legend header + mono catalog rows + accent selection",
+      "container": true
+    },
+    {
+      "id": "work-title",
+      "kind": "text",
+      "grid": "C1:F1",
+      "note": "catalog entry title, mono caps"
+    },
+    {
+      "id": "work-meta",
+      "kind": "text",
+      "grid": "C2:F2",
+      "note": "engraved meta line"
+    },
+    {
+      "id": "work-plate-ground",
+      "kind": "chrome",
+      "grid": "G3:H4",
+      "note": "ground with faint hairline column grid \u2014 CSS",
+      "container": true,
+      "codeDrawn": true
+    },
+    {
+      "id": "hal-bay",
+      "kind": "chrome",
+      "grid": "H1:J9",
+      "note": "HAL bay plate: eye instrument, transcript, ask key",
+      "container": true
+    },
+    {
+      "id": "status-line",
+      "kind": "text",
+      "grid": "A9:C9",
+      "note": "engraved status footer"
+    }
+  ],
+  "allowUncovered": true
+}

@@ -1,0 +1,405 @@
+{
+  "tool": "comp-spec",
+  "version": 1,
+  "createdAt": "2026-09-11T23:33:18.426Z",
+  "comp": ".impeccable/mocks/comp-a.png",
+  "warnings": [
+    "region top-rail: \"container\": true set in the regions file (the region-size refusal is overridden: one undivided element)",
+    "region file-rail: \"container\": true set in the regions file (the region-size refusal is overridden: one undivided element)",
+    "region work-plate-ground: \"codeDrawn\": true set in the regions file (the painted-material refusal is overridden: code draws this region)",
+    "region work-plate-ground: \"container\": true set in the regions file (the region-size refusal is overridden: one undivided element)",
+    "region hal-bay: \"container\": true set in the regions file (the region-size refusal is overridden: one undivided element)"
+  ],
+  "uncoveredInkCells": [
+    "D3",
+    "E3",
+    "F3",
+    "D4",
+    "E4",
+    "F4"
+  ],
+  "compSize": {
+    "width": 1440,
+    "height": 900
+  },
+  "aspect": 1.6,
+  "orientation": "landscape",
+  "palette": [
+    {
+      "hex": "#0f0f18",
+      "coverage": 0.9498
+    },
+    {
+      "hex": "#4c4c4c",
+      "coverage": 0.0436
+    },
+    {
+      "hex": "#382818",
+      "coverage": 0.0039
+    },
+    {
+      "hex": "#e8d8c8",
+      "coverage": 0.0021
+    },
+    {
+      "hex": "#888878",
+      "coverage": 0.0006
+    }
+  ],
+  "bands": [
+    {
+      "y": 0.0875,
+      "strength": 0.2083
+    },
+    {
+      "y": 0.125,
+      "strength": 0.2189
+    },
+    {
+      "y": 0.2625,
+      "strength": 0.3535
+    },
+    {
+      "y": 0.35,
+      "strength": 0.2205
+    },
+    {
+      "y": 0.425,
+      "strength": 0.2771
+    },
+    {
+      "y": 0.45,
+      "strength": 0.247
+    }
+  ],
+  "regions": [
+    {
+      "id": "top-rail",
+      "kind": "chrome",
+      "note": "instrument rail: mode annunciators, sync, keys",
+      "grid": "A0:J0",
+      "container": true,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 0.1
+      },
+      "px": {
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 90
+      },
+      "aspect": 16,
+      "palette": [
+        {
+          "hex": "#131318",
+          "coverage": 0.9886
+        },
+        {
+          "hex": "#e8d8c8",
+          "coverage": 0.0079
+        },
+        {
+          "hex": "#887878",
+          "coverage": 0.0022
+        },
+        {
+          "hex": "#f8b808",
+          "coverage": 0.0007
+        },
+        {
+          "hex": "#481818",
+          "coverage": 0.0006
+        }
+      ],
+      "detail": {
+        "energy": 8.1476
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "file-rail",
+      "kind": "chrome",
+      "note": "file rail plate: legend header + mono catalog rows + accent selection",
+      "grid": "A1:C9",
+      "container": true,
+      "box": {
+        "x": 0,
+        "y": 0.1,
+        "w": 0.3,
+        "h": 0.9
+      },
+      "px": {
+        "x": 0,
+        "y": 90,
+        "w": 432,
+        "h": 810
+      },
+      "aspect": 0.5333,
+      "palette": [
+        {
+          "hex": "#111118",
+          "coverage": 0.9527
+        },
+        {
+          "hex": "#484848",
+          "coverage": 0.0308
+        },
+        {
+          "hex": "#382818",
+          "coverage": 0.0142
+        },
+        {
+          "hex": "#e8d8c8",
+          "coverage": 0.0013
+        },
+        {
+          "hex": "#888878",
+          "coverage": 0.001
+        }
+      ],
+      "detail": {
+        "energy": 4.3235
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "work-title",
+      "kind": "text",
+      "note": "catalog entry title, mono caps",
+      "grid": "C1:F1",
+      "coverBox": {
+        "x": 0.2,
+        "y": 0.1,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.2042,
+        "y": 0.1,
+        "w": 0.2583,
+        "h": 0.0933
+      },
+      "px": {
+        "x": 294,
+        "y": 90,
+        "w": 372,
+        "h": 84
+      },
+      "aspect": 4.4286,
+      "palette": [
+        {
+          "hex": "#080818",
+          "coverage": 0.8847
+        },
+        {
+          "hex": "#e8d8c7",
+          "coverage": 0.0623
+        },
+        {
+          "hex": "#878173",
+          "coverage": 0.0342
+        },
+        {
+          "hex": "#0d3151",
+          "coverage": 0.0096
+        },
+        {
+          "hex": "#877546",
+          "coverage": 0.0093
+        }
+      ],
+      "detail": {
+        "energy": 33.9979
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "work-meta",
+      "kind": "text",
+      "note": "engraved meta line",
+      "grid": "C2:F2",
+      "coverBox": {
+        "x": 0.2,
+        "y": 0.2,
+        "w": 0.4,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.2417,
+        "y": 0.2133,
+        "w": 0.0167,
+        "h": 0.0533
+      },
+      "px": {
+        "x": 348,
+        "y": 192,
+        "w": 24,
+        "h": 48
+      },
+      "aspect": 0.5,
+      "palette": [
+        {
+          "hex": "#0a0a18",
+          "coverage": 0.625
+        },
+        {
+          "hex": "#4a4848",
+          "coverage": 0.375
+        }
+      ],
+      "detail": {
+        "energy": 1.0157
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "work-plate-ground",
+      "kind": "chrome",
+      "note": "ground with faint hairline column grid — CSS",
+      "grid": "G3:H4",
+      "codeDrawn": true,
+      "container": true,
+      "box": {
+        "x": 0.6,
+        "y": 0.3,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "px": {
+        "x": 864,
+        "y": 270,
+        "w": 288,
+        "h": 180
+      },
+      "aspect": 1.6,
+      "palette": [
+        {
+          "hex": "#0b0b18",
+          "coverage": 0.9854
+        },
+        {
+          "hex": "#575757",
+          "coverage": 0.0146
+        }
+      ],
+      "detail": {
+        "energy": 0.7373
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "hal-bay",
+      "kind": "chrome",
+      "note": "HAL bay plate: eye instrument, transcript, ask key",
+      "grid": "H1:J9",
+      "container": true,
+      "box": {
+        "x": 0.7,
+        "y": 0.1,
+        "w": 0.3,
+        "h": 0.9
+      },
+      "px": {
+        "x": 1008,
+        "y": 90,
+        "w": 432,
+        "h": 810
+      },
+      "aspect": 0.5333,
+      "palette": [
+        {
+          "hex": "#141418",
+          "coverage": 0.9557
+        },
+        {
+          "hex": "#585858",
+          "coverage": 0.0415
+        },
+        {
+          "hex": "#383818",
+          "coverage": 0.0018
+        },
+        {
+          "hex": "#888878",
+          "coverage": 0.0005
+        },
+        {
+          "hex": "#f8b808",
+          "coverage": 0.0005
+        }
+      ],
+      "detail": {
+        "energy": 2.7481
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    },
+    {
+      "id": "status-line",
+      "kind": "text",
+      "note": "engraved status footer",
+      "grid": "A9:C9",
+      "coverBox": {
+        "x": 0,
+        "y": 0.9,
+        "w": 0.3,
+        "h": 0.1
+      },
+      "box": {
+        "x": 0.0083,
+        "y": 0.96,
+        "w": 0.1792,
+        "h": 0.0267
+      },
+      "px": {
+        "x": 12,
+        "y": 864,
+        "w": 258,
+        "h": 24
+      },
+      "aspect": 10.75,
+      "palette": [
+        {
+          "hex": "#161618",
+          "coverage": 0.9336
+        },
+        {
+          "hex": "#694f22",
+          "coverage": 0.0196
+        },
+        {
+          "hex": "#162646",
+          "coverage": 0.0196
+        },
+        {
+          "hex": "#7f7f6d",
+          "coverage": 0.0136
+        },
+        {
+          "hex": "#3f665f",
+          "coverage": 0.0136
+        }
+      ],
+      "detail": {
+        "energy": 19.0274
+      },
+      "medium": "semantic",
+      "plate": null,
+      "text": null
+    }
+  ]
+}

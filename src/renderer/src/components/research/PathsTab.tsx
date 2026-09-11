@@ -18,8 +18,8 @@ export function PathsTab() {
       <div className="grid h-full place-items-center px-6 text-center">
         <div className="max-w-md">
           <div className="text-3xl">🌱</div>
-          <p className="mt-3 text-sm text-zinc-300">No learning paths yet.</p>
-          <p className="mt-1.5 text-xs leading-5 text-zinc-500">
+          <p className="mt-3 text-sm text-[var(--hal-ink)]">No learning paths yet.</p>
+          <p className="mt-1.5 text-xs leading-5 text-[var(--hal-dim)]">
             Type a topic above — anything you're curious about. HAL researches it across the web and your notes, then
             builds an interactive path of small cards you work through one at a time.
           </p>
@@ -37,27 +37,27 @@ export function PathsTab() {
           return (
             <button
               key={p.id}
-              className="block w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-left transition-colors hover:border-zinc-700"
+              className="block w-full rounded-lg border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-4 py-3 text-left transition-colors hover:border-[var(--hal-hairline)]"
               onClick={() => void openPath(p.id)}
             >
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium ${p.status === 'error' ? 'text-zinc-400' : 'text-zinc-100'}`}>
+                <span className={`text-sm font-medium ${p.status === 'error' ? 'text-[var(--hal-dim)]' : 'text-[var(--hal-ivory)]'}`}>
                   {p.question}
                 </span>
                 <span className="flex-1" />
-                {running && <span className="animate-pulse text-xs text-amber-300">{STATUS_LABEL[p.status]}</span>}
+                {running && <span className="animate-pulse text-xs text-[var(--hal-amber)]">{STATUS_LABEL[p.status]}</span>}
                 {p.status === 'ready' && (
-                  <span className="rounded-full bg-violet-400/10 px-2 py-0.5 text-[10px] text-violet-400">
+                  <span className="rounded-full bg-[var(--hal-amber-dim)] px-2 py-0.5 text-[10px] text-[var(--hal-amber)]">
                     {cardCount} cards
                   </span>
                 )}
                 {p.noteId && (
-                  <span className="rounded-full bg-violet-400/10 px-2 py-0.5 text-[10px] text-violet-300" title="Saved as a note in your vault">
+                  <span className="rounded-full bg-[var(--hal-amber-dim)] px-2 py-0.5 text-[10px] text-[var(--hal-amber)]" title="Saved as a note in your vault">
                     saved ✓
                   </span>
                 )}
               </div>
-              {p.status === 'error' && <p className="mt-1 text-xs text-red-400">{p.error}</p>}
+              {p.status === 'error' && <p className="mt-1 text-xs text-[var(--hal-lamp-red)]">{p.error}</p>}
             </button>
           )
         })}

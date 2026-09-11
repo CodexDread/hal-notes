@@ -22,9 +22,9 @@ export function NotebookView() {
     return (
       <div className="grid h-full flex-1 place-items-center">
         <div className="max-w-sm text-center">
-          <div className="text-4xl text-violet-400">🔬</div>
-          <p className="mt-3 text-sm text-zinc-400">Create a notebook to start researching.</p>
-          <p className="mt-1 text-xs text-zinc-600">One notebook per topic — it collects sources, conversations, and learning paths.</p>
+          <div className="text-4xl text-[var(--hal-amber)]">🔬</div>
+          <p className="mt-3 text-sm text-[var(--hal-dim)]">Create a notebook to start researching.</p>
+          <p className="mt-1 text-xs text-[var(--hal-dim)] opacity-80">One notebook per topic — it collects sources, conversations, and learning paths.</p>
         </div>
       </div>
     )
@@ -40,9 +40,9 @@ export function NotebookView() {
 
   return (
     <section className="relative flex h-full min-w-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 border-b border-zinc-800/70 px-4 py-2">
+      <div className="flex items-center gap-2 border-b border-[var(--hal-hairline)] px-4 py-2">
         <input
-          className="min-w-0 flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500"
+          className="min-w-0 flex-1 rounded-lg border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-3 py-1.5 text-sm outline-none placeholder:text-[var(--hal-dim)] opacity-80 focus:border-[var(--hal-amber)]"
           placeholder="I want to learn… (HAL researches the web + your notes, then builds a learning path)"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
@@ -51,19 +51,19 @@ export function NotebookView() {
           }}
         />
         <button
-          className="rounded-lg bg-violet-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+          className="rounded-lg bg-[var(--hal-amber)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-80 disabled:opacity-40"
           disabled={!topic.trim() || busy}
           onClick={submit}
         >
           Research it
         </button>
       </div>
-      <div className="flex shrink-0 border-b border-zinc-800">
+      <div className="flex shrink-0 border-b border-[var(--hal-hairline)]">
         {TABS.map((t) => (
           <button
             key={t.id}
             className={`px-3 py-2 text-xs font-medium ${
-              activeTab === t.id ? 'border-b-2 border-violet-400 text-violet-300' : 'text-zinc-500 hover:text-zinc-300'
+              activeTab === t.id ? 'border-b-2 border-[var(--hal-amber)] text-[var(--hal-amber)]' : 'text-[var(--hal-dim)] hover:text-[var(--hal-ink)]'
             }`}
             onClick={() => setActiveTab(t.id)}
           >

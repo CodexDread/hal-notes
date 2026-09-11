@@ -52,13 +52,13 @@ export function AIProvidersSection(): React.ReactElement {
   }
 
   return (
-    <section className="border-b border-zinc-800 px-5 py-4 last:border-b-0">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">AI providers</h2>
+    <section className="border-b border-[var(--hal-hairline)] px-5 py-4 last:border-b-0">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--hal-dim)]">AI providers</h2>
 
-      <div className="text-xs text-zinc-400">
+      <div className="text-xs text-[var(--hal-dim)]">
         Chat provider — Ask HAL, research paths, smart capture, review cards
         <select
-          className="mt-1.5 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+          className="mt-1.5 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
           value={active}
           onChange={(e) => {
             setModels([])
@@ -75,10 +75,10 @@ export function AIProvidersSection(): React.ReactElement {
       </div>
 
       {active === 'google' ? (
-        <div className="mt-3 text-xs text-zinc-400">
+        <div className="mt-3 text-xs text-[var(--hal-dim)]">
           {googleKeySet ? (
             <div className="flex items-center gap-2 text-sm">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" /> Google API key saved (manage below)
+              <span className="h-2 w-2 rounded-full bg-[var(--hal-lamp-green)]" /> Google API key saved (manage below)
             </div>
           ) : (
             <p className="leading-5">
@@ -88,11 +88,11 @@ export function AIProvidersSection(): React.ReactElement {
           )}
         </div>
       ) : active === 'custom' ? (
-        <div className="mt-3 space-y-2 text-xs text-zinc-400">
+        <div className="mt-3 space-y-2 text-xs text-[var(--hal-dim)]">
           <label className="block">
             Base URL (Ollama, LM Studio, vLLM…)
             <input
-              className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+              className="mt-1 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
               placeholder="http://localhost:11434/v1"
               onBlur={(e) => void hal.aiSetCustomBaseUrl(e.target.value.trim())}
             />
@@ -109,7 +109,7 @@ export function AIProvidersSection(): React.ReactElement {
           />
         </div>
       ) : (
-        <div className="mt-3 text-xs text-zinc-400">
+        <div className="mt-3 text-xs text-[var(--hal-dim)]">
           <KeyRow
             provider={active}
             placeholder={`${activeLabel} API key`}
@@ -125,24 +125,24 @@ export function AIProvidersSection(): React.ReactElement {
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
-          className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 disabled:opacity-40"
+          className="rounded-md border border-[var(--hal-hairline)] px-3 py-1.5 text-xs text-[var(--hal-ink)] hover:bg-[var(--hal-plate-2)] disabled:opacity-40"
           disabled={testing}
           onClick={test}
         >
           {testing ? 'Testing…' : `Test ${activeLabel}`}
         </button>
-        <span className={`text-xs ${status?.activeReady ? 'text-emerald-400' : 'text-amber-400'}`}>
+        <span className={`text-xs ${status?.activeReady ? 'text-[var(--hal-lamp-green)]' : 'text-[var(--hal-amber)]'}`}>
           {status?.activeReady ? 'ready' : 'not configured'}
         </span>
         {testMsg && (
-          <span className={`text-xs ${testMsg.startsWith('✓') ? 'text-emerald-400' : 'text-red-400'}`}>{testMsg}</span>
+          <span className={`text-xs ${testMsg.startsWith('✓') ? 'text-[var(--hal-lamp-green)]' : 'text-[var(--hal-lamp-red)]'}`}>{testMsg}</span>
         )}
       </div>
 
-      <label className="mt-3 block text-xs text-zinc-400">
+      <label className="mt-3 block text-xs text-[var(--hal-dim)]">
         Chat model
         <select
-          className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+          className="mt-1 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
           value={chatModel}
           onClick={loadModels}
           onChange={(e) => void hal.settingsSet({ chatModel: e.target.value }).then(applySettings)}
@@ -157,10 +157,10 @@ export function AIProvidersSection(): React.ReactElement {
         </select>
       </label>
 
-      <label className="mt-3 block text-xs text-zinc-400">
+      <label className="mt-3 block text-xs text-[var(--hal-dim)]">
         Embeddings provider (semantic search)
         <select
-          className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+          className="mt-1 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
           value={settings?.embeddingProvider ?? 'google'}
           onChange={(e) => {
             void hal
@@ -174,7 +174,7 @@ export function AIProvidersSection(): React.ReactElement {
           <option value="custom">OpenAI-compatible (Ollama…)</option>
         </select>
       </label>
-      <p className="mt-1.5 text-[11px] leading-4 text-zinc-600">
+      <p className="mt-1.5 text-[11px] leading-4 text-[var(--hal-dim)] opacity-80">
         Changing the embeddings provider or model clears the semantic index — rebuild it from Search → Semantic →
         Build index. Web-grounded research rounds always use Google's search tool regardless of chat provider.
       </p>
@@ -199,13 +199,13 @@ function KeyRow({
     <div className="flex gap-2">
       <input
         type="password"
-        className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm outline-none focus:border-violet-500"
+        className="min-w-0 flex-1 rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm outline-none focus:border-[var(--hal-amber)]"
         placeholder={placeholder}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
       />
       <button
-        className="rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+        className="rounded-md bg-[var(--hal-amber)] px-3 py-1.5 text-xs font-medium text-white hover:opacity-80 disabled:opacity-40"
         disabled={!draft.trim()}
         onClick={() => {
           void hal.aiSetProviderKey(provider, draft.trim()).then(() => {

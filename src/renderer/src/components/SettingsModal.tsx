@@ -16,8 +16,8 @@ const TABS: { id: SettingsTab; label: string }[] = [
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="border-b border-zinc-800 px-5 py-4 last:border-b-0">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">{title}</h2>
+    <section className="border-b border-[var(--hal-hairline)] px-5 py-4 last:border-b-0">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--hal-dim)]">{title}</h2>
       {children}
     </section>
   )
@@ -30,10 +30,10 @@ function SelectRow({ label, value, options, onChange }: {
   onChange: (v: number | string) => void
 }) {
   return (
-    <label className="mt-3 block text-xs text-zinc-400 first:mt-0">
+    <label className="mt-3 block text-xs text-[var(--hal-dim)] first:mt-0">
       {label}
       <select
-        className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+        className="mt-1 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -53,11 +53,11 @@ function Segmented<T extends string>({ value, options, onChange }: {
   onChange: (v: T) => void
 }) {
   return (
-    <div className="inline-flex overflow-hidden rounded-md border border-zinc-700 text-xs">
+    <div className="inline-flex overflow-hidden rounded-md border border-[var(--hal-hairline)] text-xs">
       {options.map((o) => (
         <button
           key={o.value}
-          className={`px-3 py-1.5 ${value === o.value ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+          className={`px-3 py-1.5 ${value === o.value ? 'bg-[var(--hal-amber-dim)] text-[var(--hal-amber)]' : 'text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]'}`}
           onClick={() => onChange(o.value)}
         >
           {o.label}
@@ -110,19 +110,19 @@ function DriveSection() {
     <Section title="Google Drive">
       {!configured && (
         <div className="mb-3">
-          <p className="mb-2 text-xs leading-5 text-zinc-400">
+          <p className="mb-2 text-xs leading-5 text-[var(--hal-dim)]">
             Create a free OAuth <b>Desktop</b> client at console.cloud.google.com (enable the Drive API), then paste the
-            downloaded <code className="text-violet-300">client_secret*.json</code> here. One-time setup.
+            downloaded <code className="text-[var(--hal-amber)]">client_secret*.json</code> here. One-time setup.
           </p>
           <textarea
             rows={4}
-            className="w-full resize-none rounded-md border border-zinc-700 bg-zinc-900 p-2 font-mono text-[11px] outline-none focus:border-violet-500"
+            className="w-full resize-none rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] p-2 font-mono text-[11px] outline-none focus:border-[var(--hal-amber)]"
             placeholder='{"installed": {"client_id": …}}'
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
           />
           <button
-            className="mt-2 rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+            className="mt-2 rounded-md bg-[var(--hal-amber)] px-3 py-1.5 text-xs font-medium text-white hover:opacity-80 disabled:opacity-40"
             disabled={!secret.trim()}
             onClick={() => {
               try {
@@ -141,11 +141,11 @@ function DriveSection() {
       )}
 
       <div className="flex items-center gap-2 text-sm">
-        <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400' : configured ? 'bg-amber-400' : 'bg-zinc-600'}`} />
+        <span className={`h-2 w-2 rounded-full ${connected ? 'bg-[var(--hal-lamp-green)]' : configured ? 'bg-amber-400' : 'bg-zinc-600'}`} />
         {connected ? 'Connected — notes sync two-way with Drive' : configured ? 'Configured — not signed in' : 'Not configured'}
       </div>
       {status?.vaultFolderId && (
-        <p className="mt-1 text-[11px] text-zinc-600">
+        <p className="mt-1 text-[11px] text-[var(--hal-dim)] opacity-80">
           Vault folder: {status.vaultFolderName} ({status.vaultFolderId})
         </p>
       )}
@@ -153,7 +153,7 @@ function DriveSection() {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {configured && !connected && (
           <button
-            className="rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-50"
+            className="rounded-md bg-[var(--hal-amber)] px-3 py-1.5 text-xs font-medium text-white hover:opacity-80 disabled:opacity-50"
             disabled={connecting}
             onClick={() => void doConnect()}
           >
@@ -163,13 +163,13 @@ function DriveSection() {
         {connected && (
           <>
             <button
-              className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+              className="rounded-md border border-[var(--hal-hairline)] px-3 py-1.5 text-xs text-[var(--hal-ink)] hover:bg-[var(--hal-plate-2)]"
               onClick={() => void hal.driveSyncNow()}
             >
               Sync now
             </button>
             <button
-              className="rounded-md border border-red-500/40 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10"
+              className="rounded-md border border-[var(--hal-lamp-red)] px-3 py-1.5 text-xs text-[var(--hal-lamp-red)] hover:bg-[color-mix(in_srgb,var(--hal-lamp-red)_12%,transparent)]"
               onClick={() => {
                 void hal.driveDisconnect().then(() => {
                   reload()
@@ -183,12 +183,12 @@ function DriveSection() {
         )}
       </div>
       {connecting && (
-        <p className="mt-2 text-xs leading-5 text-amber-300">
+        <p className="mt-2 text-xs leading-5 text-[var(--hal-amber)]">
           Waiting for Google sign-in.{' '}
           {authUrl ? (
             <>
               If your browser didn’t open,{' '}
-              <a className="text-violet-300 underline" href={authUrl} target="_blank" rel="noopener noreferrer">
+              <a className="text-[var(--hal-amber)] underline" href={authUrl} target="_blank" rel="noopener noreferrer">
                 open the sign-in page manually
               </a>
               .
@@ -198,13 +198,13 @@ function DriveSection() {
           )}
         </p>
       )}
-      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-xs text-[var(--hal-lamp-red)]">{error}</p>}
 
       {connected && (
-        <label className="mt-3 block text-xs text-zinc-400">
+        <label className="mt-3 block text-xs text-[var(--hal-dim)]">
           Vault folder in My Drive
           <input
-            className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-200 outline-none focus:border-violet-500"
+            className="mt-1 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2 py-1.5 text-sm text-[var(--hal-ink)] outline-none focus:border-[var(--hal-amber)]"
             value={folderName}
             onChange={(e) => setFolderName(e.target.value)}
             onBlur={() => {
@@ -237,7 +237,7 @@ function StyleSection() {
 
   return (
     <Section title="Appearance">
-      <div className="text-xs text-zinc-400">
+      <div className="text-xs text-[var(--hal-dim)]">
         Theme
         <div className="mt-1.5">
           <Segmented<'dark' | 'light'>
@@ -250,7 +250,7 @@ function StyleSection() {
           />
         </div>
       </div>
-      <div className="mt-4 text-xs text-zinc-400">
+      <div className="mt-4 text-xs text-[var(--hal-dim)]">
         Accent color
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {ACCENT_PRESETS.map((p) => (
@@ -265,7 +265,7 @@ function StyleSection() {
             />
           ))}
           <label
-            className={`flex h-7 items-center gap-1.5 rounded-full border border-zinc-600 px-2 text-[11px] text-zinc-400 ${
+            className={`flex h-7 items-center gap-1.5 rounded-full border border-zinc-600 px-2 text-[11px] text-[var(--hal-dim)] ${
               accent && !ACCENT_PRESETS.some((p) => p.value === accent)
                 ? 'ring-2 ring-violet-400 ring-offset-2 ring-offset-zinc-900'
                 : ''
@@ -281,11 +281,11 @@ function StyleSection() {
             Custom
           </label>
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-600">
+        <p className="mt-1.5 text-[11px] text-[var(--hal-dim)] opacity-80">
           Applies to buttons, links, wiki-links, the caret, and HAL’s branding — live, in both themes.
         </p>
       </div>
-      <div className="mt-4 text-xs text-zinc-400">
+      <div className="mt-4 text-xs text-[var(--hal-dim)]">
         Preview reading width
         <div className="mt-1.5">
           <Segmented<'full' | 'wide' | 'reading'>
@@ -298,7 +298,7 @@ function StyleSection() {
             onChange={(readingWidth) => void hal.settingsSet({ readingWidth })}
           />
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-600">Full scales with the window; Reading caps at a comfortable ~65 characters.</p>
+        <p className="mt-1.5 text-[11px] text-[var(--hal-dim)] opacity-80">Full scales with the window; Reading caps at a comfortable ~65 characters.</p>
       </div>
       <SelectRow
         label="Editor font size"
@@ -320,7 +320,7 @@ function DefaultsSection() {
 
   return (
     <Section title="Editor">
-      <div className="text-xs text-zinc-400">
+      <div className="text-xs text-[var(--hal-dim)]">
         Default view
         <div className="mt-1.5">
           <Segmented<'edit' | 'split' | 'preview'>
@@ -333,7 +333,7 @@ function DefaultsSection() {
             onChange={(defaultViewMode) => void hal.settingsSet({ defaultViewMode })}
           />
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-600">Applied when the app launches.</p>
+        <p className="mt-1.5 text-[11px] text-[var(--hal-dim)] opacity-80">Applied when the app launches.</p>
       </div>
       <SelectRow
         label="HAL suggestion delay (after you stop typing)"
@@ -346,7 +346,7 @@ function DefaultsSection() {
         ]}
         onChange={(v) => void hal.settingsSet({ captureDelayMs: Number(v) })}
       />
-      <div className="mt-4 text-xs text-zinc-400">
+      <div className="mt-4 text-xs text-[var(--hal-dim)]">
         Debug console
         <div className="mt-1.5">
           <Segmented<'off' | 'on'>
@@ -358,7 +358,7 @@ function DefaultsSection() {
             onChange={(v) => void hal.settingsSet({ debugConsole: v === 'on' })}
           />
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-600">Shows a console button beside the sync pill — main-process logs, live.</p>
+        <p className="mt-1.5 text-[11px] text-[var(--hal-dim)] opacity-80">Shows a console button beside the sync pill — main-process logs, live.</p>
       </div>
       <SelectRow
         label="Learning path length (research mode)"
@@ -388,10 +388,10 @@ function DefaultsSection() {
 function PluginsSection() {
   return (
     <Section title="Plugins">
-      <div className="rounded-lg border border-dashed border-zinc-700 p-5 text-center">
+      <div className="rounded-lg border border-dashed border-[var(--hal-hairline)] p-5 text-center">
         <div className="text-2xl">🧩</div>
-        <p className="mt-2 text-sm text-zinc-300">Plugins are coming soon</p>
-        <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-zinc-500">
+        <p className="mt-2 text-sm text-[var(--hal-ink)]">Plugins are coming soon</p>
+        <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-[var(--hal-dim)]">
           Third-party-style extensions — extra export formats, themes, editor tools — are on the roadmap. The tab is
           reserving their seat.
         </p>
@@ -413,21 +413,21 @@ export function SettingsModal() {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60" onClick={close}>
       <div
-        className="flex max-h-[82vh] w-[580px] flex-col rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl"
+        className="flex max-h-[82vh] w-[580px] flex-col rounded-xl border border-[var(--hal-hairline)] bg-[var(--hal-plate)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-3">
-          <h1 className="text-sm font-semibold text-zinc-100">Settings</h1>
-          <button className="rounded-md p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300" onClick={close}>
+        <div className="flex items-center justify-between border-b border-[var(--hal-hairline)] px-5 py-3">
+          <h1 className="text-sm font-semibold text-[var(--hal-ivory)]">Settings</h1>
+          <button className="rounded-md p-1 text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)] hover:text-[var(--hal-ink)]" onClick={close}>
             ✕
           </button>
         </div>
-        <div className="flex shrink-0 gap-1 border-b border-zinc-800 px-3 pt-2">
+        <div className="flex shrink-0 gap-1 border-b border-[var(--hal-hairline)] px-3 pt-2">
           {TABS.map((t) => (
             <button
               key={t.id}
               className={`rounded-t-md px-3 py-1.5 text-xs font-medium ${
-                tab === t.id ? 'bg-zinc-800 text-violet-300' : 'text-zinc-500 hover:text-zinc-300'
+                tab === t.id ? 'bg-[var(--hal-plate-2)] text-[var(--hal-amber)]' : 'text-[var(--hal-dim)] hover:text-[var(--hal-ink)]'
               }`}
               onClick={() => setTab(t.id)}
             >
@@ -446,7 +446,7 @@ export function SettingsModal() {
           {tab === 'defaults' && <DefaultsSection />}
           {tab === 'plugins' && <PluginsSection />}
         </div>
-        <div className="shrink-0 border-t border-zinc-800 px-5 py-2 text-right text-[10px] text-zinc-600">
+        <div className="shrink-0 border-t border-[var(--hal-hairline)] px-5 py-2 text-right text-[10px] text-[var(--hal-dim)] opacity-80">
           HAL Notes {version ? `v${version}` : ''}
         </div>
       </div>

@@ -124,7 +124,7 @@ export const themeCompartment = new Compartment()
 export function halEditorTheme(dark: boolean): Extension {
   return EditorView.theme(
     {
-      '&': { height: '100%', backgroundColor: 'transparent', color: dark ? '#d7dae0' : '#27272a' },
+      '&': { height: '100%', backgroundColor: 'transparent', color: 'var(--hal-ink)' },
       '.cm-content': { caretColor: 'var(--color-violet-400)' }
     },
     { dark }

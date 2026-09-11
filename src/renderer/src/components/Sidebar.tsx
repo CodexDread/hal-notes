@@ -14,14 +14,15 @@ export function Sidebar() {
   const setTab = useUi((s) => s.setSidebarTab)
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900/40">
-      <div className="flex shrink-0 border-b border-zinc-800">
+    <aside
+      className="flex h-full w-60 min-w-52 shrink-0 flex-col border-r"
+      style={{ background: 'var(--hal-plate)', borderColor: 'var(--hal-hairline)' }}
+    >
+      <div className="flex shrink-0 border-b" style={{ borderColor: 'var(--hal-hairline)' }}>
         {TABS.map((t) => (
           <button
             key={t.id}
-            className={`flex-1 px-2 py-2 text-xs font-medium ${
-              tab === t.id ? 'border-b-2 border-violet-400 text-violet-300' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+            className={`annun flex-1 justify-center border-0 ${tab === t.id ? 'annun-active' : ''}`}
             onClick={() => setTab(t.id)}
           >
             {t.label}

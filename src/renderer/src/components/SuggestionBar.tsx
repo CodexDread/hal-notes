@@ -25,28 +25,28 @@ export function SuggestionBar() {
   const dismiss = (): void => dismissSuggestion(activeId)
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-zinc-800 bg-violet-500/5 px-4 py-1.5 text-xs">
-      <span className="mr-1 text-violet-300">✦ HAL suggests:</span>
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--hal-hairline)] bg-[var(--hal-amber)]/5 px-4 py-1.5 text-xs">
+      <span className="mr-1 text-[var(--hal-amber)]">✦ HAL suggests:</span>
       {suggestion.title && (
-        <span className="rounded-full bg-violet-400/15 px-2 py-0.5 text-violet-200" title="Rename note">
+        <span className="rounded-full bg-[var(--hal-amber-dim)] px-2 py-0.5 text-[var(--hal-amber)]" title="Rename note">
           ✎ {suggestion.title}
         </span>
       )}
       {suggestion.tags.map((t) => (
-        <span key={t} className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-emerald-300">
+        <span key={t} className="rounded-full bg-[color-mix(in_srgb,var(--hal-lamp-green)_12%,transparent)] px-2 py-0.5 text-[var(--hal-lamp-green)]">
           #{t}
         </span>
       ))}
       {suggestion.links.map((l, i) => (
-        <span key={i} className="rounded-full bg-sky-400/15 px-2 py-0.5 text-sky-300">
+        <span key={i} className="rounded-full bg-sky-400/15 px-2 py-0.5 text-[var(--hal-amber)]">
           ↗ {l.target}
         </span>
       ))}
       <span className="flex-1" />
-      <button className="rounded bg-violet-500/25 px-2 py-0.5 text-violet-200 hover:bg-violet-500/40" onClick={apply}>
+      <button className="rounded bg-[var(--hal-amber-dim)] px-2 py-0.5 text-[var(--hal-amber)] hover:bg-[var(--hal-amber)]/40" onClick={apply}>
         Apply all
       </button>
-      <button className="rounded px-2 py-0.5 text-zinc-500 hover:bg-zinc-800" onClick={dismiss}>
+      <button className="rounded px-2 py-0.5 text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]" onClick={dismiss}>
         Dismiss
       </button>
     </div>

@@ -58,23 +58,23 @@ export function SearchPane() {
   return (
     <div className="flex h-full flex-col">
       <div className="px-3 py-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Search</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hal-dim)]">Search</span>
         <input
           ref={inputRef}
-          className="mt-1.5 w-full rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none placeholder:text-zinc-600 focus:border-violet-500"
+          className="mt-1.5 w-full rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2.5 py-1.5 text-sm outline-none placeholder:text-[var(--hal-dim)] opacity-80 focus:border-[var(--hal-amber)]"
           placeholder={mode === 'text' ? 'Search notes…' : 'Describe what you mean…'}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div className="mt-1.5 flex overflow-hidden rounded-md border border-zinc-700 text-xs">
+        <div className="mt-1.5 flex overflow-hidden rounded-md border border-[var(--hal-hairline)] text-xs">
           <button
-            className={`flex-1 px-2 py-1 ${mode === 'text' ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+            className={`flex-1 px-2 py-1 ${mode === 'text' ? 'bg-[var(--hal-amber-dim)] text-[var(--hal-amber)]' : 'text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]'}`}
             onClick={() => setMode('text')}
           >
             Text
           </button>
           <button
-            className={`flex-1 px-2 py-1 ${semanticLocked ? 'text-zinc-600' : mode === 'semantic' ? 'bg-violet-500/20 text-violet-300' : 'text-zinc-400 hover:bg-zinc-800'}`}
+            className={`flex-1 px-2 py-1 ${semanticLocked ? 'text-[var(--hal-dim)] opacity-80' : mode === 'semantic' ? 'bg-[var(--hal-amber-dim)] text-[var(--hal-amber)]' : 'text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]'}`}
             onClick={() => (semanticLocked ? openSettings() : setMode('semantic'))}
             title={semanticLocked ? 'Add a Gemini API key in Settings' : 'Search by meaning'}
           >
@@ -82,10 +82,10 @@ export function SearchPane() {
           </button>
         </div>
         {mode === 'semantic' && geminiKeySet && !embeddingsReady && (
-          <div className="mt-2 rounded-md bg-zinc-800/60 p-2 text-[11px] text-zinc-400">
+          <div className="mt-2 rounded-md bg-[var(--hal-plate-2)] p-2 text-[11px] text-[var(--hal-dim)]">
             Build the semantic index first — one-time pass over your vault.
             <button
-              className="mt-1 block rounded bg-violet-500/20 px-2 py-1 text-violet-300 hover:bg-violet-500/30"
+              className="mt-1 block rounded bg-[var(--hal-amber-dim)] px-2 py-1 text-[var(--hal-amber)] hover:bg-[var(--hal-amber)]/30"
               onClick={() => void hal.embeddingsBackfill()}
             >
               Build index
@@ -107,21 +107,21 @@ export function SearchPane() {
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
-        {error && <p className="px-2 py-2 text-xs text-red-400">{error}</p>}
-        {busy && <p className="px-2 py-2 text-xs text-zinc-600">Searching…</p>}
+        {error && <p className="px-2 py-2 text-xs text-[var(--hal-lamp-red)]">{error}</p>}
+        {busy && <p className="px-2 py-2 text-xs text-[var(--hal-dim)] opacity-80">Searching…</p>}
         {!busy && query && results.length === 0 && !error && (
-          <p className="px-2 py-2 text-xs text-zinc-600">No matches.</p>
+          <p className="px-2 py-2 text-xs text-[var(--hal-dim)] opacity-80">No matches.</p>
         )}
         {results.map((hit) => (
           <button
             key={hit.noteId}
-            className="block w-full rounded-md px-2 py-1.5 text-left hover:bg-zinc-800/70"
+            className="block w-full rounded-md px-2 py-1.5 text-left hover:bg-[var(--hal-plate-2)]"
             onClick={() => void open(hit.noteId)}
           >
-            <div className="truncate text-sm text-zinc-200">{hit.name}</div>
-            <div className="truncate text-[10px] text-zinc-600">{hit.path}</div>
+            <div className="truncate text-sm text-[var(--hal-ink)]">{hit.name}</div>
+            <div className="truncate text-[10px] text-[var(--hal-dim)] opacity-80">{hit.path}</div>
             <div
-              className="mt-0.5 line-clamp-2 text-[11px] text-zinc-500 [&_b]:text-zinc-300"
+              className="mt-0.5 line-clamp-2 text-[11px] text-[var(--hal-dim)] [&_b]:text-[var(--hal-ink)]"
               dangerouslySetInnerHTML={{ __html: hit.snippet }}
             />
           </button>

@@ -33,7 +33,7 @@ export function ResearchMode() {
   }, [])
 
   if (!loaded) {
-    return <div className="grid h-full place-items-center text-sm text-zinc-600">Loading research…</div>
+    return <div className="grid h-full place-items-center text-sm text-[var(--hal-dim)] opacity-80">Loading research…</div>
   }
 
   return (

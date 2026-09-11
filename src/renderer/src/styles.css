@@ -1,6 +1,44 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
+/* ── Apollo Avionics token layer ───────────────────────────────────────────
+   Night-lit instrument console. One amber accent (user-configurable via the
+   existing accent system, which remaps --color-violet-*). Lamps are semantic,
+   never decoration. Light theme = day plate (chart cream + navy ink). */
+
+:root {
+  --hal-ground: #0d0f12;
+  --hal-plate: #171a1f;
+  --hal-plate-2: #12151a;
+  --hal-hairline: #2a2d33;
+  --hal-hairline-dim: #22252b;
+  --hal-ivory: #e8dcc4;
+  --hal-ink: #c9c2b2;
+  --hal-dim: #8a8272;
+  --hal-amber: #ffb000;
+  --hal-amber-dim: color-mix(in srgb, var(--hal-amber) 15%, transparent);
+  --hal-lamp-green: #5a9e6f;
+  --hal-lamp-red: #e05252;
+  --hal-font-ui: 'IBM Plex Sans', system-ui, sans-serif;
+  --hal-font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
+
+.theme-light {
+  --hal-ground: #efe9da;
+  --hal-plate: #f7f2e7;
+  --hal-plate-2: #f2ecdd;
+  --hal-hairline: #cfc7b2;
+  --hal-hairline-dim: #ddd5c2;
+  --hal-ivory: #1b2735;
+  --hal-ink: #33404f;
+  --hal-dim: #6b7684;
+  --hal-amber: #b37500;
+  --hal-lamp-green: #2e7d4f;
+  --hal-lamp-red: #c0392b;
+}
+
+/* Tailwind zinc remap continues to serve layout neutrals; accent remap intact */
+
 html,
 body,
 #root {
@@ -8,167 +46,261 @@ body,
   overflow: hidden;
 }
 
-/* Light theme: Tailwind v4 palette utilities resolve to these CSS variables,
-   so remapping them here flips the whole UI at once. */
-.theme-light {
-  --color-zinc-950: #fafafa;
-  --color-zinc-900: #ffffff;
-  --color-zinc-800: #e8e8ec;
-  --color-zinc-700: #d6d6dc;
-  --color-zinc-600: #6d6d78;
-  --color-zinc-500: #52525c;
-  --color-zinc-400: #45454f;
-  --color-zinc-300: #2f2f37;
-  --color-zinc-200: #26262d;
-  --color-zinc-100: #1c1c22;
-  --color-violet-100: #402a7a;
-  --color-violet-200: #5b21b6;
-  --color-violet-300: #6d28d9;
-  --color-violet-400: #7c3aed;
-  --color-emerald-300: #047857;
-  --color-emerald-400: #059669;
-  --color-sky-300: #0369a1;
-  --color-amber-300: #b45309;
-  --color-amber-400: #d97706;
-  --color-orange-400: #c2410c;
-  --color-red-400: #dc2626;
-}
-
-.theme-light * {
-  scrollbar-color: #c9c9d0 transparent;
-}
-.theme-light ::-webkit-scrollbar-thumb {
-  background: #c9c9d0;
-}
-.theme-light .cm-activeLine {
-  background: rgba(0, 0, 0, 0.035);
-}
-.theme-light .cm-gutters {
-  color: #a1a1aa;
-}
-.theme-light .preview .tag {
-  background: rgba(4, 120, 87, 0.08);
-}
-
 body {
-  @apply bg-zinc-950 text-zinc-200 antialiased;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  @apply antialiased;
+  background: var(--hal-ground);
+  color: var(--hal-ink);
+  font-family: var(--hal-font-ui);
+  font-variant-numeric: tabular-nums;
 }
 
+/* Browser surfaces belong to the design: selection, caret color, scrollbars */
+::selection {
+  background: var(--hal-amber-dim);
+  color: var(--hal-ivory);
+}
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2e39 transparent;
+  scrollbar-color: var(--hal-hairline) transparent;
 }
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2e39;
-  border-radius: 4px;
+  background: var(--hal-hairline);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* CodeMirror */
+/* ── Instrument primitives ──────────────────────────────────────────────── */
+
+.plate {
+  background: var(--hal-plate);
+  border: 1px solid var(--hal-hairline);
+}
+
+.legend {
+  font-family: var(--hal-font-ui);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hal-dim);
+}
+
+.mono {
+  font-family: var(--hal-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.lamp {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--hal-dim);
+  flex-shrink: 0;
+}
+.lamp-amber {
+  background: var(--hal-amber);
+  box-shadow: 0 0 6px 1px var(--hal-amber-dim), 0 0 14px 2px var(--hal-amber-dim);
+}
+.lamp-green {
+  background: var(--hal-lamp-green);
+  box-shadow: 0 0 5px 0 rgba(90, 158, 111, 0.4);
+}
+.lamp-red {
+  background: var(--hal-lamp-red);
+  box-shadow: 0 0 5px 0 rgba(224, 82, 82, 0.4);
+}
+@keyframes lamp-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.lamp-blink {
+  animation: lamp-blink 1.2s ease-in-out infinite;
+}
+
+/* Panel keys: engraved buttons */
+.key {
+  font-family: var(--hal-font-ui);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hal-dim);
+  border: 1px solid var(--hal-hairline);
+  background: transparent;
+  padding: 5px 12px;
+  transition: color 120ms ease-out, border-color 120ms ease-out, transform 60ms ease-out;
+  cursor: pointer;
+  user-select: none;
+}
+.key:hover {
+  color: var(--hal-ivory);
+  border-color: var(--hal-dim);
+}
+.key:active {
+  transform: translateY(1px);
+}
+.key:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[contenteditable]:focus-visible {
+  outline: 1px solid var(--hal-amber);
+  outline-offset: 1px;
+}
+.key-keyed {
+  color: var(--hal-amber);
+  border-color: color-mix(in srgb, var(--hal-amber) 50%, var(--hal-hairline));
+  background: var(--hal-amber-dim);
+}
+
+/* Announcer (mode annunciator) */
+.annun {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--hal-font-ui);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hal-dim);
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color 120ms ease-out;
+  user-select: none;
+}
+.annun:hover {
+  color: var(--hal-ivory);
+}
+.annun-active {
+  color: var(--hal-ivory);
+  border-color: var(--hal-hairline);
+  background: var(--hal-plate-2);
+}
+
+/* Instrument field: text input */
+.field {
+  font-family: var(--hal-font-ui);
+  font-size: 13px;
+  color: var(--hal-ivory);
+  background: var(--hal-plate-2);
+  border: 1px solid var(--hal-hairline);
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 120ms ease-out;
+}
+.field::placeholder {
+  color: var(--hal-dim);
+}
+.field:focus {
+  border-color: color-mix(in srgb, var(--hal-amber) 55%, var(--hal-hairline));
+}
+
+/* Hairline column grid behind prose on the work plate */
+.hairline-grid {
+  background-image: linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px);
+  background-size: 120px 100%;
+}
+
+/* The one authored motion: instrument-lamp bloom (exponential ease-out).
+   The eye breathes once on mount; the caret blooms on editor focus; sync
+   blinks while transmitting. Nothing else animates. */
+@keyframes lamp-bloom {
+  from { box-shadow: 0 0 0 0 var(--hal-amber-dim); }
+  to { box-shadow: 0 0 10px 2px var(--hal-amber-dim), 0 0 22px 4px var(--hal-amber-dim); }
+}
+@keyframes eye-breathe {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  45% { box-shadow: 0 0 12px 2px var(--hal-amber-dim), 0 0 26px 5px var(--hal-amber-dim); }
+  100% { box-shadow: 0 0 4px 0 var(--hal-amber-dim); }
+}
+.eye-instrument {
+  animation: eye-breathe 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.cm-editor.cm-focused > .cm-scroller { transition: none; }
+.cm-editor.cm-focused .cm-cursor {
+  text-shadow: 0 0 6px var(--hal-amber-dim);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lamp-blink, .eye-instrument { animation: none; }
+}
+
+/* ── CodeMirror ─────────────────────────────────────────────────────────── */
+
 .cm-editor {
   height: 100%;
   background: transparent;
 }
 .cm-scroller {
   overflow: auto;
-  font-family: ui-monospace, 'Cascadia Code', Consolas, Menlo, monospace;
+  font-family: var(--hal-font-mono);
   font-size: var(--hal-editor-font-size, 15px);
-  line-height: 1.65;
+  line-height: 1.7;
 }
 .cm-content {
-  padding: 20px 8px 40vh 8px;
+  padding: 34px 8px 40vh 8px;
+  caret-color: var(--hal-amber);
 }
 .cm-gutters {
   background: transparent;
   border: none;
+  color: var(--hal-hairline);
 }
 .cm-activeLine {
-  background: rgba(255, 255, 255, 0.028);
+  background: rgba(255, 255, 255, 0.02);
+}
+.theme-light .cm-activeLine {
+  background: rgba(0, 0, 0, 0.03);
 }
 .cm-cursor {
-  border-left-color: var(--color-violet-400);
+  border-left-color: var(--hal-amber);
 }
 .cm-selectionBackground,
 .cm-editor ::selection {
-  background: color-mix(in srgb, var(--color-violet-400) 26%, transparent) !important;
+  background: var(--hal-amber-dim) !important;
 }
 .cm-wikilink {
-  color: var(--color-violet-300);
+  color: var(--color-violet-400);
   cursor: pointer;
 }
 .cm-wikilink-unresolved {
   color: #b06a6a;
 }
 .cm-tag {
-  color: #6ee7b7;
+  color: var(--hal-lamp-green);
 }
 
-/* Markdown preview */
+/* ── Markdown preview ───────────────────────────────────────────────────── */
+
 .preview .wl {
-  color: var(--color-violet-300);
+  color: var(--color-violet-400);
   cursor: pointer;
   text-decoration: none;
-  border-bottom: 1px dotted color-mix(in srgb, var(--color-violet-300) 45%, transparent);
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-violet-400) 45%, transparent);
 }
 .preview img.hal-embed {
   max-width: 100%;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-zinc-800);
+  border: 1px solid var(--hal-hairline);
   margin: 0.35rem 0;
 }
 .preview a.hal-file {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: var(--color-zinc-800);
-  border: 1px solid var(--color-zinc-700);
-  border-radius: 9999px;
+  background: var(--hal-plate-2);
+  border: 1px solid var(--hal-hairline);
   padding: 0.1rem 0.65rem;
-  font-size: 0.85em;
+  font-family: var(--hal-font-mono);
+  font-size: 0.8em;
   text-decoration: none;
   cursor: pointer;
 }
 .preview a.hal-file:hover {
   border-color: var(--color-violet-400);
 }
-.preview .tag {
-  color: #6ee7b7;
-  background: rgba(110, 231, 183, 0.09);
-  padding: 0 7px;
-  border-radius: 9999px;
-  font-size: 0.85em;
-  cursor: pointer;
-}
-.preview pre {
-  @apply rounded-lg bg-zinc-900 border border-zinc-800;
-}
-.preview code {
-  @apply text-[0.9em] text-violet-300 bg-zinc-900 px-1.5 py-0.5 rounded;
-}
-.preview pre code {
-  @apply bg-transparent text-zinc-300 p-0;
-}
-.preview h1,
-.preview h2,
-.preview h3,
-.preview h4 {
-  @apply text-zinc-100;
-}
-.preview a {
-  color: #93c5fd;
-}
-.preview blockquote {
-  @apply border-zinc-700 text-zinc-400;
-}
+.theme-light .preview .wl { color: var(--color-violet-400); }

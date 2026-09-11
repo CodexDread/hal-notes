@@ -24,20 +24,21 @@ function NoteReviewButton() {
   if (count > 0) {
     return (
       <button
-        className="shrink-0 rounded-md px-2 py-0.5 text-xs text-violet-300 hover:bg-zinc-800"
-        title="Cards in spaced review — click to open Review mode"
+        className="annun"
+        title="Cards in spaced review — open Review"
         onClick={() => useUi.getState().setMode('review')}
       >
-        🧠 {count} in review
+        <span className="lamp lamp-amber" />
+        REVIEW {count}
       </button>
     )
   }
 
   return (
     <button
-      className="shrink-0 rounded-md px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-violet-300 disabled:opacity-50"
+      className="annun"
       disabled={busy}
-      title={error || 'Generate recall cards from this note (active recall + spaced repetition)'}
+      title={error || 'Generate recall cards from this note'}
       onClick={() => {
         setBusy(true)
         setError('')
@@ -48,9 +49,14 @@ function NoteReviewButton() {
           .finally(() => setBusy(false))
       }}
     >
-      {busy ? '🧠 Generating…' : '🧠 Add to review'}
+      <span className={`lamp ${busy ? 'lamp-amber lamp-blink' : ''}`} />
+      {busy ? 'INDEXING…' : 'ADD REVIEW'}
     </button>
   )
+}
+
+function isImageName(name: string): boolean {
+  return /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(name)
 }
 
 export function EditorArea() {
@@ -81,32 +87,49 @@ export function EditorArea() {
   const previewPane = showPreview && <PreviewPane containerRef={previewRef} />
 
   return (
-    <section className="flex h-full min-w-0 flex-1 flex-col bg-zinc-950">
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-zinc-800/70 px-4">
-        <input
-          className="min-w-0 flex-1 truncate bg-transparent text-sm font-medium text-zinc-200 outline-none placeholder:text-zinc-600"
-          value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
-          onFocus={() => (renamingRef.current = true)}
-          onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-            if (e.key === 'Escape') {
-              setNameDraft(active.name)
-              renamingRef.current = false
-              ;(e.target as HTMLInputElement).blur()
-            }
-          }}
+    <section className="relative flex h-full min-w-0 flex-1 flex-col" style={{ background: 'var(--hal-ground)' }}>
+      {/* Catalog entry: title block on the ground, per the approved comp */}
+      <div className="relative shrink-0 px-8 pb-4" style={{ paddingTop: 46 }}>
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden
+          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0.6 }}
         />
-        <NoteReviewButton />
-        {pendingSync && (
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" title="Waiting to sync to Drive" />
-        )}
+        <div className="relative flex items-baseline gap-3">
+          <input
+            className="mono min-w-0 flex-1 truncate border-0 bg-transparent p-0 text-[28px] uppercase leading-none tracking-[0.06em] outline-none"
+            style={{ color: 'var(--hal-ivory)' }}
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onFocus={() => (renamingRef.current = true)}
+            onBlur={commitName}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+              if (e.key === 'Escape') {
+                setNameDraft(active.name)
+                renamingRef.current = false
+                ;(e.target as HTMLInputElement).blur()
+              }
+            }}
+          />
+          <NoteReviewButton />
+        </div>
+        <div className="relative mt-1 flex items-center gap-2">
+          <span className="lamp" style={{ background: pendingSync ? 'var(--hal-amber)' : 'var(--hal-lamp-green)' }} title={pendingSync ? 'Pending sync' : 'Synced'} />
+          <span className="legend" style={{ color: '#4a4848' }}>
+            {active.modifiedLocal ? `MOD ${new Date(active.modifiedLocal).toISOString().slice(5, 10).replace('-', '')}` : 'NEW ENTRY'} · {active.pendingSync ? 'PENDING XFER' : 'SYNCED'}
+          </span>
+        </div>
       </div>
       <SuggestionBar />
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden
+          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0.6 }}
+        />
         {editorPane}
-        {showEditor && showPreview && <div className="w-px shrink-0 bg-zinc-800/70" />}
+        {showEditor && showPreview && <div className="w-px shrink-0" style={{ background: 'var(--hal-hairline)' }} />}
         {previewPane}
       </div>
     </section>

@@ -38,10 +38,12 @@ export function App() {
     const shades = ['100', '200', '300', '400', '500'] as const
     if (!accentColor) {
       for (const s of shades) root.style.removeProperty(`--color-violet-${s}`)
+      root.style.removeProperty('--hal-amber')
       return
     }
     const ramp = accentRamp(accentColor, theme)
     for (const s of shades) root.style.setProperty(`--color-violet-${s}`, ramp[s])
+    root.style.setProperty('--hal-amber', ramp['500'])
   }, [accentColor, theme])
 
   useEffect(() => {
@@ -100,17 +102,17 @@ export function App() {
 
   if (!initialized) {
     return (
-      <div className="grid h-full place-items-center bg-zinc-950">
+      <div className="grid h-full place-items-center" style={{ background: 'var(--hal-ground)' }}>
         <div className="animate-pulse text-center">
-          <div className="text-5xl text-violet-400">◉</div>
-          <p className="mt-3 text-sm text-zinc-500">HAL Notes</p>
+          <div className="eye-instrument text-5xl" style={{ color: "var(--hal-amber)" }}>◉</div>
+          <p className="mt-3 text-sm" style={{ color: "var(--hal-dim)" }}>HAL Notes</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative flex h-full flex-col bg-zinc-950 text-zinc-200">
+    <div className="relative flex h-full flex-col" style={{ background: 'var(--hal-ground)', color: 'var(--hal-ink)' }}>
       <TopBar />
       {mode === 'research' ? (
         <ResearchMode />

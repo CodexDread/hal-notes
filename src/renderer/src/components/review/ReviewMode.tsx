@@ -40,19 +40,19 @@ function DueItemBlock({ item, onDone }: { item: DueItem; onDone: () => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3">
-      <div className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+    <div className="rounded-lg border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-4 py-3">
+      <div className="flex items-center gap-1.5 text-[11px] text-[var(--hal-dim)]">
         <span>{item.kind === 'note' ? '📄' : '🌱'}</span>
-        <span className="truncate text-zinc-400">{source}</span>
+        <span className="truncate text-[var(--hal-dim)]">{source}</span>
       </div>
-      <p className="mt-1.5 text-sm text-zinc-200">{question}</p>
+      <p className="mt-1.5 text-sm text-[var(--hal-ink)]">{question}</p>
       {kind === 'mcq' && options.length > 0 && !feedback && (
         <div className="mt-2 space-y-1">
           {options.map((opt) => (
             <button
               key={opt}
               disabled={busy}
-              className="block w-full rounded-md border border-zinc-700 px-3 py-1.5 text-left text-sm text-zinc-300 hover:border-violet-500 disabled:hover:border-zinc-700"
+              className="block w-full rounded-md border border-[var(--hal-hairline)] px-3 py-1.5 text-left text-sm text-[var(--hal-ink)] hover:border-[var(--hal-amber)] disabled:hover:border-[var(--hal-hairline)]"
               onClick={() => submit(opt)}
             >
               {opt}
@@ -63,7 +63,7 @@ function DueItemBlock({ item, onDone }: { item: DueItem; onDone: () => void }) {
       {kind === 'short' && !feedback && (
         <div className="mt-2 flex gap-2">
           <input
-            className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-2.5 py-1.5 text-sm outline-none focus:border-violet-500"
+            className="min-w-0 flex-1 rounded-md border border-[var(--hal-hairline)] bg-[var(--hal-plate)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--hal-amber)]"
             placeholder="What you remember — partial counts"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
@@ -73,7 +73,7 @@ function DueItemBlock({ item, onDone }: { item: DueItem; onDone: () => void }) {
             disabled={busy}
           />
           <button
-            className="rounded-md bg-violet-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-400 disabled:opacity-40"
+            className="rounded-md bg-[var(--hal-amber)] px-3 py-1.5 text-xs font-medium text-white hover:opacity-80 disabled:opacity-40"
             disabled={busy || !answer.trim()}
             onClick={() => submit(answer)}
           >
@@ -81,7 +81,7 @@ function DueItemBlock({ item, onDone }: { item: DueItem; onDone: () => void }) {
           </button>
         </div>
       )}
-      {feedback && <p className="mt-2 rounded-md bg-zinc-800/70 px-3 py-2 text-sm leading-5 text-zinc-300">{feedback}</p>}
+      {feedback && <p className="mt-2 rounded-md bg-[var(--hal-plate-2)] px-3 py-2 text-sm leading-5 text-[var(--hal-ink)]">{feedback}</p>}
     </div>
   )
 }
@@ -99,10 +99,10 @@ export function ReviewMode() {
       .finally(() => setLoaded(true))
   }, [])
 
-  if (!loaded) return <div className="grid h-full place-items-center text-sm text-zinc-600">Loading review…</div>
+  if (!loaded) return <div className="grid h-full place-items-center text-sm text-[var(--hal-dim)] opacity-80">Loading review…</div>
 
   if (error) {
-    return <div className="grid h-full place-items-center text-sm text-red-400">{error}</div>
+    return <div className="grid h-full place-items-center text-sm text-[var(--hal-lamp-red)]">{error}</div>
   }
 
   if (items.length === 0) {
@@ -110,11 +110,11 @@ export function ReviewMode() {
       <div className="grid h-full place-items-center px-6 text-center">
         <div className="max-w-md">
           <div className="text-4xl">🧠</div>
-          <p className="mt-3 text-sm text-zinc-300">Nothing due right now.</p>
-          <p className="mt-2 text-xs leading-5 text-zinc-500">
+          <p className="mt-3 text-sm text-[var(--hal-ink)]">Nothing due right now.</p>
+          <p className="mt-2 text-xs leading-5 text-[var(--hal-dim)]">
             Cards come back after a day, then three, then a week — just often enough to stick, never as a test. Two ways
             to feed this queue: open any note and click{' '}
-            <span className="rounded bg-zinc-800 px-1 text-violet-300">🧠 Add to review</span> in its header, or walk
+            <span className="rounded bg-[var(--hal-plate-2)] px-1 text-[var(--hal-amber)]">🧠 Add to review</span> in its header, or walk
             learning paths in Research mode.
           </p>
         </div>
@@ -125,7 +125,7 @@ export function ReviewMode() {
   return (
     <div className="h-full overflow-y-auto px-6 py-5">
       <div className="mx-auto max-w-2xl">
-        <p className="mb-4 text-xs text-zinc-500">
+        <p className="mb-4 text-xs text-[var(--hal-dim)]">
           {items.length} card{items.length === 1 ? '' : 's'} resurfacing — answer what you like, skip the rest. Nothing
           is graded.
         </p>

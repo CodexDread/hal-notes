@@ -4,9 +4,9 @@ import { hal } from '@/lib/ipc'
 import { useUi } from '@/state/ui'
 
 const LEVEL_STYLE: Record<ConsoleLine['level'], string> = {
-  log: 'text-zinc-400',
-  warn: 'text-amber-300',
-  error: 'text-red-400'
+  log: 'text-[var(--hal-dim)]',
+  warn: 'text-[var(--hal-amber)]',
+  error: 'text-[var(--hal-lamp-red)]'
 }
 
 function formatTime(t: number): string {
@@ -43,30 +43,30 @@ export function ConsoleDrawer() {
   if (!open) return null
 
   return (
-    <div className="flex h-64 shrink-0 flex-col border-t border-zinc-700 bg-zinc-950">
-      <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-3 py-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Main-process console</span>
-        <label className="ml-auto flex cursor-pointer items-center gap-1 text-[11px] text-zinc-500">
+    <div className="flex h-64 shrink-0 flex-col border-t border-[var(--hal-hairline)] bg-[var(--hal-ground)]">
+      <div className="flex shrink-0 items-center gap-2 border-b border-[var(--hal-hairline)] px-3 py-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--hal-dim)]">Main-process console</span>
+        <label className="ml-auto flex cursor-pointer items-center gap-1 text-[11px] text-[var(--hal-dim)]">
           <input type="checkbox" checked={autoscroll} onChange={(e) => setAutoscroll(e.target.checked)} />
           follow
         </label>
         <button
-          className="rounded px-2 py-0.5 text-[11px] text-zinc-400 hover:bg-zinc-800"
+          className="rounded px-2 py-0.5 text-[11px] text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]"
           onClick={() => {
             void hal.consoleClear().then(() => setLines([]))
           }}
         >
           Clear
         </button>
-        <button className="rounded px-2 py-0.5 text-[11px] text-zinc-400 hover:bg-zinc-800" onClick={close}>
+        <button className="rounded px-2 py-0.5 text-[11px] text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]" onClick={close}>
           ✕
         </button>
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-1.5 font-mono text-[11px] leading-5">
-        {lines.length === 0 && <p className="text-zinc-600">No output yet — sync events, capture decisions, and errors land here as they happen.</p>}
+        {lines.length === 0 && <p className="text-[var(--hal-dim)] opacity-80">No output yet — sync events, capture decisions, and errors land here as they happen.</p>}
         {lines.map((l) => (
           <div key={l.seq} className="flex gap-2">
-            <span className="shrink-0 text-zinc-600">{formatTime(l.t)}</span>
+            <span className="shrink-0 text-[var(--hal-dim)] opacity-80">{formatTime(l.t)}</span>
             <span className={`whitespace-pre-wrap break-all ${LEVEL_STYLE[l.level]}`}>{l.text}</span>
           </div>
         ))}

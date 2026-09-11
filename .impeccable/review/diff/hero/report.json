@@ -1,0 +1,323 @@
+{
+  "tool": "comp-diff",
+  "version": 1,
+  "createdAt": "2026-09-11T23:37:11.645Z",
+  "label": "hero",
+  "comp": ".impeccable/mocks/comp-a.png",
+  "build": ".impeccable/review/hero-repro.png",
+  "spec": ".impeccable/build/spec.json",
+  "compSize": "1440x900",
+  "buildSize": "1440x900",
+  "align": "top",
+  "overall": 0.6046,
+  "verdict": "drift",
+  "scores": {
+    "overall": 0.6046,
+    "structure": 0.7822,
+    "color": 0.9447,
+    "colorIntersection": 0.9054,
+    "paletteMatch": 0.9659,
+    "detail": 0.1558,
+    "detailRaw": 0.3329,
+    "detailAdded": 0.3542,
+    "bands": 0.3714
+  },
+  "palette": {
+    "comp": [
+      {
+        "hex": "#0f0f18",
+        "coverage": 0.9498
+      },
+      {
+        "hex": "#4c4c4c",
+        "coverage": 0.0436
+      },
+      {
+        "hex": "#382818",
+        "coverage": 0.0039
+      },
+      {
+        "hex": "#e8d8c8",
+        "coverage": 0.0021
+      },
+      {
+        "hex": "#888878",
+        "coverage": 0.0006
+      }
+    ],
+    "build": [
+      {
+        "hex": "#0f1019",
+        "coverage": 0.9335
+      },
+      {
+        "hex": "#f7f7f8",
+        "coverage": 0.0507
+      },
+      {
+        "hex": "#717171",
+        "coverage": 0.0085
+      },
+      {
+        "hex": "#a5a5a5",
+        "coverage": 0.0034
+      },
+      {
+        "hex": "#3c3c43",
+        "coverage": 0.0026
+      },
+      {
+        "hex": "#a888f8",
+        "coverage": 0.0012
+      }
+    ]
+  },
+  "regions": [
+    {
+      "id": "top-rail",
+      "x": 0,
+      "y": 0,
+      "w": 1,
+      "h": 0.1,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.5593,
+        "structure": 0.9315,
+        "color": 0.9329,
+        "colorIntersection": 0.8543,
+        "paletteMatch": 0.9753,
+        "detail": 0,
+        "detailRaw": 0.1007,
+        "detailAdded": 0.4896,
+        "bands": 0
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 21,
+          "y": 19,
+          "w": 1272,
+          "h": 71
+        },
+        "build": {
+          "x": 4,
+          "y": 0,
+          "w": 1436,
+          "h": 90
+        }
+      }
+    },
+    {
+      "id": "file-rail",
+      "x": 0,
+      "y": 0.1,
+      "w": 0.3,
+      "h": 0.9,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.7093,
+        "structure": 0.7251,
+        "color": 0.9589,
+        "colorIntersection": 0.9136,
+        "paletteMatch": 0.9833,
+        "detail": 0.3433,
+        "detailRaw": 0.5725,
+        "detailAdded": 0.4583,
+        "bands": 0.8667
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 12,
+          "y": 0,
+          "w": 420,
+          "h": 792
+        },
+        "build": {
+          "x": 0,
+          "y": 2,
+          "w": 432,
+          "h": 808
+        }
+      }
+    },
+    {
+      "id": "work-title",
+      "x": 0.2042,
+      "y": 0.1,
+      "w": 0.2583,
+      "h": 0.0933,
+      "kind": "text",
+      "score": {
+        "overall": 0.517,
+        "structure": 0.4061,
+        "color": 0.9152,
+        "colorIntersection": 0.8826,
+        "paletteMatch": 0.9328,
+        "detail": 0.1543,
+        "detailRaw": 0.2637,
+        "detailAdded": 0.2188,
+        "bands": 0.62
+      },
+      "verdict": "contradicted",
+      "inkBox": {
+        "comp": {
+          "x": 7,
+          "y": 0,
+          "w": 357,
+          "h": 76
+        },
+        "build": {
+          "x": 0,
+          "y": 12,
+          "w": 372,
+          "h": 44
+        }
+      }
+    },
+    {
+      "id": "work-meta",
+      "x": 0.2417,
+      "y": 0.2133,
+      "w": 0.0167,
+      "h": 0.0533,
+      "kind": "text",
+      "score": {
+        "overall": 0.5055,
+        "structure": 0.628,
+        "color": 0.6027,
+        "colorIntersection": 0.5833,
+        "paletteMatch": 0.6131,
+        "detail": 0.0388,
+        "detailRaw": 0.1638,
+        "detailAdded": 0.25,
+        "bands": 0.35
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 0,
+          "y": 8,
+          "w": 48,
+          "h": 35
+        },
+        "build": {
+          "x": 0,
+          "y": 4,
+          "w": 48,
+          "h": 44
+        }
+      }
+    },
+    {
+      "id": "work-plate-ground",
+      "x": 0.6,
+      "y": 0.3,
+      "w": 0.2,
+      "h": 0.2,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.7281,
+        "structure": 0.9728,
+        "color": 0.9503,
+        "colorIntersection": 0.9173,
+        "paletteMatch": 0.9681,
+        "detail": 0,
+        "detailRaw": 0,
+        "detailAdded": 0,
+        "bands": 1
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 266,
+          "y": 2,
+          "w": 22,
+          "h": 80
+        },
+        "build": null
+      }
+    },
+    {
+      "id": "hal-bay",
+      "x": 0.7,
+      "y": 0.1,
+      "w": 0.3,
+      "h": 0.9,
+      "kind": "chrome",
+      "score": {
+        "overall": 0.5141,
+        "structure": 0.7958,
+        "color": 0.9011,
+        "colorIntersection": 0.7952,
+        "paletteMatch": 0.9582,
+        "detail": 0.0411,
+        "detailRaw": 0.2234,
+        "detailAdded": 0.3646,
+        "bands": 0
+      },
+      "verdict": "drift",
+      "inkBox": {
+        "comp": {
+          "x": 122,
+          "y": 0,
+          "w": 260,
+          "h": 770
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 432,
+          "h": 810
+        }
+      }
+    },
+    {
+      "id": "status-line",
+      "x": 0.0083,
+      "y": 0.96,
+      "w": 0.1792,
+      "h": 0.0267,
+      "kind": "text",
+      "score": {
+        "overall": 0.3414,
+        "structure": 0.3383,
+        "color": 0.6892,
+        "colorIntersection": 0.2684,
+        "paletteMatch": 0.9158,
+        "detail": 0,
+        "detailRaw": 0.1204,
+        "detailAdded": 0.3646,
+        "bands": 0
+      },
+      "verdict": "missing",
+      "inkBox": {
+        "comp": {
+          "x": 9,
+          "y": 23,
+          "w": 241,
+          "h": 7
+        },
+        "build": {
+          "x": 0,
+          "y": 0,
+          "w": 258,
+          "h": 20
+        }
+      }
+    }
+  ],
+  "files": {
+    "sideBySide": "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/side-by-side.png",
+    "heatmap": "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/heatmap.png",
+    "regionFiles": [
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/top-rail.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/file-rail.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/work-title.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/work-meta.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/work-plate-ground.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/hal-bay.png",
+      "C:/Users/Al Piatt/Documents/at home projects/hal-notes/.impeccable/review/diff/hero/regions/status-line.png"
+    ]
+  }
+}
