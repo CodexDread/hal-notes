@@ -49,7 +49,7 @@ export const useUi = create<UiState>((set, get) => ({
   sidebarTab: 'files',
   sidebarOpen: true,
   rightTab: 'hal',
-  rightOpen: true,
+  rightOpen: false,
   viewMode: 'split',
   graphOpen: false,
   settingsOpen: false,

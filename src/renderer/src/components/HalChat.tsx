@@ -140,8 +140,13 @@ export function HalChat() {
               Ask
             </button>
             {messages.length > 0 && (
-              <button className="rounded-lg px-3 py-1 text-[11px] text-[var(--hal-dim)] hover:bg-[var(--hal-plate-2)]" onClick={clear}>
-                Clear
+              <button
+                className="key"
+                onClick={() => {
+                  void hal.halHistoryClear().then(() => clear())
+                }}
+              >
+                CLEAR
               </button>
             )}
           </div>

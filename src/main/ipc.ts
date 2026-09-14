@@ -1,6 +1,7 @@
 import { app, ipcMain, shell } from 'electron'
 import type { ChatMessage } from '@shared/types'
 import { askHal } from './ai/chat'
+import { appendChatHistory, clearChatHistory, loadChatHistory } from './ai/chat-history'
 import { attachmentPath, createAttachment, getAttachmentByName, trashAttachment } from './store/attachments'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
 import { aiActiveReady, aiListModels, aiTest, providerReady, type ProviderId } from './ai/router'
@@ -159,14 +160,24 @@ export function registerIpc(): void {
   handle('embed:ready', () => embeddingsReady())
 
   handle('hal:ask', async (id: string, question: string, history: Pick<ChatMessage, 'role' | 'text'>[]) => {
+    appendChatHistory('user', question)
+    let full = ''
     void askHal(
       question,
       history,
-      (delta) => broadcast('hal:delta', { id, delta })
+      (delta) => {
+        full += delta
+        broadcast('hal:delta', { id, delta })
+      }
     )
-      .then(({ citations }) => broadcast('hal:done', { id, citations }))
+      .then(({ citations }) => {
+        if (full.trim()) appendChatHistory('hal', full, citations)
+        broadcast('hal:done', { id, citations })
+      })
       .catch((err) => broadcast('hal:error', { id, error: err instanceof Error ? err.message : String(err) }))
   })
+  handle('hal:history', () => loadChatHistory())
+  handle('hal:history-clear', () => clearChatHistory())
 
   // ── Research mode ──────────────────────────────────────────────────────────
   handle('research:list', () => research.listNotebooks())

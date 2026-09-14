@@ -45,6 +45,7 @@ function migrate(): void {
   if (current < 4) migrateV4()
   if (current < 5) migrateV5()
   if (current < 6) migrateV6()
+  if (current < 7) migrateV7()
 }
 
 function migrateV1(): void {
@@ -260,5 +261,21 @@ function migrateV6(): void {
       );
     `)
     db!.pragma('user_version = 6')
+  })()
+}
+
+function migrateV7(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      CREATE TABLE hal_chat_history (
+        id TEXT PRIMARY KEY,
+        role TEXT NOT NULL,
+        text TEXT NOT NULL,
+        citations_json TEXT NOT NULL DEFAULT '[]',
+        created_at INTEGER NOT NULL
+      );
+      CREATE INDEX idx_hal_chat_history ON hal_chat_history(created_at);
+    `)
+    db!.pragma('user_version = 7')
   })()
 }

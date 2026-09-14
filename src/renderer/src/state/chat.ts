@@ -8,6 +8,7 @@ interface ChatState {
   error: string | null
 
   ask(question: string): Promise<void>
+  init(): void
   onDelta(id: string, delta: string): void
   onDone(id: string, citations: Citation[]): void
   onError(id: string, error: string): void
@@ -18,6 +19,11 @@ export const useChat = create<ChatState>((set, get) => ({
   messages: [],
   busy: false,
   error: null,
+
+  init: () => {
+    if (get().messages.length > 0) return
+    void hal.halHistory().then((msgs) => set({ messages: msgs.map((m) => ({ ...m, streaming: false })) }))
+  },
 
   ask: async (question) => {
     const { messages, busy } = get()
@@ -45,7 +51,7 @@ export const useChat = create<ChatState>((set, get) => ({
 
   onDelta: (id, delta) =>
     set((s) => ({
-      messages: s.messages.map((m) => (m.id === id ? { ...m, text: m.text + delta } : m))
+      messages: s.messages.map((m) => (m.id === id ? { ...m, text: (m.text + delta).replace(/\n{3,}/g, '\n\n') } : m))
     })),
 
   onDone: (id, citations) =>

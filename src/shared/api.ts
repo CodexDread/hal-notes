@@ -94,6 +94,8 @@ export interface HalApi {
   embeddingsBackfill(): Promise<void>
   embeddingsReady(): Promise<boolean>
   halAsk(id: string, question: string, history: Pick<ChatMessage, 'role' | 'text'>[]): Promise<void>
+  halHistory(): Promise<import('./types').ChatMessage[]>
+  halHistoryClear(): Promise<void>
   researchList(): Promise<ResearchNotebook[]>
   researchCreate(name: string): Promise<ResearchNotebook>
   researchRename(id: string, name: string): Promise<void>

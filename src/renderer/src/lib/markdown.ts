@@ -135,5 +135,7 @@ const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/
 
 export function renderMarkdown(content: string): string {
   const body = content.startsWith('---') ? content.replace(FRONTMATTER_RE, '') : content
-  return md.render(body)
+  // Collapse 3+ consecutive newlines (common in model output) to one paragraph break
+  const compact = body.replace(/\n{3,}/g, '\n\n')
+  return md.render(compact)
 }

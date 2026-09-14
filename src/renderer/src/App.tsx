@@ -48,7 +48,10 @@ export function App() {
 
   useEffect(() => {
     void useVault.getState().init()
-    void loadSettings().then(() => initPluginSystem())
+    void loadSettings().then(() => {
+      initPluginSystem()
+      useChat.getState().init()
+    })
   }, [])
 
   useEffect(() => {
