@@ -146,6 +146,24 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
           ✕
         </button>
       )}
+      {menu && (
+        <TreeContextMenu
+          x={menu.x}
+          y={menu.y}
+          onClose={() => setMenu(null)}
+          items={[
+            { label: 'Open', run: () => void open(note.id) },
+            { label: 'Rename', run: () => startRename() },
+            {
+              label: 'Delete',
+              danger: true,
+              run: () => {
+                if (window.confirm(`Delete "${note.name}"?`)) void trashNote(note.id)
+              }
+            }
+          ]}
+        />
+      )}
     </div>
   )
 }
@@ -247,6 +265,18 @@ function FolderBranch({
               }}
             >
               ▤
+            </button>
+            <button
+              title="Delete folder and everything inside"
+              className="rounded px-1 text-[10px] hover:text-[var(--hal-lamp-red)]"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (window.confirm(`Delete folder "${node.folder.name}" and all notes inside it?`)) {
+                  void hal.folderTrash(node.folder.id).then(() => useVault.getState().refresh())
+                }
+              }}
+            >
+              ✕
             </button>
           </span>
         )}
