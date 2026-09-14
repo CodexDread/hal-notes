@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { hal } from '@/lib/ipc'
 import { EditorPane } from './EditorPane'
 import { EmptyState } from './EmptyState'
-import { PreviewPane } from './PreviewPane'
 import { SuggestionBar } from './SuggestionBar'
 import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
@@ -63,10 +62,8 @@ export function EditorArea() {
   const activeId = useVault((s) => s.activeId)
   const active = useVault((s) => s.snapshot.notes.find((n) => n.id === s.activeId))
   const pendingSync = active?.pendingSync ?? false
-  const viewMode = useUi((s) => s.viewMode)
   const renameActive = useVault((s) => s.renameActive)
   const [nameDraft, setNameDraft] = useState(active?.name ?? '')
-  const previewRef = useRef<HTMLDivElement>(null)
   const renamingRef = useRef(false)
 
   useEffect(() => {
@@ -80,11 +77,7 @@ export function EditorArea() {
     if (nameDraft.trim() && nameDraft.trim() !== active.name) void renameActive(nameDraft.trim())
   }
 
-  const showEditor = viewMode !== 'preview'
-  const showPreview = viewMode !== 'edit'
-
-  const editorPane = showEditor && <EditorPane previewRef={previewRef} />
-  const previewPane = showPreview && <PreviewPane containerRef={previewRef} />
+  const editorPane = <EditorPane />
 
   return (
     <section className="relative flex h-full min-w-0 flex-1 flex-col" style={{ background: 'var(--hal-ground)' }}>
@@ -129,8 +122,6 @@ export function EditorArea() {
           style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0.6 }}
         />
         {editorPane}
-        {showEditor && showPreview && <div className="w-px shrink-0" style={{ background: 'var(--hal-hairline)' }} />}
-        {previewPane}
       </div>
     </section>
   )

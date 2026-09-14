@@ -40,26 +40,18 @@ function SyncAnnunciator() {
   )
 }
 
-const VIEW_KEYS = [
-  { mode: 'edit', label: 'EDIT' },
-  { mode: 'split', label: 'SPLIT' },
-  { mode: 'preview', label: 'VIEW' }
-] as const
-
 export function TopBar() {
   const mode = useUi((s) => s.mode)
   const setMode = useUi((s) => s.setMode)
   const pluginModes = useUi((s) => s.pluginModes)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
-  const viewMode = useUi((s) => s.viewMode)
   const graphOpen = useUi((s) => s.graphOpen)
   const toggleGraph = useUi((s) => s.toggleGraph)
   const debugConsole = useUi((s) => s.settings?.debugConsole ?? false)
   const consoleOpen = useUi((s) => s.consoleOpen)
   const toggleSidebar = useUi((s) => s.toggleSidebar)
   const toggleRight = useUi((s) => s.toggleRight)
-  const setViewMode = useUi((s) => s.setViewMode)
   const openSettings = useUi((s) => s.openSettings)
 
   return (
@@ -109,20 +101,9 @@ export function TopBar() {
       <SyncAnnunciator />
 
       {mode === 'notes' && (
-        <span className="mx-1 flex overflow-hidden border" style={{ borderColor: 'var(--hal-hairline)' }}>
-          {VIEW_KEYS.map((v) => (
-            <button
-              key={v.mode}
-              className={`key border-0 ${viewMode === v.mode ? 'key-keyed' : ''}`}
-              onClick={() => setViewMode(v.mode)}
-            >
-              {v.label}
-            </button>
-          ))}
-          <button className={`key border-0 ${graphOpen ? 'key-keyed' : ''}`} onClick={toggleGraph} title="Star chart">
-            GRAPH
-          </button>
-        </span>
+        <button className={`key ${graphOpen ? 'key-keyed' : ''}`} onClick={toggleGraph} title="Star chart">
+          GRAPH
+        </button>
       )}
 
       {mode === 'notes' && (

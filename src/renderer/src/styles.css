@@ -304,3 +304,21 @@ textarea:focus-visible,
   border-color: var(--hal-amber);
 }
 
+
+/* Live preview: rendered blocks inside the editor */
+.cm-rendered-block {
+  pointer-events: auto;
+}
+.cm-rendered-block p {
+  margin: 0.35em 0;
+}
+.cm-rendered-block h1, .cm-rendered-block h2, .cm-rendered-block h3 {
+  margin: 0.6em 0 0.3em 0;
+}
+.cm-rendered-block ul, .cm-rendered-block ol {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+.cm-rendered-block pre {
+  margin: 0.4em 0;
+}

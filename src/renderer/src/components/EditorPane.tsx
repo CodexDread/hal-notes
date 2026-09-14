@@ -1,7 +1,7 @@
-import { useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useRef } from 'react'
 import { EditorView } from '@codemirror/view'
 import { hal } from '@/lib/ipc'
-import { createEditorState, halEditorTheme, replaceDoc, themeCompartment } from '@/lib/cm'
+import { createEditorState, halEditorTheme, livePreview, replaceDoc, themeCompartment } from '@/lib/cm'
 import type { CmOptions } from '@/lib/cm'
 import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
@@ -10,7 +10,7 @@ function isImageName(name: string): boolean {
   return /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(name)
 }
 
-export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElement | null> }) {
+export function EditorPane() {
   const hostRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const activeId = useVault((s) => s.activeId)
@@ -52,23 +52,8 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
     })
     viewRef.current = view
 
-    let raf = 0
-    const syncScroll = (): void => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        const target = previewRef.current
-        if (!target) return
-        const scroller = view.scrollDOM
-        const denom = scroller.scrollHeight - scroller.clientHeight
-        const ratio = denom > 0 ? scroller.scrollTop / denom : 0
-        target.scrollTop = ratio * (target.scrollHeight - target.clientHeight)
-      })
-    }
-    view.scrollDOM.addEventListener('scroll', syncScroll)
 
     return () => {
-      view.scrollDOM.removeEventListener('scroll', syncScroll)
-      cancelAnimationFrame(raf)
       view.destroy()
       viewRef.current = null
     }
