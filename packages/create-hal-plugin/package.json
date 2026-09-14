@@ -1,0 +1,13 @@
+{
+  "name": "@hal-notes/create-hal-plugin",
+  "version": "0.12.0",
+  "description": "Scaffold a new HAL Notes plugin",
+  "license": "MIT",
+  "bin": {
+    "create-hal-plugin": "./bin/init.js"
+  },
+  "files": ["bin"],
+  "publishConfig": {
+    "access": "public"
+  }
+}

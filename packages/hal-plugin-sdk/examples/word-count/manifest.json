@@ -1,0 +1,9 @@
+{
+  "id": "com.local.word.count",
+  "name": "Word Count",
+  "version": "1.0.0",
+  "halVersion": "0.12.0",
+  "description": "Vault-wide word-count stats — a working reference plugin",
+  "entry": "index.js",
+  "permissions": ["ui", "notes"]
+}
