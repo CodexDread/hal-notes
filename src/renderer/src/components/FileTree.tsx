@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { AttachmentMeta, FolderMeta, NoteMeta } from '@shared/types'
 import { hal } from '@/lib/ipc'
 import { useVault } from '@/state/vault'
@@ -36,11 +36,47 @@ function buildTree(folders: FolderMeta[], notes: NoteMeta[]): { roots: FolderNod
   return { roots, rootNotes }
 }
 
+interface MenuItem {
+  label: string
+  danger?: boolean
+  run(): void
+}
+
+function TreeContextMenu({ x, y, items, onClose }: { x: number; y: number; items: MenuItem[]; onClose: () => void }) {
+  useEffect(() => {
+    const close = (): void => onClose()
+    window.addEventListener('mousedown', close)
+    return () => window.removeEventListener('mousedown', close)
+  }, [onClose])
+  return (
+    <div
+      className="fixed z-[100] min-w-40 border py-1"
+      style={{ left: x, top: y, background: 'var(--hal-plate)', borderColor: 'var(--hal-hairline)' }}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {items.map((item) => (
+        <button
+          key={item.label}
+          className="block w-full px-3 py-1 text-left text-xs hover:bg-[var(--hal-plate-2)]"
+          style={{ color: item.danger ? 'var(--hal-lamp-red)' : 'var(--hal-ink)' }}
+          onClick={() => {
+            onClose()
+            item.run()
+          }}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
   const activeId = useVault((s) => s.activeId)
   const open = useVault((s) => s.open)
   const trashNote = useVault((s) => s.trashNote)
   const [editing, setEditing] = useState(false)
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
   const [draft, setDraft] = useState(note.name)
 
   const startRename = (): void => {
@@ -73,6 +109,11 @@ function NoteRow({ note, depth }: { note: NoteMeta; depth: number }) {
       onDoubleClick={(e) => {
         e.stopPropagation()
         startRename()
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setMenu({ x: e.clientX, y: e.clientY })
       }}
     >
       <span className="lamp" style={{ background: 'var(--hal-hairline)' }} />
@@ -128,6 +169,7 @@ function FolderBranch({
   const createNote = useVault((s) => s.createNote)
   const createFolder = useVault((s) => s.createFolder)
   const [editing, setEditing] = useState(false)
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null)
   const [draft, setDraft] = useState(node.folder.name)
 
   const commit = (): void => {
@@ -159,6 +201,11 @@ function FolderBranch({
           e.stopPropagation()
           setDraft(node.folder.name)
           setEditing(true)
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setMenu({ x: e.clientX, y: e.clientY })
         }}
       >
         <span className={`text-[9px] transition-transform ${open_ ? 'rotate-90' : ''}`} style={{ color: 'var(--hal-dim)' }}>▶</span>
@@ -204,6 +251,33 @@ function FolderBranch({
           </span>
         )}
       </div>
+      {menu && (
+        <TreeContextMenu
+          x={menu.x}
+          y={menu.y}
+          onClose={() => setMenu(null)}
+          items={[
+            { label: 'New note here', run: () => void createNote(node.folder.id) },
+            { label: 'New subfolder', run: () => void createFolder(node.folder.id) },
+            {
+              label: 'Rename',
+              run: () => {
+                setDraft(node.folder.name)
+                setEditing(true)
+              }
+            },
+            {
+              label: 'Delete',
+              danger: true,
+              run: () => {
+                if (window.confirm(`Delete folder "${node.folder.name}" and all notes inside it?`)) {
+                  void hal.folderTrash(node.folder.id).then(() => useVault.getState().refresh())
+                }
+              }
+            }
+          ]}
+        />
+      )}
       {open_ && (
         <div>
           {node.children.map((c) => (
