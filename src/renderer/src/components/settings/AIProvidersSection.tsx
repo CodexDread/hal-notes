@@ -74,20 +74,52 @@ export function AIProvidersSection(): React.ReactElement {
         </select>
       </div>
 
-      {active === 'google' ? (
-        <div className="mt-3 text-xs text-[var(--hal-dim)]">
+      {active === 'google' && (
+        <div className="mt-3 space-y-2 text-xs text-[var(--hal-dim)]">
           {googleKeySet ? (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="h-2 w-2 rounded-full bg-[var(--hal-lamp-green)]" /> Google API key saved (manage below)
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="h-2 w-2 rounded-full bg-[var(--hal-lamp-green)]" /> Google API key saved
+              <span className="flex-1" />
+              <button
+                className="key"
+                onClick={() => {
+                  void hal.aiClearKey().then(() => hal.settingsGet()).then(applySettings).then(reloadStatus)
+                }}
+              >
+                Remove
+              </button>
             </div>
           ) : (
-            <p className="leading-5">
-              No Google key yet — the field below accepts one. Free at aistudio.google.com; a Google AI Pro/Ultra
-              subscription raises its limits.
-            </p>
+            <p className="leading-5">Free key at aistudio.google.com — a Google AI Pro/Ultra subscription raises its limits.</p>
           )}
+          <div className="flex gap-2">
+            <input
+              type="password"
+              className="field min-w-0 flex-1 py-1.5 text-sm"
+              placeholder={googleKeySet ? 'Replace Google API key' : 'Google API key (AIza…)'}
+              value={keyDraft}
+              onChange={(e) => setKeyDraft(e.target.value)}
+            />
+            <button
+              className="key"
+              disabled={!keyDraft.trim()}
+              onClick={() => {
+                const k = keyDraft.trim()
+                setKeyDraft('')
+                setTestMsg('Key saved')
+                void hal
+                  .aiSetKey(k)
+                  .then(() => hal.settingsGet())
+                  .then(applySettings)
+                  .then(reloadStatus)
+              }}
+            >
+              Save
+            </button>
+          </div>
         </div>
-      ) : active === 'custom' ? (
+      )}
+      {active === 'custom' ? (
         <div className="mt-3 space-y-2 text-xs text-[var(--hal-dim)]">
           <label className="block">
             Base URL (Ollama, LM Studio, vLLM…)

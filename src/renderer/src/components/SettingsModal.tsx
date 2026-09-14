@@ -221,7 +221,8 @@ function DriveSection() {
 
 
 const ACCENT_PRESETS = [
-  { label: 'Default', value: '', hex: '#8b5cf6' },
+  { label: 'Violet', value: '#8b5cf6', hex: '#8b5cf6' },
+  { label: 'Mission (amber)', value: '', hex: '#ffb000' },
   { label: 'Blue', value: '#3b82f6', hex: '#3b82f6' },
   { label: 'Cyan', value: '#06b6d4', hex: '#06b6d4' },
   { label: 'Teal', value: '#14b8a6', hex: '#14b8a6' },

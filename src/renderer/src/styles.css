@@ -265,7 +265,7 @@ textarea:focus-visible,
   background: var(--hal-amber-dim) !important;
 }
 .cm-wikilink {
-  color: var(--color-violet-400);
+  color: var(--hal-amber);
   cursor: pointer;
 }
 .cm-wikilink-unresolved {
@@ -278,10 +278,10 @@ textarea:focus-visible,
 /* ── Markdown preview ───────────────────────────────────────────────────── */
 
 .preview .wl {
-  color: var(--color-violet-400);
+  color: var(--hal-amber);
   cursor: pointer;
   text-decoration: none;
-  border-bottom: 1px dotted color-mix(in srgb, var(--color-violet-400) 45%, transparent);
+  border-bottom: 1px dotted color-mix(in srgb, var(--hal-amber) 45%, transparent);
 }
 .preview img.hal-embed {
   max-width: 100%;
@@ -301,6 +301,6 @@ textarea:focus-visible,
   cursor: pointer;
 }
 .preview a.hal-file:hover {
-  border-color: var(--color-violet-400);
+  border-color: var(--hal-amber);
 }
-.theme-light .preview .wl { color: var(--color-violet-400); }
+
