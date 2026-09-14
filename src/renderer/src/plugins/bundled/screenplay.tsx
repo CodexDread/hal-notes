@@ -5,6 +5,7 @@ import { Decoration, EditorView, ViewPlugin, keymap, type DecorationSet, type Vi
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { autocompletion, type CompletionContext } from '@codemirror/autocomplete'
 import { sceneOutline, screenplayStats } from '@shared/fountain'
+import { halEditorTheme } from '@/lib/cm'
 import type { HalPluginSdk } from '../host'
 
 const FOUNTAIN_STORAGE_KEY = 'screenplay-docs' // JSON: { noteId: string; title: string }[]
@@ -237,6 +238,12 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
           EditorView.lineWrapping,
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+          halEditorTheme(document.documentElement.classList.contains('theme-light') === false),
+          EditorView.theme({
+            '.cm-content': { caretColor: 'var(--hal-amber)' },
+            '.cm-cursor': { borderLeftColor: 'var(--hal-amber)', borderLeftWidth: '2px' },
+            '&': { color: 'var(--hal-ink)' }
+          }, { dark: true }),
           fountainEditor({
             onDocChange: (text) => {
               contentRef.current = text
@@ -381,7 +388,8 @@ export function registerScreenplayPlugin(sdk: HalPluginSdk): void {
       color: var(--hal-amber);
       font-weight: 600;
       text-transform: uppercase;
-      margin-top: 1.4em;
+      text-align: center;
+      margin: 1.4em 24% 0 24%;
     }
     .cm-line.cm-fountain-character {
       color: var(--hal-lamp-green);
