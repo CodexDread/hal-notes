@@ -504,13 +504,13 @@ function PluginConfigRows({
     <div className="mt-2 space-y-2 border-t pt-2 pl-12" style={{ borderColor: 'var(--hal-hairline)', opacity: disabled ? 0.5 : 1 }}>
       {schema.map((field) => (
         <div key={field.key} className="flex items-center gap-3">
-          <label className="w-56 shrink-0 text-xs" style={{ color: 'var(--hal-dim)' }}>
+          <label className="max-w-52 shrink-0 truncate text-xs" style={{ color: 'var(--hal-dim)' }}>
             {field.label}
           </label>
           {field.type === 'select' ? (
             <select
               disabled={disabled}
-              className="field w-56 py-1 text-xs"
+              className="field min-w-0 max-w-60 flex-1 py-1 text-xs"
               value={String(values[field.key])}
               onChange={(e) => {
                 const raw = e.target.value

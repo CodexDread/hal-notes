@@ -263,6 +263,7 @@ export function registerIpc(): void {
   bus.on('embed:progress', (p) => broadcast('embed:progress', p))
   bus.on('capture:suggestion', (s) => broadcast('capture:suggestion', s))
   bus.on('drive:status-changed', () => broadcast('drive:status-changed'))
+  bus.on('plugins:changed', () => broadcast('plugins:changed'))
   bus.on('research:path-updated', (pathId: string, notebookId: string) =>
     broadcast('research:path-updated', { pathId, notebookId })
   )
