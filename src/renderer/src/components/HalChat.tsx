@@ -93,7 +93,7 @@ export function HalChat() {
                 ◉ HAL {m.streaming && <span className="animate-pulse text-[var(--hal-dim)]">thinking…</span>}
               </div>
               <div
-                className={`preview prose prose-sm prose-zinc max-w-none whitespace-pre-wrap ${dark ? 'prose-invert' : ''}`}
+                className={`preview prose prose-sm prose-zinc max-w-none ${dark ? 'prose-invert' : ''}`}
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }}
               />
               {m.citations.length > 0 && !m.streaming && (
