@@ -596,6 +596,7 @@ class SyncEngine {
       return
     }
 
+    await this.ensureParentPushed(row.parent_id, rootId)
     const parentRemoteId = this.parentRemoteId(row.parent_id, rootId)
     if (isLocalId(row.id)) {
       const res = await uploadNewNote(drive, row.name, parentRemoteId, row.content, row.modified_local)
@@ -606,6 +607,28 @@ class SyncEngine {
       markSynced(row.id, res.md5 ?? row.local_hash, res.version, Date.parse(res.modifiedTime) || Date.now())
     }
     bus.emit('vault:changed')
+  }
+
+  /**
+   * Ensures a note's parent folder chain exists remotely before the note is
+   * uploaded into it. Without this, a debounced note push racing ahead of an
+   * unsynced folder uploads the note to the vault root (and the next reconcile
+   * then "moves" it out of its folder locally).
+   */
+  private async ensureParentPushed(parentId: string | null, rootId: string): Promise<void> {
+    if (!parentId) return
+    const folder = getFolderRow(parentId)
+    if (!folder) return
+    if (isLocalId(folder.id)) {
+      // Recurse first so grandparents exist before this folder moves into them.
+      await this.ensureParentPushed(folder.parent_id, rootId)
+      const drive = await this.drive()
+      const parentRemote = this.parentRemoteId(folder.parent_id, rootId)
+      const created = await createRemoteFolder(drive, folder.name, parentRemote)
+      swapFolderId(folder.id, created.id)
+      markFolderSynced(created.id, created.parentId)
+      bus.emit('vault:changed')
+    }
   }
 
   private parentRemoteId(parentId: string | null, rootId: string): string {
