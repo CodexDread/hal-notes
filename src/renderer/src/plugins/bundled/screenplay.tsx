@@ -139,15 +139,30 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
   const outline = useMemo(() => sceneOutline(content), [content])
 
   useEffect(() => {
-    void sdk.storage.get(FOUNTAIN_STORAGE_KEY).then((raw) => {
-      if (raw) {
-        try {
-          const list = JSON.parse(raw) as ScreenplayDoc[]
-          setDocs(list)
-          if (list[0]) void openDoc(list[0].noteId)
-        } catch {
-          // corrupt registry — start empty
+    void sdk.storage.get(FOUNTAIN_STORAGE_KEY).then(async (raw) => {
+      if (!raw) return
+      try {
+        const list = JSON.parse(raw) as ScreenplayDoc[]
+        setDocs(list)
+        // Stale ids (Drive swap) get healed before first selection
+        const vault = await sdk.notes.list()
+        let changed = false
+        const healed = list.map((d) => {
+          if (vault.notes.some((n) => n.id === d.noteId)) return d
+          const byTitle = vault.notes.find((n) => n.name === d.title)
+          if (byTitle) {
+            changed = true
+            return { ...d, noteId: byTitle.id }
+          }
+          return d
+        })
+        if (changed) {
+          setDocs(healed)
+          await sdk.storage.set(FOUNTAIN_STORAGE_KEY, JSON.stringify(healed))
         }
+        if (healed[0]) void openDoc(healed[0].noteId)
+      } catch {
+        // corrupt registry — start empty
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -158,9 +173,36 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
     await sdk.storage.set(FOUNTAIN_STORAGE_KEY, JSON.stringify(list))
   }
 
+  /** Note ids swap (local-… → Drive id) after sync; re-resolve dead ids by title. */
+  const reconcileDocs = async (): Promise<ScreenplayDoc[]> => {
+    const vault = await sdk.notes.list()
+    let changed = false
+    const reconciled = docs.map((d) => {
+      const stillThere = vault.notes.some((n) => n.id === d.noteId)
+      if (stillThere) return d
+      const byTitle = vault.notes.find((n) => n.name === d.title)
+      if (byTitle) {
+        changed = true
+        return { ...d, noteId: byTitle.id }
+      }
+      return d
+    })
+    if (changed) await persistDocs(reconciled)
+    return reconciled
+  }
+
   const openDoc = async (noteId: string): Promise<void> => {
-    const note = await sdk.notes.open(noteId)
-    if (!note) return
+    let note = await sdk.notes.open(noteId)
+    if (!note) {
+      // id went stale (Drive upload swapped it) — reconcile by title and retry
+      const reconciled = await reconcileDocs()
+      const byOld = reconciled.find((d) => d.noteId === noteId)
+      const byCurrentTitle = reconciled.find((d) => d.title === docs.find((x) => x.noteId === noteId)?.title)
+      const retryId = byOld?.noteId ?? byCurrentTitle?.noteId ?? noteId
+      note = await sdk.notes.open(retryId)
+      if (!note) return
+      noteId = retryId
+    }
     setActiveNoteId(noteId)
     setTitleDraft(note.meta.name)
     setContent(note.content)
