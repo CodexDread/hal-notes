@@ -322,15 +322,43 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
         <div className="min-h-0 flex-1 overflow-y-auto px-2 py-1">
           {docs.length === 0 && <p className="px-2 py-3 text-xs" style={{ color: 'var(--hal-dim)' }}>No screenplays yet.</p>}
           {docs.map((d) => (
-            <button
+            <div
               key={d.noteId}
-              className={`mono block w-full truncate px-2 py-1 text-left text-[11px] ${
-                activeNoteId === d.noteId ? 'text-[var(--hal-ivory)]' : 'text-[var(--hal-dim)]'
-              }`}
+              className="group flex cursor-pointer items-center gap-1 px-2 py-1"
               onClick={() => void openDoc(d.noteId)}
             >
-              {d.title}
-            </button>
+              <span
+                className={`mono min-w-0 flex-1 truncate text-left text-[11px] ${
+                  activeNoteId === d.noteId ? 'text-[var(--hal-ivory)]' : 'text-[var(--hal-dim)]'
+                }`}
+              >
+                {d.title}
+              </span>
+              <button
+                title="Delete screenplay"
+                className="hidden shrink-0 px-1 text-[10px] hover:text-[var(--hal-lamp-red)] group-hover:block"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (!window.confirm(`Delete screenplay "${d.title}"? The note and its Drive copy go to trash.`)) return
+                  void (window as unknown as { hal: import('@shared/api').HalApi }).hal
+                    .noteTrash(d.noteId)
+                    .then(async () => {
+                      const next = docs.filter((x) => x.noteId !== d.noteId)
+                      await persistDocs(next)
+                      if (activeNoteId === d.noteId) {
+                        if (next[0]) await openDoc(next[0].noteId)
+                        else {
+                          setActiveNoteId(null)
+                          setContent('')
+                          contentRef.current = ''
+                        }
+                      }
+                    })
+                }}
+              >
+                ✕
+              </button>
+            </div>
           ))}
         </div>
         <div className="border-t px-3 py-2 legend" style={{ borderColor: 'var(--hal-hairline)' }}>
