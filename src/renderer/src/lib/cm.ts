@@ -172,49 +172,53 @@ interface SyntaxRange {
 }
 
 function buildSyntaxHiding(view: EditorView): DecorationSet {
-  const builder = new RangeSetBuilder<Decoration>()
+  const ranges: { from: number; to: number; deco: Decoration }[] = []
   const doc = view.state.doc
   const cursorLine = doc.lineAt(view.state.selection.main.head).number
-  const activeRange = new Map<number, Decoration>()
 
   for (const { from, to } of view.visibleRanges) {
     for (let pos = from; pos <= to; ) {
       const line = doc.lineAt(pos)
       const isCursor = line.number === cursorLine
+      const text = line.text
 
-      if (!isCursor && line.text.trim() !== '') {
-        // Heading lines: style the whole line + hide the # marks
-        const heading = /^(#{1,6})(\s+)/.exec(line.text)
+      if (!isCursor && text.trim() !== '' && !text.trim().startsWith('```')) {
+        const heading = /^(#{1,6})(\s+)/.exec(text)
         if (heading) {
-          const level = heading[1].length
-          activeRange.set(line.from, Decoration.line({ class: `cm-preview-h${Math.min(level, 4)}` }))
-          // Hide the "# " prefix
-          const prefixLen = heading[0].length
-          builderAndAdd(builder, line.from, line.from + prefixLen, Decoration.replace({}))
+          const level = Math.min(heading[1].length, 4)
+          ranges.push({ from: line.from, to: line.from, deco: Decoration.line({ class: `cm-preview-h${level}` }) })
+          ranges.push({ from: line.from, to: line.from + heading[0].length, deco: Decoration.replace({}) })
         } else {
-          // Inline syntax: bold, italic, strike, inline code — hide markers
-          const text = line.text
-          // Bold **text** or __text__
           for (const m of text.matchAll(/\*\*(.+?)\*\*|__(.+?)__/g)) {
             const start = line.from + m.index
             const full = m[0]
-            builderAndAdd(builder, start, start + 2, Decoration.replace({}))
-            builderAndAdd(builder, start + full.length - 2, start + full.length, Decoration.replace({}))
-            builderAndAdd(builder, start + 2, start + full.length - 2, Decoration.mark({ class: 'cm-preview-strong' }))
+            ranges.push({ from: start, to: start + 2, deco: Decoration.replace({}) })
+            ranges.push({ from: start + 2, to: start + full.length - 2, deco: Decoration.mark({ class: 'cm-preview-strong' }) })
+            ranges.push({ from: start + full.length - 2, to: start + full.length, deco: Decoration.replace({}) })
           }
-          // Inline code `code` (skip ```` fence lines)
-          if (!text.trim().startsWith('```')) {
-            for (const m of text.matchAll(/`([^`]+)`/g)) {
-              const start = line.from + m.index
-              builderAndAdd(builder, start, start + 1, Decoration.replace({}))
-              builderAndAdd(builder, start + m[0].length - 1, start + m[0].length, Decoration.replace({}))
-              builderAndAdd(builder, start + 1, start + m[0].length - 1, Decoration.mark({ class: 'cm-preview-code' }))
-            }
+          for (const m of text.matchAll(/`([^`]+)`/g)) {
+            const start = line.from + m.index
+            const full = m[0]
+            ranges.push({ from: start, to: start + 1, deco: Decoration.replace({}) })
+            ranges.push({ from: start + 1, to: start + full.length - 1, deco: Decoration.mark({ class: 'cm-preview-code' }) })
+            ranges.push({ from: start + full.length - 1, to: start + full.length, deco: Decoration.replace({}) })
           }
-          // List bullets: style but don't hide (they look good)
-          const list = /^(\s*)[-*+]\s/.exec(text)
-          if (list) {
-            activeRange.set(line.from, Decoration.line({ class: 'cm-preview-list' }))
+          for (const m of text.matchAll(/(?<!\*)\*([^*]+?)\*(?!\*)|(?<!_)_([^_]+?)_(?!_)/g)) {
+            const start = line.from + m.index
+            const full = m[0]
+            ranges.push({ from: start, to: start + 1, deco: Decoration.replace({}) })
+            ranges.push({ from: start + 1, to: start + full.length - 1, deco: Decoration.mark({ class: 'cm-preview-em' }) })
+            ranges.push({ from: start + full.length - 1, to: start + full.length, deco: Decoration.replace({}) })
+          }
+          for (const m of text.matchAll(/~~(.+?)~~/g)) {
+            const start = line.from + m.index
+            const full = m[0]
+            ranges.push({ from: start, to: start + 2, deco: Decoration.replace({}) })
+            ranges.push({ from: start + 2, to: start + full.length - 2, deco: Decoration.mark({ class: 'cm-preview-strike' }) })
+            ranges.push({ from: start + full.length - 2, to: start + full.length, deco: Decoration.replace({}) })
+          }
+          if (/^\s*[-*+]\s/.test(text)) {
+            ranges.push({ from: line.from, to: line.from, deco: Decoration.line({ class: 'cm-preview-list' }) })
           }
         }
       }
@@ -223,20 +227,20 @@ function buildSyntaxHiding(view: EditorView): DecorationSet {
     }
   }
 
-  // Merge line decorations into the set (must be position-sorted)
-  // RangeSetBuilder needs all ranges sorted; line decorations go at line starts
-  // which are already in order relative to the inline ones within that line.
-  // For simplicity we rebuild everything sorted.
-  return builder.finish()
-}
+  ranges.sort((a, b) => a.from - b.from || a.to - b.to)
 
-/** Adds a range to the builder, catching overlaps from rapid edits. */
-function builderAndAdd(builder: RangeSetBuilder<Decoration>, from: number, to: number, deco: Decoration): void {
-  try {
-    builder.add(from, to, deco)
-  } catch {
-    // skip overlapping
+  const builder = new RangeSetBuilder<Decoration>()
+  let lastTo = -1
+  for (const r of ranges) {
+    if (r.from < lastTo) continue
+    try {
+      builder.add(r.from, r.to, r.deco)
+      lastTo = r.to
+    } catch {
+      // overlap from nesting — skip
+    }
   }
+  return builder.finish()
 }
 
 export function livePreview(): Extension {
@@ -261,6 +265,8 @@ export function livePreview(): Extension {
       '.cm-preview-h3': { fontSize: '1.15em', fontWeight: '500', color: 'var(--hal-ivory)', lineHeight: '1.6' },
       '.cm-preview-h4': { fontSize: '1.05em', fontWeight: '500', color: 'var(--hal-ivory)' },
       '.cm-preview-strong': { fontWeight: '600', color: 'var(--hal-ivory)' },
+      '.cm-preview-em': { fontStyle: 'italic' },
+      '.cm-preview-strike': { textDecoration: 'line-through', color: 'var(--hal-dim)' },
       '.cm-preview-code': { fontFamily: 'var(--hal-font-mono)', background: 'var(--hal-plate-2)', padding: '0 0.2em' },
       '.cm-preview-list': { paddingLeft: '0.3em' }
     })
