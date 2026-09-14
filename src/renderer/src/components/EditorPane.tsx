@@ -16,6 +16,7 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
   const activeId = useVault((s) => s.activeId)
   const activeContent = useVault((s) => s.activeContent)
   const dark = useUi((s) => (s.settings?.theme ?? 'dark') === 'dark')
+  const readingWidth = useUi((s) => s.settings?.readingWidth ?? 'full')
 
   useEffect(() => {
     const handleFiles = async (files: File[]): Promise<void> => {
@@ -86,5 +87,10 @@ export function EditorPane({ previewRef }: { previewRef: RefObject<HTMLDivElemen
     view.dispatch({ effects: themeCompartment.reconfigure(halEditorTheme(dark)) })
   }, [dark])
 
-  return <div ref={hostRef} className="h-full min-h-0 min-w-0 flex-1 overflow-hidden" />
+  const widthClass = readingWidth === 'full' ? 'max-w-none' : readingWidth === 'wide' ? 'max-w-5xl' : 'max-w-[70ch]'
+  return (
+    <div className="h-full min-h-0 min-w-0 flex-1 overflow-x-hidden">
+      <div ref={hostRef} className={`mx-auto h-full w-full ${widthClass}`} />
+    </div>
+  )
 }

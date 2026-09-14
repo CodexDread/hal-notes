@@ -114,6 +114,7 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
   const [docs, setDocs] = useState<ScreenplayDoc[]>([])
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null)
   const [content, setContent] = useState('')
+  const contentRef = useRef('')
   const [titleDraft, setTitleDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const hostRef = useRef<HTMLDivElement>(null)
@@ -203,9 +204,10 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
       if (!note) return
       noteId = retryId
     }
+    contentRef.current = note.content
+    setContent(note.content)
     setActiveNoteId(noteId)
     setTitleDraft(note.meta.name)
-    setContent(note.content)
   }
 
   useEffect(() => {
@@ -213,18 +215,19 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
     const view = new EditorView({
       parent: hostRef.current,
       state: EditorState.create({
-        doc: content,
+        doc: contentRef.current,
         extensions: [
           EditorView.lineWrapping,
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
           fountainEditor({
             onDocChange: (text) => {
+              contentRef.current = text
               setContent(text)
               if (saveTimer.current) clearTimeout(saveTimer.current)
-              saveTimer.current = setTimeout(() => void flush(), 900)
+              saveTimer.current = setTimeout(() => void flushRef.current(), 900)
             },
-            getCharacters: () => stats.characters
+            getCharacters: () => statsRef.current
           })
         ]
       })
@@ -235,22 +238,30 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
       viewRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeNoteId])
+  }, [])
 
+  // Swap documents imperatively on doc change — never as a reaction to typing.
   useEffect(() => {
     const view = viewRef.current
-    if (!view) return
-    if (view.state.doc.toString() !== content) {
-      view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: content } })
+    if (!view || !activeNoteId) return
+    const current = view.state.doc.toString()
+    if (current !== contentRef.current) {
+      view.dispatch({ changes: { from: 0, to: current.length, insert: contentRef.current } })
     }
-  }, [content])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNoteId])
+
+  const statsRef = useRef<string[]>([])
+  statsRef.current = stats.characters
+  const flushRef = useRef<() => void>(() => undefined)
 
   const flush = async (): Promise<void> => {
     if (!activeNoteId) return
     setSaving(true)
-    await sdk.notes.save(activeNoteId, content)
+    await sdk.notes.save(activeNoteId, contentRef.current)
     setSaving(false)
   }
+  flushRef.current = () => void flush()
 
   const newDoc = async (): Promise<void> => {
     const meta = await sdk.notes.create('Untitled screenplay', NEW_DOC)
@@ -324,7 +335,9 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
           </button>
         </div>
         <div className="flex min-h-0 flex-1">
-          <div ref={hostRef} className="min-h-0 min-w-0 flex-1 overflow-hidden" />
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
+            <div ref={hostRef} className="mx-auto h-full w-full max-w-[860px]" />
+          </div>
           <aside
             className="hidden w-48 shrink-0 overflow-y-auto border-l px-2 py-2 xl:block"
             style={{ borderColor: 'var(--hal-hairline)', background: 'var(--hal-plate)' }}
