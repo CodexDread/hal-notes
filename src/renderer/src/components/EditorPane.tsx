@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { EditorView } from '@codemirror/view'
 import { hal } from '@/lib/ipc'
-import { createEditorState, halEditorTheme, livePreview, replaceDoc, themeCompartment } from '@/lib/cm'
+import { createEditorState, halEditorTheme, replaceDoc, themeCompartment } from '@/lib/cm'
 import type { CmOptions } from '@/lib/cm'
 import { useUi } from '@/state/ui'
 import { useVault } from '@/state/vault'
