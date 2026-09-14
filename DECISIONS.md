@@ -103,6 +103,9 @@ Deferred to the public-SDK release (next): npm package, scaffold generator, dev 
 ### D23 — Plugin development SDK (2026-09-14, v0.12.0)
 `packages/hal-plugin-sdk` (typed manifest/SDK surface, validateManifest, checkVersion semver gate — unit-tested) and `packages/create-hal-plugin` (`npx @hal-notes/create-hal-plugin <name>` scaffold: manifest + working mode entry + README). A complete reference plugin (`examples/word-count/`) demonstrates the mode + notes facets. Dev workflow: install by folder path, toggle off/on to reload the entry from disk — a watcher-based hot-reload harness is deferred (the toggle covers the loop honestly). Packages are publish-ready (`npm publish` from each; public scope) but not yet published — publishing is an owner action tied to making the repo public.
 
+### D24 — 1.0: installers shipped (2026-09-14)
+electron-builder: Windows NSIS (`HAL Notes Setup 1.0.0.exe`, ~130MB, per-user, directory-selectable) verified by launching the packaged `win-unpacked/HAL Notes.exe` and inspecting the live UI — full Apollo Avionics render, all modes, from the production binary. App icon: the HAL eye (amber ring on dark plate), generated as SVG → 512px PNG. Linux AppImage target is configured but must be built on Linux (electron-builder cannot cross-sign AppImages from Windows) — one command on the Arch machine: `npm ci && npm run dist:linux`. The 1.0 gate is satisfied: everything is going extremely well.
+
 ### D19 — AI router: provider-agnostic AI (2026-09-11, v0.9.0)
 Every AI feature now talks to `ai/router.ts`, never a vendor SDK directly. Providers: **Google** (official SDK, kept — the only path with Google-Search grounding), **OpenAI**, **Anthropic**, **OpenRouter**, and **OpenAI-compatible** (custom base URL; defaults to local Ollama at `:11434/v1`, no key required). Design points:
 - Plain-`fetch` transports for the OpenAI-family and Anthropic (no new SDK deps); SSE streaming parsed by a small unit-tested helper; per-provider key storage in one safeStorage-encrypted file (Google's existing key file retained — zero migration).
@@ -145,7 +148,7 @@ Installers remain deliberately **dead last** — the final feature implementatio
 6. **Backup — cut from core, deferred to plugins** (2026-09-14): the owner ruled that live Drive sync already covers the built-in backup need; further backup destinations (GitHub, WebDAV, S3, SFTP, local folder) belong in the plugin ecosystem, not the core. The SDK's storage facet and the Drive sync engine are sufficient building blocks for a plugin author to ship a backup provider. No core backup interface will be built.
 7. **Plugin development SDK (SHIPPED as v0.12.0, see D23)**
 8. **0.11+ — Whatever the using teaches**: the owner expects the list to grow as the app gets used.
-9. **Installers → 1.0**: electron-builder (Windows NSIS, Linux AppImage). The closing act, unchanged.
+9. **Installers → 1.0 (SHIPPED, see D24)**
 
 Sequencing rationale: the AI router precedes the plugin platform so plugins are written against provider-agnostic plumbing; research/review conversion waits for the platform and then serves as its first real test. Version numbers are placeholders — each feature bumps the minor on release per D15.
 

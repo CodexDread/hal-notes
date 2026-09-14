@@ -1,7 +1,7 @@
 {
   "name": "hal-notes",
   "productName": "HAL Notes",
-  "version": "0.12.1",
+  "version": "1.0.0",
   "description": "Markdown notes vault with Google Drive sync and Gemini AI",
   "main": "./out/main/index.js",
   "author": "Al Piatt",
@@ -9,6 +9,9 @@
   "private": true,
   "scripts": {
     "dev": "electron-vite dev",
+    "dist": "electron-vite build && electron-builder --win --linux",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dist:linux": "electron-vite build && electron-builder --linux",
     "start": "electron-vite start",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.json",
@@ -44,6 +47,7 @@
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^5.2.0",
     "electron": "^44.3.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
