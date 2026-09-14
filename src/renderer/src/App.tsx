@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 import { EditorArea } from './components/EditorArea'
 import { RightPanel } from './components/RightPanel'
 import { ConsoleDrawer } from './components/ConsoleDrawer'
-import { ResearchMode } from './components/research/ResearchMode'
-import { ReviewMode } from './components/review/ReviewMode'
 import { GraphView } from './components/graph/GraphView'
+import { PluginModeContainer } from './plugins/PluginModeContainer'
+import { initPluginSystem } from './plugins/boot'
 import { SettingsModal } from './components/SettingsModal'
 import { Sidebar } from './components/Sidebar'
 import { StatusBar } from './components/StatusBar'
@@ -48,7 +48,7 @@ export function App() {
 
   useEffect(() => {
     void useVault.getState().init()
-    void loadSettings()
+    void loadSettings().then(() => initPluginSystem())
   }, [])
 
   useEffect(() => {
@@ -114,10 +114,8 @@ export function App() {
   return (
     <div className="relative flex h-full flex-col" style={{ background: 'var(--hal-ground)', color: 'var(--hal-ink)' }}>
       <TopBar />
-      {mode === 'research' ? (
-        <ResearchMode />
-      ) : mode === 'review' ? (
-        <ReviewMode />
+      {mode.startsWith('plugin:') ? (
+        <PluginModeContainer modeId={mode.slice('plugin:'.length)} />
       ) : graphOpen ? (
         <GraphView />
       ) : (

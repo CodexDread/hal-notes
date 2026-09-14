@@ -8,6 +8,7 @@ import type {
 } from '@shared/types'
 import { retrieveContext } from '../ai/embed'
 import { aiActiveReady, aiChat, aiGroundedChat } from '../ai/router'
+import { aiFeatureEnabled } from '../ai/gate'
 import { bus } from '../events'
 import { createNoteWithContent, ensureFolderUnder, getNoteRow, noteNameList } from '../store/notes'
 import { getSettings } from '../store/settings'
@@ -102,7 +103,7 @@ export function startLearningPath(notebookId: string, topic: string, pathId: str
 }
 
 async function runLearningPath(notebookId: string, topic: string, pathId: string): Promise<void> {
-  if (!aiActiveReady()) throw new Error('No AI provider is configured — add one in Settings → Integrations')
+  if (!aiFeatureEnabled()) throw new Error('AI features are disabled or unconfigured — check Settings → Integrations')
 
   // 1. Assess: what does the learner already bring?
   const vault = await groundInVault(topic)

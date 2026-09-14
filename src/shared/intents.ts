@@ -10,8 +10,8 @@ const INDEX_REBUILD_PATTERNS: RegExp[] = [
   // "re-index", "reindex the vault"
   /\bre-?index\b/i,
   // "rebuild your index / embeddings / semantic index"
-  /\brebuild\b[^\n]{0,30}\b(?:index|embedding|semantic)\b/i,
-  /\b(?:index|embedding|semantic)\b[^\n]{0,30}\brebuild\b/i
+  /\brebuild\w*\s[^\n]{0,30}\b(?:index|embedding|semantic)/i,
+  /\b(?:index|embedding|semantic)\w*[^\n]{0,30}\brebuild/i
 ]
 
 /** True when the user is asking HAL to rebuild the vault's semantic index. */

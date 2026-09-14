@@ -46,6 +46,10 @@ export interface HalEventPayloads {
   'research:path-updated': { pathId: string; notebookId: string }
   'research:path-error': { pathId: string; notebookId: string; error: string }
   'console:line': import('./types').ConsoleLine
+  'plugins:changed': undefined
+  'ai:chat-delta': { reqId: string; delta: string }
+  'ai:chat-done': { reqId: string; text: string }
+  'ai:chat-error': { reqId: string; error: string }
 }
 
 export type HalEventChannel = keyof HalEventPayloads
@@ -86,7 +90,7 @@ export interface HalApi {
   aiSetProvider(provider: string): Promise<AppSettings>
   aiSetProviderKey(provider: string, key: string): Promise<boolean>
   aiSetCustomBaseUrl(url: string): Promise<void>
-  aiStatus(): Promise<{ active: string; activeReady: boolean; embeddingProvider: string; chatModel: string }>
+  aiStatus(): Promise<{ active: string; activeReady: boolean; embeddingProvider: string; chatModel: string; aiEnabled: boolean; anyKeySet: boolean }>
   embeddingsBackfill(): Promise<void>
   embeddingsReady(): Promise<boolean>
   halAsk(id: string, question: string, history: Pick<ChatMessage, 'role' | 'text'>[]): Promise<void>
@@ -109,6 +113,16 @@ export interface HalApi {
   reviewNoteCardCount(noteId: string): Promise<number>
   reviewDue(): Promise<{ note: ReviewCard[]; research: DueCard[] }>
   reviewAnswer(cardId: string, answer: string): Promise<CardAnswerResult>
+  pluginsList(): Promise<import('./types').PluginDescriptor[]>
+  pluginSetEnabled(id: string, enabled: boolean): Promise<void>
+  pluginInstallFromFolder(path: string): Promise<import('./types').PluginDescriptor>
+  pluginRemove(id: string): Promise<void>
+  pluginReadCode(id: string): Promise<string>
+  pluginStorageGet(pluginId: string, key: string): Promise<string | null>
+  pluginStorageSet(pluginId: string, key: string, value: string): Promise<void>
+  pluginStorageKeys(pluginId: string): Promise<string[]>
+  aiChat(reqId: string, req: { system?: string; messages: { role: string; text: string }[]; json?: boolean; stream?: boolean }): Promise<void>
+  filesSaveText(defaultName: string, content: string): Promise<string | null>
   consoleFetch(): Promise<import('./types').ConsoleLine[]>
   consoleClear(): Promise<void>
   on<K extends HalEventChannel>(channel: K, cb: (payload: HalEventPayloads[K]) => void): () => void

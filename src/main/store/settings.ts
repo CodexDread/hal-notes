@@ -20,7 +20,9 @@ const DEFAULTS: AppSettings = {
   readingWidth: 'full',
   aiProvider: 'google',
   embeddingProvider: 'google',
-  embeddingModel: ''
+  embeddingModel: '',
+  aiEnabled: true,
+  plugins: { enabled: {} }
 }
 
 const KEY_FILE = 'gemini-key.bin'

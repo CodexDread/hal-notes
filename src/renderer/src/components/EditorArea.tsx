@@ -26,7 +26,7 @@ function NoteReviewButton() {
       <button
         className="annun"
         title="Cards in spaced review — open Review"
-        onClick={() => useUi.getState().setMode('review')}
+        onClick={() => useUi.getState().setMode('plugin:hal.review')}
       >
         <span className="lamp lamp-amber" />
         REVIEW {count}

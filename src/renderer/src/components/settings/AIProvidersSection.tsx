@@ -15,6 +15,8 @@ interface Status {
   activeReady: boolean
   embeddingProvider: string
   chatModel: string
+  aiEnabled?: boolean
+  anyKeySet?: boolean
 }
 
 export function AIProvidersSection(): React.ReactElement {
@@ -170,6 +172,25 @@ export function AIProvidersSection(): React.ReactElement {
           <span className={`text-xs ${testMsg.startsWith('✓') ? 'text-[var(--hal-lamp-green)]' : 'text-[var(--hal-lamp-red)]'}`}>{testMsg}</span>
         )}
       </div>
+
+      {status?.anyKeySet && (
+        <div className="mt-3 text-xs text-[var(--hal-dim)]">
+          AI features — master switch
+          <div className="mt-1.5">
+            <button
+              className={`key ${status.aiEnabled === false ? '' : 'key-keyed'}`}
+              onClick={() =>
+                void hal.settingsSet({ aiEnabled: !(status.aiEnabled ?? true) }).then(() => reloadStatus())
+              }
+            >
+              {status.aiEnabled === false ? 'DISABLED — enable' : 'ENABLED — disable'}
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] opacity-70">
+            No key registered means no AI surface anywhere; with a key this switch is the single opt-in/out.
+          </p>
+        </div>
+      )}
 
       <label className="mt-3 block text-xs text-[var(--hal-dim)]">
         Chat model

@@ -5,10 +5,11 @@ import { hal } from '@/lib/ipc'
 export type SidebarTab = 'files' | 'search' | 'tags'
 export type RightTab = 'hal' | 'backlinks'
 export type ViewMode = 'edit' | 'split' | 'preview'
-export type AppMode = 'notes' | 'research' | 'review'
+export type AppMode = 'notes' | `plugin:${string}`
 
 interface UiState {
   mode: AppMode
+  pluginModes: { id: string; label: string; order: number }[]
   sidebarTab: SidebarTab
   sidebarOpen: boolean
   rightTab: RightTab
@@ -44,6 +45,7 @@ interface UiState {
 
 export const useUi = create<UiState>((set, get) => ({
   mode: 'notes',
+  pluginModes: [],
   sidebarTab: 'files',
   sidebarOpen: true,
   rightTab: 'hal',

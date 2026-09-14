@@ -44,6 +44,7 @@ function migrate(): void {
   if (current < 3) migrateV3()
   if (current < 4) migrateV4()
   if (current < 5) migrateV5()
+  if (current < 6) migrateV6()
 }
 
 function migrateV1(): void {
@@ -245,5 +246,19 @@ function migrateV5(): void {
       ALTER TABLE folders ADD COLUMN remote_parent_id TEXT;
     `)
     db!.pragma('user_version = 5')
+  })()
+}
+
+function migrateV6(): void {
+  db!.transaction(() => {
+    db!.exec(`
+      CREATE TABLE plugin_storage (
+        plugin_id TEXT NOT NULL,
+        key TEXT NOT NULL,
+        value TEXT NOT NULL,
+        PRIMARY KEY (plugin_id, key)
+      );
+    `)
+    db!.pragma('user_version = 6')
   })()
 }

@@ -126,6 +126,8 @@ export interface AppSettings {
   aiProvider: 'google' | 'openai' | 'anthropic' | 'openrouter' | 'custom'
   embeddingProvider: 'google' | 'openai' | 'custom'
   embeddingModel: string
+  aiEnabled: boolean
+  plugins?: { enabled?: Record<string, boolean> }
 }
 
 export interface ConsoleLine {
@@ -133,6 +135,19 @@ export interface ConsoleLine {
   t: number
   level: 'log' | 'warn' | 'error'
   text: string
+}
+
+// ── Plugin platform ──────────────────────────────────────────────────────────
+
+export interface PluginDescriptor {
+  id: string
+  name: string
+  version: string
+  description: string
+  bundled: boolean
+  dirName?: string
+  permissions?: string[]
+  enabled?: boolean
 }
 
 export interface EmbedProgress {

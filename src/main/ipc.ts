@@ -4,6 +4,7 @@ import { askHal } from './ai/chat'
 import { attachmentPath, createAttachment, getAttachmentByName, trashAttachment } from './store/attachments'
 import { backfillEmbeddings, embeddingsReady, embedSingle, semanticSearch } from './ai/embed'
 import { aiActiveReady, aiListModels, aiTest, providerReady, type ProviderId } from './ai/router'
+import { anyProviderKeySet } from './ai/gate'
 import { driveAuth } from './drive/auth'
 import { syncEngine } from './drive/sync'
 import { bus } from './events'
@@ -11,6 +12,18 @@ import { answerCard, answerReview, completeCard, getPathDetailOrThrow, savePathN
 import { notebookChat } from './research/chat'
 import { answerNoteCard, dueReviewCards, generateReviewCards, noteCardCount } from './research/reviewcards'
 import { clearConsoleLines, getConsoleLines } from './console'
+import {
+  installPluginFromFolder,
+  listPlugins,
+  pluginStorageGet,
+  pluginStorageKeys,
+  pluginStorageSet,
+  readPluginCode,
+  removePlugin,
+  saveTextFile,
+  setPluginEnabled
+} from './plugins/registry'
+import { aiChat as routerChat } from './ai/router'
 import * as research from './research/store'
 import { deleteMeta, getMeta } from './store/db'
 import {
@@ -138,7 +151,9 @@ export function registerIpc(): void {
     active: getSettings().aiProvider,
     activeReady: aiActiveReady(),
     embeddingProvider: getSettings().embeddingProvider,
-    chatModel: getSettings().chatModel
+    chatModel: getSettings().chatModel,
+    aiEnabled: getSettings().aiEnabled ?? true,
+    anyKeySet: anyProviderKeySet()
   }))
   handle('embed:backfill', () => backfillEmbeddings())
   handle('embed:ready', () => embeddingsReady())
@@ -210,6 +225,33 @@ export function registerIpc(): void {
     research: research.dueCardsAll()
   }))
   handle('review:answer', (cardId: string, answer: string) => answerNoteCard(cardId, answer))
+
+  // ── Plugin platform ──────────────────────────────────────────────────────────
+  handle('plugins:list', () => listPlugins())
+  handle('plugins:set-enabled', (id: string, enabled: boolean) => setPluginEnabled(id, enabled))
+  handle('plugins:install-from-folder', (path: string) => installPluginFromFolder(path))
+  handle('plugins:remove', (id: string) => removePlugin(id))
+  handle('plugins:read-code', (id: string) => readPluginCode(id))
+  handle('plugin-storage:get', (pluginId: string, key: string) => pluginStorageGet(pluginId, key))
+  handle('plugin-storage:set', (pluginId: string, key: string, value: string) => pluginStorageSet(pluginId, key, value))
+  handle('plugin-storage:keys', (pluginId: string) => pluginStorageKeys(pluginId))
+
+  // ── Generic AI surface for plugins (router-backed) ──────────────────────────
+  handle('ai:chat', async (reqId: string, req: { system?: string; messages: { role: string; text: string }[]; json?: boolean; stream?: boolean }) => {
+    void routerChat({
+      system: req.system,
+      messages: req.messages.map((m) => ({ role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const), text: m.text })),
+      json: req.json,
+      stream: req.stream
+        ? (delta: string) => broadcast('ai:chat-delta', { reqId, delta })
+        : undefined
+    })
+      .then((res) => broadcast('ai:chat-done', { reqId, text: res.text }))
+      .catch((err) => broadcast('ai:chat-error', { reqId, error: err instanceof Error ? err.message : String(err) }))
+  })
+
+  // ── Export dialog for plugins ───────────────────────────────────────────────
+  handle('files:save-text', (defaultName: string, content: string) => saveTextFile(defaultName, content))
 
   // ── Debug console ───────────────────────────────────────────────────────────
   handle('console:fetch', () => getConsoleLines())

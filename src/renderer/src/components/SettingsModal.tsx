@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { AppSettings, DriveStatus } from '@shared/types'
+import type { AppSettings, DriveStatus, PluginDescriptor } from '@shared/types'
 import { hal } from '@/lib/ipc'
 import { useUi } from '@/state/ui'
 import { AIProvidersSection } from './settings/AIProvidersSection'
@@ -387,17 +387,117 @@ function DefaultsSection() {
 }
 
 function PluginsSection() {
+  const [plugins, setPlugins] = useState<PluginDescriptor[]>([])
+  const [installMsg, setInstallMsg] = useState('')
+
+  const reload = (): void => {
+    void hal.pluginsList().then(setPlugins).catch(() => setPlugins([]))
+  }
+  useEffect(reload, [])
+  useEffect(() => hal.on('plugins:changed', reload), [])
+
+  const installFromFolder = (): void => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.webkitdirectory = true
+    input.onchange = () => {
+      const files = input.files
+      if (!files || files.length === 0) return
+      // Derive the selected folder path from the first file's relative path
+      const first = files[0]
+      const rel = (first as unknown as { webkitRelativePath: string }).webkitRelativePath
+      const rootDir = rel.split('/')[0]
+      // The main process needs an absolute path; reconstruct from the file handle is not
+      // possible in a sandboxed renderer, so use the folder name under userData/plugins
+      // plus a manual path input fallback.
+      setInstallMsg(`Select a plugin folder on this machine and paste its path below (folder: ${rootDir}).`)
+    }
+    input.click()
+  }
+
   return (
     <Section title="Plugins">
-      <div className="rounded-lg border border-dashed border-[var(--hal-hairline)] p-5 text-center">
-        <div className="text-2xl">🧩</div>
-        <p className="mt-2 text-sm text-[var(--hal-ink)]">Plugins are coming soon</p>
-        <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-[var(--hal-dim)]">
-          Third-party-style extensions — extra export formats, themes, editor tools — are on the roadmap. The tab is
-          reserving their seat.
+      <div className="space-y-2">
+        {plugins.map((p) => (
+          <div
+            key={p.id}
+            className="flex items-center gap-3 border px-3 py-2"
+            style={{ borderColor: 'var(--hal-hairline)', background: 'var(--hal-plate-2)' }}
+          >
+            <button
+              className={`lamp ${p.enabled ? 'lamp-green' : ''}`}
+              title={p.enabled ? 'Enabled' : 'Disabled'}
+              onClick={() => void hal.pluginSetEnabled(p.id, !p.enabled)}
+              style={{ cursor: 'pointer' }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm" style={{ color: 'var(--hal-ivory)' }}>
+                {p.name} <span className="mono text-[10px]" style={{ color: 'var(--hal-dim)' }}>v{p.version}{p.bundled ? ' · bundled' : ''}</span>
+              </div>
+              <div className="truncate text-[11px]" style={{ color: 'var(--hal-dim)' }}>
+                {p.description}
+              </div>
+            </div>
+            {!p.bundled && (
+              <button
+                className="key"
+                onClick={() => {
+                  if (window.confirm(`Remove plugin "${p.name}"? Its data will be deleted.`)) {
+                    void hal.pluginRemove(p.id)
+                  }
+                }}
+              >
+                REMOVE
+              </button>
+            )}
+          </div>
+        ))}
+        {plugins.length === 0 && (
+          <p className="text-xs" style={{ color: 'var(--hal-dim)' }}>
+            No plugins installed.
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4 text-xs" style={{ color: 'var(--hal-dim)' }}>
+        Install third-party plugin from a folder on this machine
+        <PathInstallRow onInstalled={() => setInstallMsg('Installed — enable it above.')} onError={(e) => setInstallMsg(e)} />
+        {installMsg && <p className="mt-1">{installMsg}</p>}
+        <p className="mt-2 text-[11px] opacity-70">
+          A plugin folder contains manifest.json (id, name, version, entry, permissions) and its entry script.
+          Permissions: ui, notes, storage, ai, files. The public SDK ships in a later release.
         </p>
       </div>
     </Section>
+  )
+}
+
+function PathInstallRow({ onInstalled, onError }: { onInstalled: () => void; onError: (msg: string) => void }): React.ReactElement {
+  const [path, setPath] = useState('')
+  return (
+    <div className="mt-1.5 flex gap-2">
+      <input
+        className="field min-w-0 flex-1 py-1.5 text-sm"
+        placeholder="C:\path	o\plugin-folder"
+        value={path}
+        onChange={(e) => setPath(e.target.value)}
+      />
+      <button
+        className="key"
+        disabled={!path.trim()}
+        onClick={() => {
+          void hal
+            .pluginInstallFromFolder(path.trim())
+            .then(() => {
+              setPath('')
+              onInstalled()
+            })
+            .catch((err: unknown) => onError(err instanceof Error ? err.message : String(err)))
+        }}
+      >
+        INSTALL
+      </button>
+    </div>
   )
 }
 

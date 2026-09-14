@@ -1,6 +1,7 @@
 import { bus } from '../events'
 import { getNoteRow, listTags, noteNameList } from '../store/notes'
 import { getSettings } from '../store/settings'
+import { aiFeatureEnabled } from './gate'
 import { aiActiveReady, aiChat } from './router'
 
 const CAPTURE_MIN_LEN = 250
@@ -30,7 +31,7 @@ const lastSuggestedVersion = new Map<string, number>()
 
 export function initCaptureWatcher(): void {
   bus.on('note:saved', (id: string) => {
-    if (!aiActiveReady()) return
+    if (!aiFeatureEnabled()) return
     const existing = timers.get(id)
     if (existing) clearTimeout(existing)
     const delay = Math.max(3_000, getSettings().captureDelayMs || CAPTURE_DEBOUNCE_MS)

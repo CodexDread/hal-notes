@@ -49,6 +49,7 @@ const VIEW_KEYS = [
 export function TopBar() {
   const mode = useUi((s) => s.mode)
   const setMode = useUi((s) => s.setMode)
+  const pluginModes = useUi((s) => s.pluginModes)
   const sidebarOpen = useUi((s) => s.sidebarOpen)
   const rightOpen = useUi((s) => s.rightOpen)
   const viewMode = useUi((s) => s.viewMode)
@@ -92,14 +93,16 @@ export function TopBar() {
         <span className={`lamp ${mode === 'notes' ? 'lamp-amber' : ''}`} />
         NOTES
       </button>
-      <button className={`annun ${mode === 'research' ? 'annun-active' : ''}`} onClick={() => setMode('research')}>
-        <span className={`lamp ${mode === 'research' ? 'lamp-amber' : ''}`} />
-        RESEARCH
-      </button>
-      <button className={`annun ${mode === 'review' ? 'annun-active' : ''}`} onClick={() => setMode('review')}>
-        <span className={`lamp ${mode === 'review' ? 'lamp-amber' : ''}`} />
-        REVIEW
-      </button>
+      {pluginModes.map((pm) => (
+        <button
+          key={pm.id}
+          className={`annun ${mode === `plugin:${pm.id}` ? 'annun-active' : ''}`}
+          onClick={() => setMode(`plugin:${pm.id}`)}
+        >
+          <span className={`lamp ${mode === `plugin:${pm.id}` ? 'lamp-amber' : ''}`} />
+          {pm.label.toUpperCase()}
+        </button>
+      ))}
 
       <span className="flex-1" />
 

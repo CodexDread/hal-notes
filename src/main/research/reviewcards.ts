@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import type { CardAnswerResult, ReviewCard } from '@shared/types'
-import { aiActiveReady, aiChat } from '../ai/router'
+import { aiChat } from '../ai/router'
+import { aiFeatureEnabled } from '../ai/gate'
 import { getDb } from '../store/db'
 import { getNoteRow } from '../store/notes'
 import { evaluateShortAnswerFor } from './engine'
@@ -64,7 +65,7 @@ export function dueReviewCards(): ReviewCard[] {
 
 /** Generates recall cards for a note (replacing any existing set). Returns the new count. */
 export async function generateReviewCards(noteId: string): Promise<{ count: number }> {
-  if (!aiActiveReady()) throw new Error('No AI provider is configured — add one in Settings → Integrations')
+  if (!aiFeatureEnabled()) throw new Error('AI features are disabled or unconfigured — check Settings → Integrations')
   const note = getNoteRow(noteId)
   if (!note) throw new Error('Note not found')
   if (note.content.trim().length < 120) throw new Error('Write a bit more first — cards need something to recall (a few sentences)')
