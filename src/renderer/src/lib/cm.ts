@@ -183,9 +183,8 @@ function buildSyntaxHiding(view: EditorView): DecorationSet {
       const text = line.text
 
       if (!isCursor && text.trim() !== '' && !text.trim().startsWith('```')) {
-        if (/^([-*_]){2,}$/.test(text.trim())) {
+        if (/^([-*_]){3,}$/.test(text.trim())) {
           ranges.push({ from: line.from, to: line.from, deco: Decoration.line({ class: 'cm-preview-hr' }) })
-          ranges.push({ from: line.from, to: line.to, deco: Decoration.replace({}) })
         } else {
         const heading = /^(#{1,6})\s+/.exec(text) || /^(#{1,6})()$/.exec(text)
         if (heading && heading[1]) {
@@ -274,11 +273,15 @@ export function livePreview(): Extension {
       '.cm-preview-strike': { textDecoration: 'line-through', color: 'var(--hal-dim)', opacity: '0.7' },
       '.cm-preview-code': { fontFamily: 'var(--hal-font-mono)', background: 'var(--hal-plate-2)', border: '1px solid var(--hal-hairline)', padding: '0.05em 0.3em', borderRadius: '2px', color: 'var(--hal-amber)', fontSize: '0.92em' },
       '.cm-preview-list': { paddingLeft: '0.3em' },
-      '.cm-preview-hr': {
-        borderBottom: '1px solid var(--hal-hairline)',
-        margin: '1.2em 20%',
-        height: '0.5em',
-        display: 'block'
+      '.cm-preview-hr .cm-text, .cm-preview-hr span': { color: 'transparent', fontSize: '0.1px', lineHeight: '0.1px' },
+      '.cm-preview-hr': { position: 'relative', padding: '0.8em 0' },
+      '.cm-preview-hr::after': {
+        content: '""',
+        position: 'absolute',
+        left: '20%',
+        right: '20%',
+        top: '50%',
+        borderBottom: '1px solid var(--hal-hairline)'
       },
       '.cm-line': { lineHeight: '1.75' }
     })
