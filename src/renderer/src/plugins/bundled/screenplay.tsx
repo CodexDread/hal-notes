@@ -23,24 +23,40 @@ This is where dialogue goes.
 `
 
 /** Fountain syntax highlighting — a light StreamLanguage-style decorator pass. */
-const fountainHighlights = EditorView.theme(
-  {
-    '.cm-fountain-scene': { color: 'var(--hal-amber)', fontWeight: '600', textTransform: 'uppercase' },
-    '.cm-fountain-character': { color: 'var(--hal-lamp-green)', fontWeight: '600', marginLeft: '22%' },
-    '.cm-fountain-dialogue': { marginLeft: '16%', marginRight: '16%' },
-    '.cm-fountain-paren': { color: 'var(--hal-dim)', marginLeft: '20%' },
-    '.cm-fountain-transition': { color: 'var(--hal-dim)', textAlign: 'right', fontWeight: '600' }
-  },
-  { dark: true }
-)
 
-function classifyLine(line: string): string | null {
+type LineKind = 'scene' | 'character' | 'dialogue' | 'paren' | 'transition' | null
+
+function classifyLine(line: string): LineKind {
   const t = line.trim()
-  if (/^(INT\.?|EXT\.?|EST\.?|INT\.?\/EXT\.?|I\/E\.?)[\s\.]/i.test(t)) return 'cm-fountain-scene'
-  if (/^[A-Z0-9 '.-]+$/.test(t) && t.length > 1 && !t.endsWith(':')) return 'cm-fountain-character'
-  if (t.startsWith('(') && t.endsWith(')')) return 'cm-fountain-paren'
-  if (/(TO:|FADE (IN|OUT)|FADE TO BLACK)/i.test(t) && t === t.toUpperCase()) return 'cm-fountain-transition'
+  if (t === '') return null
+  if (/^(INT\.?|EXT\.?|EST\.?|INT\.?\/EXT\.?|I\/E\.?)[\s\.]/i.test(t)) return 'scene'
+  if (t.startsWith('(') && t.endsWith(')')) return 'paren'
+  if (/(TO:|FADE (IN|OUT)|FADE TO BLACK)/i.test(t) && t === t.toUpperCase()) return 'transition'
+  if (/^[A-Z0-9 '.-]+$/.test(t) && t.length > 1 && !t.endsWith(':')) return 'character'
   return null
+}
+
+/**
+ * Full line classification with dialogue continuation: a line is dialogue when
+ * the previous non-blank line was a character cue, parenthetical, or dialogue.
+ */
+function classifyScreenplayLine(line: string, prev: LineKind): { kind: LineKind; next: LineKind } {
+  const t = line.trim()
+  if (t === '') return { kind: null, next: null }
+  const kind = classifyLine(line)
+  if (kind) return { kind, next: kind === 'paren' || kind === 'character' ? 'dialogue' : kind }
+  if (prev === 'character' || prev === 'paren' || prev === 'dialogue') {
+    return { kind: 'dialogue', next: 'dialogue' }
+  }
+  return { kind: null, next: null }
+}
+
+const KIND_CLASS: Record<Exclude<LineKind, null>, string> = {
+  scene: 'cm-fountain-scene',
+  character: 'cm-fountain-character',
+  dialogue: 'cm-fountain-dialogue',
+  paren: 'cm-fountain-paren',
+  transition: 'cm-fountain-transition'
 }
 
 const fountainPlugin = ViewPlugin.fromClass(
@@ -58,11 +74,13 @@ const fountainPlugin = ViewPlugin.fromClass(
 
 function buildLineDeco(view: EditorView): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>()
+  let prev: LineKind = null
   for (const { from, to } of view.visibleRanges) {
     for (let pos = from; pos <= to; ) {
       const line = view.state.doc.lineAt(pos)
-      const cls = classifyLine(line.text)
-      if (cls && line.text.trim() !== '') builder.add(line.from, line.from, Decoration.line({ class: cls }))
+      const { kind, next } = classifyScreenplayLine(line.text, prev)
+      if (kind) builder.add(line.from, line.from, Decoration.line({ class: KIND_CLASS[kind] }))
+      prev = next
       pos = line.to + 1
     }
   }
@@ -101,7 +119,6 @@ function fountainEditor(opts: {
   }
 
   return [
-    fountainHighlights,
     fountainPlugin,
     autocompletion({ override: [sceneSource, charSource] }),
     EditorView.updateListener.of((u) => {
@@ -357,6 +374,37 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
 
 /** Screenplay as a bundled plugin: Fountain editor with autocomplete, stats, export. */
 export function registerScreenplayPlugin(sdk: HalPluginSdk): void {
+  // Script-page alignment: character cues centered, dialogue in its narrow
+  // column, parentheticals slightly inside, transitions right-flush.
+  sdk.ui.addStyle(`
+    .cm-line.cm-fountain-scene {
+      color: var(--hal-amber);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 1.4em;
+    }
+    .cm-line.cm-fountain-character {
+      color: var(--hal-lamp-green);
+      font-weight: 600;
+      text-align: center;
+      margin: 0.6em 32% 0 32%;
+    }
+    .cm-line.cm-fountain-dialogue {
+      text-align: center;
+      margin: 0 20%;
+    }
+    .cm-line.cm-fountain-paren {
+      color: var(--hal-dim);
+      text-align: center;
+      margin: 0 30%;
+    }
+    .cm-line.cm-fountain-transition {
+      color: var(--hal-dim);
+      font-weight: 600;
+      text-align: right;
+      margin-top: 1.2em;
+    }
+  `)
   sdk.ui.registerMode({
     id: 'screenplay',
     label: 'Screenplay',
