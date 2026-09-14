@@ -12,6 +12,7 @@ import { aiFeatureEnabled } from '../ai/gate'
 import { bus } from '../events'
 import { createNoteWithContent, ensureFolderUnder, getNoteRow, noteNameList } from '../store/notes'
 import { getSettings } from '../store/settings'
+import { bundledPluginConfig } from '../plugins/registry'
 import {
   addSource,
   getPathRow,
@@ -35,8 +36,13 @@ const TONE_RULES = `Tone rules (non-negotiable — this learner thrives on momen
 // ── Learning path generation ──────────────────────────────────────────────────
 
 function pathLengthCards(): number {
-  const n = getSettings().pathLengthCards
+  const n = bundledPluginConfig('hal.research').pathLengthCards
   return n === 5 || n === 9 ? n : 7
+}
+
+function maxSubQuestions(): number {
+  const n = bundledPluginConfig('hal.research').maxSubQuestions
+  return [4, 6, 8].includes(Number(n)) ? Number(n) : 6
 }
 
 const PATH_SCHEMA = {
@@ -114,7 +120,7 @@ async function runLearningPath(notebookId: string, topic: string, pathId: string
   const planRes = await aiChat({
     messages: [{ role: 'user', text: `A learner wants to learn: "${topic}".
 They already have some familiarity (their existing notes touch): ${vault.anchors.join('; ') || 'nothing yet — brand new topic'}.
-Decompose this into 4-6 sub-questions that together cover what's genuinely worth understanding, ordered from foundations to interesting edges. Avoid trivia.
+Decompose this into ${maxSubQuestions()} sub-questions that together cover what's genuinely worth understanding, ordered from foundations to interesting edges. Avoid trivia.
 Return JSON: {"subQuestions": string[]}` }],
     json: true
   })
@@ -128,7 +134,7 @@ Return JSON: {"subQuestions": string[]}` }],
 
   const findings: { q: string; text: string }[] = []
   const webSources = new Map<string, string>()
-  for (const q of subQuestions.slice(0, 6)) {
+  for (const q of subQuestions.slice(0, maxSubQuestions())) {
     const res = await aiGroundedChat({
       messages: [
         {

@@ -3,6 +3,7 @@ import type { CardAnswerResult, ReviewCard } from '@shared/types'
 import { aiChat } from '../ai/router'
 import { aiFeatureEnabled } from '../ai/gate'
 import { getDb } from '../store/db'
+import { bundledPluginConfig } from '../plugins/registry'
 import { getNoteRow } from '../store/notes'
 import { evaluateShortAnswerFor } from './engine'
 import { nextDueFromReviews } from './store'
@@ -71,7 +72,7 @@ export async function generateReviewCards(noteId: string): Promise<{ count: numb
   if (note.content.trim().length < 120) throw new Error('Write a bit more first — cards need something to recall (a few sentences)')
 
   const res = await aiChat({
-    messages: [{ role: 'user', text: `Create 2-4 active-recall cards from this personal note.
+    messages: [{ role: 'user', text: `Create 2-${bundledPluginConfig('hal.review').maxCardsPerNote ?? 4} active-recall cards from this personal note.
 
 Rules:
 - Ask about the note's core ideas, in the learner's own framing where possible.
@@ -116,7 +117,7 @@ Return JSON: {"cards": [{"kind": "mcq"|"short", "question": string, "options": s
 
   const cards = (parsed.cards ?? [])
     .filter((c) => typeof c?.question === 'string' && c.question.length > 0 && typeof c.answer === 'string' && c.answer.length > 0)
-    .slice(0, 4)
+    .slice(0, Number(bundledPluginConfig('hal.review').maxCardsPerNote ?? 4))
     .map((c) => {
       const kind = c.kind === 'mcq' && Array.isArray(c.options) && c.options.length >= 2 ? 'mcq' : 'short'
       const options = kind === 'mcq' ? (c.options ?? []).slice(0, 5) : []

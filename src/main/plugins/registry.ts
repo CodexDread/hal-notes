@@ -2,6 +2,7 @@ import { app, dialog } from 'electron'
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import type { PluginDescriptor } from '@shared/types'
+import type { PluginConfigField } from '@shared/plugins-config'
 import { bus } from '../events'
 import { getDb } from '../store/db'
 import { getSettings, updateSettings } from '../store/settings'
@@ -16,29 +17,99 @@ export interface ThirdPartyManifest {
   permissions?: string[]
 }
 
+const RESEARCH_CONFIG: PluginConfigField[] = [
+  {
+    key: 'pathLengthCards',
+    label: 'Learning path length',
+    type: 'select',
+    options: [
+      { value: 5, label: '5 cards — sprint' },
+      { value: 7, label: '7 cards — standard' },
+      { value: 9, label: '9 cards — deep dive' }
+    ],
+    defaultValue: 7
+  },
+  {
+    key: 'maxSubQuestions',
+    label: 'Web research depth',
+    type: 'select',
+    options: [
+      { value: 4, label: '4 sub-questions — quick' },
+      { value: 6, label: '6 sub-questions — standard' },
+      { value: 8, label: '8 sub-questions — thorough' }
+    ],
+    defaultValue: 6,
+    hint: 'Sub-questions HAL researches per learning path'
+  }
+]
+
+const REVIEW_CONFIG: PluginConfigField[] = [
+  {
+    key: 'maxCardsPerNote',
+    label: 'Recall cards generated per note',
+    type: 'select',
+    options: [
+      { value: 2, label: '2 cards' },
+      { value: 3, label: '3 cards' },
+      { value: 4, label: '4 cards' }
+    ],
+    defaultValue: 4
+  }
+]
+
+const SCREENPLAY_CONFIG: PluginConfigField[] = [
+  {
+    key: 'linesPerPage',
+    label: 'Page estimate basis',
+    type: 'select',
+    options: [
+      { value: 52, label: '52 lines/page — dense' },
+      { value: 55, label: '55 lines/page — standard' },
+      { value: 60, label: '60 lines/page — airy' }
+    ],
+    defaultValue: 55,
+    hint: 'Used for the page-count estimate in the stats rail'
+  }
+]
+
 export const BUNDLED_PLUGINS: PluginDescriptor[] = [
   {
     id: 'hal.research',
     name: 'Research',
-    version: '1.0.0',
+    version: '1.1.0',
     description: 'Learning-path notebooks: HAL researches the web + your vault and builds interactive paths.',
-    bundled: true
+    bundled: true,
+    configSchema: RESEARCH_CONFIG
   },
   {
     id: 'hal.review',
     name: 'Review',
-    version: '1.0.0',
+    version: '1.1.0',
     description: 'Vault-wide spaced recall: cards from notes and learning paths on a gentle 1/3/7/14/30-day ladder.',
-    bundled: true
+    bundled: true,
+    configSchema: REVIEW_CONFIG
   },
   {
     id: 'hal.screenplay',
     name: 'Screenplay',
-    version: '1.0.0',
+    version: '1.1.0',
     description: 'Fountain-format screenplay editor with character/scene autocomplete, stats, and .fountain export.',
-    bundled: true
+    bundled: true,
+    configSchema: SCREENPLAY_CONFIG
   }
 ]
+
+/** Reads a bundled plugin's config with schema defaults applied. */
+export function bundledPluginConfig(pluginId: string): Record<string, string | number | boolean> {
+  const plugin = BUNDLED_PLUGINS.find((p) => p.id === pluginId)
+  if (!plugin?.configSchema) return {}
+  const values = getSettings().plugins?.config?.[pluginId]
+  const out: Record<string, string | number | boolean> = {}
+  for (const field of plugin.configSchema) {
+    out[field.key] = values?.[field.key] !== undefined ? values[field.key] : field.defaultValue
+  }
+  return out
+}
 
 export function pluginsDir(): string {
   return join(app.getPath('userData'), 'plugins')

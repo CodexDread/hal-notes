@@ -120,7 +120,22 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
   const viewRef = useRef<EditorView | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const stats = useMemo(() => screenplayStats(content), [content])
+    const [linesPerPage, setLinesPerPage] = useState(55)
+  useEffect(() => {
+    const fetchCfg = (): void => {
+      void (window as unknown as { hal: import('@shared/api').HalApi }).hal
+        .settingsGet()
+        .then((s) => {
+          const v = s.plugins?.config?.['hal.screenplay']?.linesPerPage
+          setLinesPerPage(typeof v === 'number' ? v : 55)
+        })
+        .catch(() => undefined)
+    }
+    fetchCfg()
+    const off = (window as unknown as { hal: import('@shared/api').HalApi }).hal.on('settings:changed', fetchCfg)
+    return off
+  }, [])
+  const stats = useMemo(() => screenplayStats(content, linesPerPage), [content, linesPerPage])
   const outline = useMemo(() => sceneOutline(content), [content])
 
   useEffect(() => {

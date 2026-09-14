@@ -127,7 +127,7 @@ export interface AppSettings {
   embeddingProvider: 'google' | 'openai' | 'custom'
   embeddingModel: string
   aiEnabled: boolean
-  plugins?: { enabled?: Record<string, boolean> }
+  plugins?: { enabled?: Record<string, boolean>; config?: Record<string, PluginConfigValues> }
 }
 
 export interface ConsoleLine {
@@ -139,6 +139,8 @@ export interface ConsoleLine {
 
 // ── Plugin platform ──────────────────────────────────────────────────────────
 
+import type { PluginConfigField, PluginConfigValues } from './plugins-config'
+
 export interface PluginDescriptor {
   id: string
   name: string
@@ -148,6 +150,7 @@ export interface PluginDescriptor {
   dirName?: string
   permissions?: string[]
   enabled?: boolean
+  configSchema?: PluginConfigField[]
 }
 
 export interface EmbedProgress {

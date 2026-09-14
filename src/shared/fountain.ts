@@ -156,7 +156,7 @@ export interface ScreenplayStats {
   words: number
 }
 
-export function screenplayStats(text: string): ScreenplayStats {
+export function screenplayStats(text: string, linesPerPage = 55): ScreenplayStats {
   const elements = parseFountain(text)
   const scenes = elements.filter((e) => e.type === 'scene_heading').length
   const characters = [
@@ -169,7 +169,7 @@ export function screenplayStats(text: string): ScreenplayStats {
   ].sort()
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '').length
   const words = text.split(/\s+/).filter(Boolean).length
-  return { scenes, characters, pageEstimate: Math.max(1, Math.round(lines / 55)), words }
+  return { scenes, characters, pageEstimate: Math.max(1, Math.round(lines / linesPerPage)), words }
 }
 
 export interface SceneOutlineItem {

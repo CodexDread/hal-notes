@@ -3,6 +3,8 @@ import type { AppSettings, DriveStatus, PluginDescriptor } from '@shared/types'
 import { hal } from '@/lib/ipc'
 import { useUi } from '@/state/ui'
 import { AIProvidersSection } from './settings/AIProvidersSection'
+import { Switch } from './Switch'
+import { mergePluginConfig, type PluginConfigValues } from '@shared/plugins-config'
 import { useVault } from '@/state/vault'
 
 type SettingsTab = 'integrations' | 'style' | 'defaults' | 'plugins'
@@ -362,16 +364,6 @@ function DefaultsSection() {
         <p className="mt-1.5 text-[11px] text-[var(--hal-dim)] opacity-80">Shows a console button beside the sync pill — main-process logs, live.</p>
       </div>
       <SelectRow
-        label="Learning path length (research mode)"
-        value={settings?.pathLengthCards ?? 7}
-        options={[
-          { value: 5, label: '5 cards — sprint' },
-          { value: 7, label: '7 cards — standard' },
-          { value: 9, label: '9 cards — deep dive' }
-        ]}
-        onChange={(v) => void hal.settingsSet({ pathLengthCards: Number(v) })}
-      />
-      <SelectRow
         label="Poll Google Drive for changes every"
         value={settings?.syncIntervalMs ?? 30_000}
         options={[
@@ -421,34 +413,47 @@ function PluginsSection() {
         {plugins.map((p) => (
           <div
             key={p.id}
-            className="flex items-center gap-3 border px-3 py-2"
+            className="border px-3 py-2.5"
             style={{ borderColor: 'var(--hal-hairline)', background: 'var(--hal-plate-2)' }}
           >
-            <button
-              className={`lamp ${p.enabled ? 'lamp-green' : ''}`}
-              title={p.enabled ? 'Enabled' : 'Disabled'}
-              onClick={() => void hal.pluginSetEnabled(p.id, !p.enabled)}
-              style={{ cursor: 'pointer' }}
-            />
-            <div className="min-w-0 flex-1">
-              <div className="text-sm" style={{ color: 'var(--hal-ivory)' }}>
-                {p.name} <span className="mono text-[10px]" style={{ color: 'var(--hal-dim)' }}>v{p.version}{p.bundled ? ' · bundled' : ''}</span>
+            <div className="flex items-center gap-3">
+              <Switch
+                on={!!p.enabled}
+                title={p.enabled ? 'Enabled' : 'Disabled'}
+                onChange={(next) => void hal.pluginSetEnabled(p.id, next)}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-sm" style={{ color: 'var(--hal-ivory)' }}>
+                  {p.name}{' '}
+                  <span className="mono text-[10px]" style={{ color: 'var(--hal-dim)' }}>
+                    v{p.version}
+                    {p.bundled ? ' · bundled' : ''}
+                    {p.enabled ? '' : ' · disabled'}
+                  </span>
+                </div>
+                <div className="truncate text-[11px]" style={{ color: 'var(--hal-dim)' }}>
+                  {p.description}
+                </div>
               </div>
-              <div className="truncate text-[11px]" style={{ color: 'var(--hal-dim)' }}>
-                {p.description}
-              </div>
+              {!p.bundled && (
+                <button
+                  className="key"
+                  onClick={() => {
+                    if (window.confirm(`Remove plugin "${p.name}"? Its data will be deleted.`)) {
+                      void hal.pluginRemove(p.id)
+                    }
+                  }}
+                >
+                  REMOVE
+                </button>
+              )}
             </div>
-            {!p.bundled && (
-              <button
-                className="key"
-                onClick={() => {
-                  if (window.confirm(`Remove plugin "${p.name}"? Its data will be deleted.`)) {
-                    void hal.pluginRemove(p.id)
-                  }
-                }}
-              >
-                REMOVE
-              </button>
+            {p.configSchema && p.configSchema.length > 0 && (
+              <PluginConfigRows
+                pluginId={p.id}
+                schema={p.configSchema}
+                disabled={!p.enabled}
+              />
             )}
           </div>
         ))}
@@ -469,6 +474,67 @@ function PluginsSection() {
         </p>
       </div>
     </Section>
+  )
+}
+
+function PluginConfigRows({
+  pluginId,
+  schema,
+  disabled
+}: {
+  pluginId: string
+  schema: import('@shared/plugins-config').PluginConfigField[]
+  disabled: boolean
+}): React.ReactElement {
+  const settings = useUi((s) => s.settings)
+  const applySettings = useUi((s) => s.applySettings)
+  const values = mergePluginConfig(schema, settings?.plugins?.config?.[pluginId] as PluginConfigValues | undefined)
+
+  const setConfig = (key: string, value: string | number | boolean): void => {
+    const plugins = { ...(settings?.plugins ?? {}) }
+    const config = { ...(plugins.config ?? {}) }
+    const current = { ...(config[pluginId] ?? {}) }
+    current[key] = value
+    config[pluginId] = current
+    plugins.config = config
+    void hal.settingsSet({ plugins }).then(applySettings)
+  }
+
+  return (
+    <div className="mt-2 space-y-2 border-t pt-2 pl-12" style={{ borderColor: 'var(--hal-hairline)', opacity: disabled ? 0.5 : 1 }}>
+      {schema.map((field) => (
+        <div key={field.key} className="flex items-center gap-3">
+          <label className="w-56 shrink-0 text-xs" style={{ color: 'var(--hal-dim)' }}>
+            {field.label}
+          </label>
+          {field.type === 'select' ? (
+            <select
+              disabled={disabled}
+              className="field w-56 py-1 text-xs"
+              value={String(values[field.key])}
+              onChange={(e) => {
+                const raw = e.target.value
+                const num = Number(raw)
+                setConfig(field.key, Number.isNaN(num) ? raw : num)
+              }}
+            >
+              {field.options?.map((o) => (
+                <option key={String(o.value)} value={String(o.value)}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Switch on={!!values[field.key]} disabled={disabled} onChange={(next) => setConfig(field.key, next)} />
+          )}
+          {field.hint && (
+            <span className="text-[10px]" style={{ color: 'var(--hal-dim)' }}>
+              {field.hint}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
   )
 }
 
