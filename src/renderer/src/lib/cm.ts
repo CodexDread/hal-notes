@@ -260,15 +260,16 @@ export function livePreview(): Extension {
       { decorations: (v) => v.decorations }
     ),
     EditorView.theme({
-      '.cm-preview-h1': { fontSize: '1.5em', fontWeight: '600', color: 'var(--hal-ivory)', lineHeight: '1.8' },
-      '.cm-preview-h2': { fontSize: '1.3em', fontWeight: '600', color: 'var(--hal-ivory)', lineHeight: '1.7' },
-      '.cm-preview-h3': { fontSize: '1.15em', fontWeight: '500', color: 'var(--hal-ivory)', lineHeight: '1.6' },
-      '.cm-preview-h4': { fontSize: '1.05em', fontWeight: '500', color: 'var(--hal-ivory)' },
-      '.cm-preview-strong': { fontWeight: '600', color: 'var(--hal-ivory)' },
-      '.cm-preview-em': { fontStyle: 'italic' },
-      '.cm-preview-strike': { textDecoration: 'line-through', color: 'var(--hal-dim)' },
-      '.cm-preview-code': { fontFamily: 'var(--hal-font-mono)', background: 'var(--hal-plate-2)', padding: '0 0.2em' },
-      '.cm-preview-list': { paddingLeft: '0.3em' }
+      '.cm-preview-h1': { fontSize: '1.6em', fontWeight: '700', color: 'var(--hal-amber)', lineHeight: '2.0', letterSpacing: '-0.01em' },
+      '.cm-preview-h2': { fontSize: '1.4em', fontWeight: '600', color: 'var(--hal-amber)', lineHeight: '1.8', letterSpacing: '-0.01em', opacity: '0.9' },
+      '.cm-preview-h3': { fontSize: '1.2em', fontWeight: '600', color: 'var(--hal-ivory)', lineHeight: '1.7' },
+      '.cm-preview-h4': { fontSize: '1.05em', fontWeight: '600', color: 'var(--hal-ivory)', lineHeight: '1.6' },
+      '.cm-preview-strong': { fontWeight: '700', color: 'var(--hal-ivory)' },
+      '.cm-preview-em': { fontStyle: 'italic', color: 'var(--hal-ink)' },
+      '.cm-preview-strike': { textDecoration: 'line-through', color: 'var(--hal-dim)', opacity: '0.7' },
+      '.cm-preview-code': { fontFamily: 'var(--hal-font-mono)', background: 'var(--hal-plate-2)', border: '1px solid var(--hal-hairline)', padding: '0.05em 0.3em', borderRadius: '2px', color: 'var(--hal-amber)', fontSize: '0.92em' },
+      '.cm-preview-list': { paddingLeft: '0.3em' },
+      '.cm-line': { lineHeight: '1.75' }
     })
   ]
 }

@@ -86,7 +86,7 @@ export function EditorArea() {
         <div
           className="pointer-events-none absolute inset-0"
           aria-hidden
-          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0.6 }}
+          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0 }}
         />
         <div className="relative flex items-baseline gap-3">
           <input
@@ -119,7 +119,7 @@ export function EditorArea() {
         <div
           className="pointer-events-none absolute inset-0"
           aria-hidden
-          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0.6 }}
+          style={{ backgroundImage: 'linear-gradient(to right, var(--hal-hairline-dim) 1px, transparent 1px)', backgroundSize: '120px 100%', opacity: 0 }}
         />
         {editorPane}
       </div>
