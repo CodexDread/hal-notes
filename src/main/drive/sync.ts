@@ -399,11 +399,20 @@ class SyncEngine {
       await this.resolveConflict(existing, file)
     } else if (existing.name !== name && existing.local_hash === existing.synced_hash) {
       applyRemoteRename(file.id, name)
-    } else if (existing.parent_id !== parentId && existing.local_hash === existing.synced_hash) {
+    } else if (
+      existing.parent_id !== parentId &&
+      existing.local_hash === existing.synced_hash &&
+      existing.parent_id === existing.remote_parent_id
+    ) {
+      // The local parent matches the last-synced parent — the remote listing
+      // is authoritative, so Drive moved it. If the local parent has drifted
+      // (user just dragged the note), fall through untouched so the pending
+      // local move pushes instead of being reverted.
       applyRemoteMove(file.id, parentId)
-    } else {
+    } else if (existing.parent_id === parentId || existing.parent_id === existing.remote_parent_id) {
       markSynced(file.id, file.md5 ?? existing.local_hash, file.version, Date.parse(file.modifiedTime) || Date.now())
     }
+    // else: local move pending push — deliberately no-op here; pushAllDirty handles it.
   }
 
   /** A remote file we have never seen: adopt an identical offline-created local note, or insert fresh. */
