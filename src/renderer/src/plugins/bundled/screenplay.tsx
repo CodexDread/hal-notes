@@ -388,7 +388,7 @@ function ScreenplayMode({ sdk }: { sdk: HalPluginSdk }) {
         </div>
         <div className="flex min-h-0 flex-1">
           <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden">
-            <div ref={hostRef} className="mx-auto h-full w-full max-w-[860px]" />
+            <div ref={hostRef} className="hal-screenplay-editor mx-auto h-full w-full max-w-[860px]" />
           </div>
           <aside
             className="hidden w-48 shrink-0 overflow-y-auto border-l px-2 py-2 xl:block"
@@ -439,6 +439,12 @@ export function registerScreenplayPlugin(sdk: HalPluginSdk): void {
       font-weight: 600;
       text-align: right;
       margin-top: 1.2em;
+    }
+    .hal-screenplay-editor .cm-line {
+      text-align: center;
+    }
+    .hal-screenplay-editor .cm-line.cm-fountain-transition {
+      text-align: right;
     }
   `)
   sdk.ui.registerMode({
